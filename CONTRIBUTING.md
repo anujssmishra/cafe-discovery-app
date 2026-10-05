@@ -1,0 +1,78 @@
+# Contributing and Maintaining the Project
+
+Last updated: 2026-10-06. This repository currently contains planning documents only.
+
+## 1. Understand the Project First
+
+Read [README.md](README.md), [PROJECT_BRIEF.md](PROJECT_BRIEF.md) and [DECISIONS.md](DECISIONS.md). Developers should also read [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md), [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) and [DATA_AND_PRIVACY.md](DATA_AND_PRIVACY.md). The bootstrap recipe is in [GETTING_STARTED.md](GETTING_STARTED.md).
+
+Keep the focus on cafés and the first pilot. Larger menus, restaurant ordering, table management and full hospitality operations are outside the current concept. A café's drink/snack preferences may inform discovery without turning this into restaurant management software.
+
+## 2. Repository Access and Working Method
+
+The repository is private under [anujssmishra/cafe-discovery-app](https://github.com/anujssmishra/cafe-discovery-app). Request access from the project owner when needed. Use your own GitHub identity and normal credential manager. A project licence and any future public-release policy have not been selected; do not assume this is already an open-source project.
+
+For implementation, create a focused branch, make a reviewable change, and open a pull request using the agreed team process. Suggested branch names include `feat/catalogue`, `fix/visit-ownership` and `docs/setup-update`. Direct owner-authorized documentation updates may use the owner's requested workflow.
+
+Each work item should state the user problem, scope, acceptance criteria, data impact and validation needed. Keep unrelated changes separate. Record material scope/stack/provider decisions rather than introducing them silently.
+
+## 3. Suggested Issue Format
+
+```markdown
+Problem / user need:
+Proposed change:
+In scope:
+Acceptance criteria:
+Data or permission impact:
+Validation:
+Dependencies:
+Owner:
+```
+
+Use redacted or synthetic examples. Do not include passwords, access tokens, database URLs with credentials, interview transcripts, identifiable participant histories or production exports in issues or pull requests.
+
+## 4. Pull Request Expectations
+
+Lead the description with the concrete behaviour and why it helps. Include relevant validation and remaining limitations. If setup changes, update the setup file in the same change. If a feature becomes implemented, update the status only after its acceptance checks pass.
+
+A contribution is ready for review when:
+
+- The stated acceptance criteria are met and important behaviour is checked.
+- Authorization, validation, consent and deletion are addressed where affected.
+- Schema changes include migrations and an operational plan if needed.
+- New settings have an example variable name, safe default or explanation, and no committed secret.
+- README links and related requirements/decisions remain accurate.
+- The PR distinguishes completed behaviour from proposed follow-up work.
+
+For future application code, run the relevant tests and Django checks described by the actual implementation. Add meaningful tests for behaviour such as ownership, matching constraints or withdrawal, rather than tests that merely duplicate a function's internals. This documentation-only repository currently has no application test command.
+
+## 5. Data Contributions
+
+Follow the source, permission and verification rules in [DATA_AND_PRIVACY.md](DATA_AND_PRIVACY.md). Use stable IDs and checking dates. Do not publish private contact details or copied third-party review collections. Clearly label unknown, stale and subjective attributes.
+
+During development, use synthetic users and synthetic visit logs. Synthetic records must be visibly marked and excluded from pilot metrics and community explanations. Never let demo records appear to be real participants or real evidence of repeat visits.
+
+## 6. Keeping Documentation Current
+
+| Change | Files to review |
+|---|---|
+| Stage or available features | README and product requirements |
+| Product scope/segment | Project brief, requirements, roadmap and decisions |
+| Stack, authentication or deployment | Technical design, getting started, sources and decisions |
+| Models or ranking logic | Technical design, data plan, requirements and metric definitions |
+| Providers, consent or retention | Data plan, technical design, sources and notice implementation |
+| New budget, staffing or results | Roadmap/budget and decision log |
+
+Every substantial document update should include its date and status. Keep proposed and implemented details separate. Once code exists, document actual prerequisites, configuration, migrations, tests and run instructions; remove obsolete bootstrap-only directions.
+
+During active work, review progress and open decisions weekly. Review café freshness weekly during a pilot. Recheck versions, provider terms/prices and relevant regulation before selecting services or launching, and whenever those dependencies change. Link to original authoritative references.
+
+## 7. Security and Sensitive Reports
+
+Do not place an exploitable vulnerability or personal data in a public issue. Contact the project owner through an existing private channel, using a minimal redacted description. A dedicated support/security contact must be chosen before pilot launch and then documented here and in the app.
+
+If a secret is accidentally committed, removing it from the latest file is insufficient: revoke/rotate it, assess exposure, and coordinate necessary repository cleanup. Do not use this repository as a place to store operational credentials even while it remains private.
+
+## 8. Handover to a New Contributor
+
+Give the contributor repository access, reading order, current milestone, one specific task, synthetic/local data instructions and the actual tested setup procedure. Identify who can answer product, data and deployment questions. They should be able to tell what exists, what is proposed and what is undecided from the files without needing this chat.

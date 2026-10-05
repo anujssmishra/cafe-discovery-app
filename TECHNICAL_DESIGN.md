@@ -1,0 +1,152 @@
+# Technical Design
+
+Last updated: 2026-10-06. Status: proposed architecture; none of the components below are implemented.
+
+## 1. Architecture and Boundaries
+
+Start with one Django application serving responsive HTML/CSS and ordinary forms, with small amounts of JavaScript only where useful. Use Django authentication, sessions, CSRF protection, ORM and a restricted admin. This is sufficient to test catalogue discovery and feedback without operating separate mobile apps, an API gateway, background workers or a large-model service.
+
+| Component | Proposed choice | Reason and limit |
+|---|---|---|
+| Runtime | Python 3.13, maintained micro release | Supported by Django 5.2; check compatibility when dependencies change |
+| Framework | Latest maintained Django 5.2 LTS patch | Built-in forms, auth and admin; support ends April 2028, so schedule a version review |
+| Presentation | Server-rendered templates, responsive CSS | One web product for mobile and desktop; dedicated frontend optional later |
+| Database | SQLite only for initial local skeleton; PostgreSQL for pilot | Pilot needs durable multi-user storage and production-equivalent tests |
+| Authentication | Default Django user plus a one-to-one taste profile | Avoid custom authentication requirements during initial migrations |
+| Matching | Deterministic feature scores, followed later by an optional aggregate signal | Useful with no interaction history; easy to inspect and compare |
+| Location | Selected area or temporary optional coordinates | Small catalogue can use Haversine distance; map/PostGIS optional later |
+| Hosting | Managed web process plus persistent database; provider undecided | Choose for backups, reliability, cost and data handling |
+
+PostgreSQL 17 is a proposed starting version if supported by the selected host; choose a maintained version compatible with the actual Django and database-driver releases. Record the final dependencies and versions in code. See [SOURCES.md](SOURCES.md) for framework and deployment references.
+
+The initial default-user flow is username/password authentication. Email-only login, verification and password recovery require deliberate implementation and email delivery; do not assume the default skeleton provides them. Restrict staff roles explicitly and do not grant catalogue editors superuser access.
+
+## 2. Proposed Data Model
+
+| Entity | Core fields and responsibility | Important rules |
+|---|---|---|
+| User | Django authentication identity | No private histories in public profile responses |
+| TasteProfile | One user; drink preferences, soft ambience preferences, optional favourite café IDs | Favourites optional, up to three; preferences remain editable |
+| Cafe | Stable UUID, name, area, address, coordinates, active status, public contact/website | Latitude/longitude validation; archived cafés excluded from normal ranking |
+| CafeOffering | Café, drink category, brewing method, indicative price/currency, source and checking date | Prices are estimates, not guaranteed quotes; unknown stays unknown |
+| CafeObservation | Café, attribute, value, source type/link, checked date, notes | Amenities use yes/no/unknown; separate observations from facts |
+| Bookmark | User and café | Unique pair; ownership checked server-side |
+| Visit | User, café, local visit date, optional drink/spend band, purpose and structured feedback | Self-reported; prevent future dates; user can edit/delete |
+| ConsentRecord | User, purpose, notice version, choice, timestamp, withdrawal time | Separate community contribution from core service choices |
+| CorrectionReport | Café, disputed field, proposed correction, optional contact, status | Restricted review queue; no reporter profile displayed publicly |
+| AdminAudit | Actor, time, operation, object ID, safe change summary | No secrets or full private histories in audit payloads |
+| PilotEvent | Event name, time, short-lived pseudonymous session/member key, allowlisted properties | Optional minimal measurement; retention and notice defined first |
+
+Use database constraints for unique relationships and valid values, and migrations for schema changes. Do not use café names as primary keys. Keep normalized attributes searchable; define controlled tags before using them in ranking. Raw interview material belongs outside the application database and Git.
+
+For this small catalogue, calculate distances in application code and filter against the user's chosen radius. Validate coordinates and handle absent location. Store café coordinates; avoid persisting exact user coordinates. Add spatial indexing only if scale and measured query behaviour justify it.
+
+## 3. Matching Baseline
+
+### Eligibility before scoring
+
+1. Select active cafés within the chosen area/radius.
+2. Apply explicitly marked essential requirements. A required attribute with unknown evidence does not qualify.
+3. For a hard budget ceiling, require a recently checked price for at least one selected drink within that ceiling. Explain that the listed price is indicative; no hard budget match is possible with unknown pricing.
+4. If nothing qualifies, explain the constraints and offer user-controlled changes. Never silently change them.
+
+### Content scores
+
+Use versioned, deterministic scores between 0 and 1:
+
+- **T — taste:** proportion of the selected drink/brewing preferences supported by the café's checked offerings.
+- **P — purpose:** proportion of the user's desired attributes for today's purpose that are confirmed present. Start with explicit user-selected attributes rather than assuming every work visit requires Wi-Fi or every date requires low noise.
+- **B — budget:** 1 if a checked selected-drink price fits the spending band, 0.5 if it exceeds the band by no more than 20%, otherwise 0. A hard ceiling has already been enforced during eligibility.
+
+A known absent attribute scores 0 for that dimension. Unknown soft attributes are omitted from that dimension's denominator and reported as unknown. If an entire dimension is unknown or unselected, omit that dimension and renormalize its remaining weights. Require at least one supported selected taste or purpose attribute for a personalized match; otherwise show a clearly labelled area browse list. This avoids presenting sparse records as highly certain matches.
+
+Track evidence coverage separately from score. Resolve equal scores by greater relevant evidence coverage, then shorter distance if available, then stable café ID. Show missing information in the result, not a confidence percentage. These rules and the 20% budget tolerance are initial hypotheses to evaluate, not measured predictors.
+
+### Optional community score
+
+Initial proposed weights:
+
+```text
+score = 0.40 × T + 0.30 × P + 0.20 × B + 0.10 × R
+```
+
+**R** is disabled until there are at least **five distinct consenting comparable participants who visited that café** in the preceding 90 days, excluding the requesting user. Compare shared drink tags with Jaccard similarity, initially requiring similarity at least 0.5 and at least one shared tag. Filter to the same purpose when the requester selected one. These thresholds are proposed and must be recorded with the algorithm version.
+
+Among those eligible peers, give each person one vote. A positive vote requires visits on at least two distinct dates in that window and their latest return feedback to be yes. Other eligible visitors remain in the denominator. Set R to positive votes divided by eligible distinct visitors, preventing one frequent visitor from dominating the signal. Logs are self-reported, so this is a community signal rather than verified purchasing behaviour.
+
+With too little eligible data, omit R and renormalize the available content weights. With all T/P/B available, this gives weights 4/9, 3/9 and 2/9. Withdrawal, profile changes and deleted visits must invalidate affected aggregates. The five-person threshold reduces disclosure risk; it does not guarantee anonymity. See [DATA_AND_PRIVACY.md](DATA_AND_PRIVACY.md).
+
+```mermaid
+flowchart TD
+    A["Area, preferences and purpose"] --> B["Active cafés and essential filters"]
+    B --> C{"Eligible results?"}
+    C -->|No| D["Explain limits and offer changes"]
+    C -->|Yes| E["Score checked content"]
+    E --> F{"Enough consenting peers?"}
+    F -->|No| G["Content ranking"]
+    F -->|Yes| H["Blend aggregate repeat signal"]
+    G --> I["Rank and explain"]
+    H --> I
+    I --> J["Private visit feedback"]
+    J --> E
+```
+
+Recommend unvisited cafés in a discovery mode when that history is available; provide an explicit option to include familiar cafés. A future “regulars” view can serve repeat choices. Do not let the feedback loop continually show only the same popular cafés; examine coverage and user outcomes before introducing exploration rules.
+
+### Explanations and evaluation
+
+Create explanations directly from the features used: a confirmed drink, a selected amenity, a listed price and its verification date. Mention aggregate repeat evidence only when the threshold is met, without individual names or histories. Do not claim “friends visited,” “open now” or a percentage match without implementing the required evidence.
+
+Version the score configuration and record the version alongside test/pilot results. Compare the baseline against a simple location-and-purpose list before increasing complexity. Experiment changes must preserve essential filters and consent handling.
+
+## 4. Proposed Web Routes
+
+These are interface plans, not existing endpoints. Prefer server-rendered forms first; add a JSON API only when an actual client needs it.
+
+| Route | Method | Access and effect |
+|---|---|---|
+| `/` | GET | Guest/member discovery; validated query preferences |
+| `/cafes/<uuid>/` | GET | Active public café details |
+| `/preferences/` | GET, POST | Member reads/updates own profile |
+| `/saved/` | GET | Member's own shortlist |
+| `/cafes/<uuid>/save/` | POST | Member toggles own bookmark; CSRF protected |
+| `/visits/` | GET, POST | Member's own list and new log |
+| `/visits/<uuid>/edit/` | GET, POST | Owner-only edit |
+| `/visits/<uuid>/delete/` | POST | Owner-only deletion |
+| `/account/data/` | GET, POST | Own export, contribution choices and confirmed deletion request |
+| `/cafes/<uuid>/report/` | POST | Validated correction, rate-limited |
+| `/admin/` | GET, POST | Authorized staff only; model permissions constrained |
+
+State-changing operations use CSRF protection and server-side authorization. Never trust a submitted user ID as ownership proof. Do not delete records with GET requests. Account deletion requires a confirmation flow and appropriate reauthentication.
+
+## 5. Implementation and Testing Priorities
+
+Keep catalogue access, eligibility and score computation testable without HTTP requests. Implement content-based matching first. Cache only when measured need exists; any cached personal/community results require invalidation on changes and deletion.
+
+Necessary behavioural checks include:
+
+- User B cannot read, change, export or delete user A's bookmarks, visits or profile by altering an ID.
+- Duplicate bookmarks are prevented; invalid coordinates, future visit dates and malformed prices fail validation.
+- Empty catalogue, no favourites, no location permission, no peers and missing attributes all produce understandable outcomes.
+- Essential constraints never relax automatically; unavailable peer signals produce the documented content fallback.
+- Consent withdrawal and visit/account deletion remove the user from derived signals and explanations.
+- Catalogue editors cannot inspect private histories through the admin, exports or search.
+- Forms work on mobile and keyboard; error messages preserve non-sensitive input.
+- Migrations, transactions and main journeys pass against PostgreSQL before deployment.
+- A backup can actually be restored, with deletion records reapplied before serving restored data.
+
+Run the implemented project's tests and Django system checks; use `python manage.py check --deploy` with production settings as one input to release review. Passing it alone is not proof of a safe deployment.
+
+## 6. Deployment and Operations
+
+Before hosting: choose the provider, configure persistent PostgreSQL and its driver, store secrets in provider configuration, disable debug, configure allowed hosts, HTTPS and secure session/CSRF cookies, collect static files, run migrations, and configure transactional email. Use a production WSGI/ASGI server supported by the host rather than `runserver`.
+
+Add error reporting with sensitive fields excluded, uptime checks, a restricted admin, database backups and a restore procedure. Separate development, staging and production credentials. For any later media uploads, use durable object storage with controlled access and documented rights.
+
+Render is an example candidate, not a selected provider. Its documented free web service sleeps after inactivity and has an ephemeral filesystem; free PostgreSQL expires after 30 days. Such free arrangements are unsuitable as the pilot's durable data plan. Review current offerings and terms at selection time. [Provider references](SOURCES.md#s9-render-free-service-limits).
+
+Release sequence: staging checks → catalogue review → backup/restore exercise → notice and eligibility review → small invited cohort → monitoring and correction handling. Establish who can roll back an application release; handle database changes separately from code rollback. Keep a short incident log and inform affected people through the chosen support process when necessary.
+
+## 7. Future Expansion Triggers
+
+Use PostgreSQL indexing/query improvements when measured load needs them. Consider asynchronous jobs for genuine long-running tasks, spatial storage for a larger geographic catalogue, native clients after web retention is demonstrated, and more complex recommendation models only after sufficient legitimate data and a baseline comparison. Each addition needs an owner, benefit, cost and privacy review in [DECISIONS.md](DECISIONS.md).

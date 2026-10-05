@@ -1,41 +1,63 @@
 # Personalized Café Discovery App
 
-A personalized café-discovery app that recommends cafés based on your drink preferences, budget, preferred atmosphere, repeat visits, and people with similar tastes.
+**Find your kind of coffee. Find your kind of café.**
 
-It answers: **“Which café suits my taste and what I want to do today?”**
+An app that recommends cafés using drink preferences, the purpose of today's visit, budget, atmosphere, and, when enough consenting user data exists, repeat visits by people with similar tastes.
 
-## The Problem
+It answers: **“Which café suits my taste and what I want to do today?”** Someone looking for light-roast pour-over and quiet reading should receive different suggestions from someone meeting friends over affordable iced coffee.
 
-A café’s overall rating does not tell you whether it matches your drink preferences, budget, or reason for visiting. Someone looking for a quiet place to read may want a different café from someone meeting friends over affordable iced coffee.
+## Project Status
 
-## App Features
+**Stage: concept and planning documentation. Last updated: 2026-10-06.**
 
-| App feature | Café-specific version |
+This repository contains the project brief, product specification, technical design, startup instructions, data plan, and roadmap. The café application, café catalogue, recommendation engine, and live deployment have **not** been implemented. No pilot results, customers, revenue, or partnerships are claimed.
+
+The architecture, budgets, thresholds, and timeline below are proposed starting decisions. The pilot city, team availability, spending limit, brand, and launch date still need the project owner's decisions. See [DECISIONS.md](DECISIONS.md).
+
+## Start Here
+
+| You want to understand… | Read |
 |---|---|
-| Taste profile | Espresso, pour-over, cold brew, milk-based drinks, tea, matcha, and preferred snacks |
-| Visit purpose | Working, studying, meeting friends, dates, or exploring specialty coffee |
-| Atmosphere preferences | Quietness, seating, outdoor space, Wi-Fi, and charging points |
-| Behaviour tracking | Favourite cafés, repeat visits, usual orders, and spending range |
-| Similar-taste matching | Discover cafés frequented by people who enjoy the same drinks and atmosphere |
-| Explained recommendations | “Regulars at your favourite café also return here for pour-over and quiet seating” |
+| The idea, customer problem, validation, and business model | [PROJECT_BRIEF.md](PROJECT_BRIEF.md) |
+| What is needed and what to do first | [GETTING_STARTED.md](GETTING_STARTED.md) |
+| User journeys, features, scope, and acceptance criteria | [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md) |
+| Architecture, database, matching logic, testing, and deployment | [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) |
+| Café information, consent, privacy, and operational data handling | [DATA_AND_PRIVACY.md](DATA_AND_PRIVACY.md) |
+| People, effort, milestones, costs, and pilot measurement | [ROADMAP_AND_BUDGET.md](ROADMAP_AND_BUDGET.md) |
+| How to contribute and keep these documents current | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| Which choices are settled, proposed, or still open | [DECISIONS.md](DECISIONS.md) |
+| Official references and when to recheck them | [SOURCES.md](SOURCES.md) |
 
-## Example
+**Suggested reading order:** project brief, getting started, product requirements, then the document relevant to your role. A developer should also read the technical design and data plan before implementing models.
 
-Someone who enjoys light-roast pour-over and reading gets different recommendations from someone seeking affordable iced coffee and a lively place to meet friends.
+## First Pilot
 
-## First Version
+The proposed pilot is a mobile-friendly web app covering **20–30 verified cafés in one city or neighbourhood**, tested with **30–50 adult participants**. These are planning targets, not current inventory or users.
 
-Users choose their preferences, add three favourite cafés, save places, and log visits. The app recommends nearby cafés and learns from their feedback.
+Users can browse, choose their drink and atmosphere preferences, set today's purpose and budget, optionally add up to three favourite cafés, receive explained recommendations, save cafés, and log visits with short feedback. A fresh user receives preference-based matches immediately; recommendations do not depend on having a transaction history or friends on the app.
 
-Start with preference profiles, favourite cafés, saved places, manual visit logs, similar-taste matching, and explained recommendations. Optional receipt or payment-history imports can be considered later.
+## MVP Scope
 
-## Potential Revenue
+- Taste and purpose profiles: espresso, pour-over, cold brew, milk-based drinks, tea, matcha, snacks, work, reading, dates, or socialising.
+- A manually checked catalogue with drink availability, indicative prices, amenities, and verification dates.
+- Explained recommendations and a clear response when no café fits the requested constraints.
+- Private saved cafés and self-reported visit/return feedback.
+- Staff catalogue management, account data deletion, and basic pilot measurement.
 
-- Café referral partnerships.
-- Coffee-event bookings.
-- Premium discovery features.
-- Clearly labelled sponsored listings.
+Friends, café owner dashboards, native mobile apps, receipt imports, payment-history connections, subscriptions, and booking payments are later candidates. They are not required to test the first version.
 
-## App Promise
+## What You Need to Begin
 
-**“Find your kind of coffee. Find your kind of café.”**
+At minimum: a product owner, Python/web development capability, a laptop, access to this repository, a small café catalogue, pilot participants, and time for customer interviews and usability testing. One person can cover multiple roles. A GPU, a large language model service, and banking integrations are not prerequisites for the proposed matching baseline.
+
+The proposed build uses Python 3.13, Django 5.2 LTS, responsive HTML/CSS, and SQLite for the initial local skeleton; the pilot uses PostgreSQL and a production web host. These choices require owner confirmation and periodic version review. [GETTING_STARTED.md](GETTING_STARTED.md) explains the bootstrap recipe; it does not imply that app code already exists.
+
+## Next Three Actions
+
+1. Select the pilot area, assign an owner, and agree on a time and spending budget.
+2. Interview café visitors and managers; build the first catalogue and test manual recommendations.
+3. Create the application foundation on a development branch, then implement catalogue browsing and preference-based matching before adding community signals.
+
+## Keeping This Repository Useful
+
+Update the project status and decision log when assumptions become decisions or features become implemented. Keep setup commands aligned with actual code. Never present proposed capabilities as completed work. The maintenance rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
