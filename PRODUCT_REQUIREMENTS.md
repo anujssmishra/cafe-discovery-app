@@ -23,7 +23,7 @@ The initial pilot is proposed for adults aged 18 and over. Eligibility handling 
 
 Choose an area or optionally grant location permission, select today's purpose, choose drinks and a spending range, then view a ranked list. Each result shows relevant attributes, indicative prices, the last verification date, and reasons for the match. A member can save a result.
 
-The same eligible results appear in an interactive map view. Name search and configured area shortcuts keep both views synchronized. A marker or list item opens an accessible detail dialog with a full-page alternative. Users can inspect original curator notes and deliberately open directions in an external maps provider.
+The same eligible results appear in an interactive map view. After deliberate map activation, users can choose a map-first layout with original, labelled coffee-cup pins and switch back to the list. Name search and floating, configured area chips keep both views synchronized. A marker or list item opens an accessible detail dialog with a full-page alternative. Users can inspect original curator notes, deliberately open external directions, or open a café-prefilled Log visit form.
 
 For the first pilot, the budget refers to one selected drink per person, not a full meal or total bill. Label whether the checked price includes taxes/add-ons; unknown extras cannot be guaranteed within a ceiling.
 
@@ -33,7 +33,7 @@ Select drink types and atmosphere preferences. Optionally add up to three favour
 
 ### C. Record a visit
 
-Select a café, enter the visit date and optionally the drink and spending band, then answer short questions about taste, atmosphere, purpose fit, and willingness to return. Clearly label the entry as self-reported. Editing or deleting an entry must update derived signals.
+Select a café, enter the visit date and optionally the drink/brewing context and spending band, then answer short questions about purpose fit and willingness to return. Offer separate optional 1–5 coffee and vibe ratings, with neither preselected; skipped answers remain unknown/null. A person can rate either, both or neither. Clearly label the entry as self-reported. Editing or deleting an entry must update derived signals. Opening Log visit does not save a record until the member submits it; guests return to the chosen café form after signing in.
 
 ### D. Maintain the catalogue
 
@@ -49,15 +49,15 @@ An authorized curator can add original visit notes, optional coffee/experience r
 | P2 | Preferences and purpose | Store chosen drinks, budget, atmosphere and purpose; onboarding works without favourites or a friend network |
 | P3 | Matching | Apply essential filters, rank eligible cafés, explain known matches; a user with no history still gets content-based results |
 | P4 | Saved cafés | Members can save and unsave their own cafés; duplicate bookmarks are prevented |
-| P5 | Visits and feedback | Members create, edit and delete their own logs; other members cannot read them by changing a URL or record ID |
+| P5 | Visits and feedback | Members create, edit and delete their own logs; optional coffee/vibe ratings are 1–5 or null with no preselection; drink/purpose context retained; other members cannot read logs by changing a URL or record ID |
 | P6 | Data choices | Private histories by default; optional community contribution is separate; users can export and request/delete their account data |
 | P7 | Catalogue operations | Editors record provenance and checking dates; corrections are queued and resolved without exposing a reporter's private profile |
 | P8 | Pilot measurement | Record minimal events with defined purposes; exclude secrets, exact location and free-text feedback from routine analytics payloads |
-| P9 | Map and area navigation | Labelled markers, pan/zoom and configured area shortcuts; map/list show identical eligible IDs; list remains available when tiles/JavaScript fail; no location permission required |
-| P10 | Detail dialog/page | Checked address, offerings and dates, save action and editorial context; keyboard/Escape/close/focus return work; same café has a full detail URL |
+| P9 | Map and area navigation | Map-first mode after deliberate activation, original named coffee-cup pins, map/list toggle, pan/zoom and accessible floating area chips; both views show identical eligible IDs; list works when tiles/JavaScript fail; no location permission required |
+| P10 | Detail dialog/page | Checked address, offerings and dates, save and Log visit actions plus editorial context; Log visit preselects the café without automatic recording; keyboard/Escape/close/focus return work; same café has a full detail URL |
 | P11 | Curator ratings and notes | Optional separate 1–5 coffee/experience scores, original notes, real visit date and approved attribution; no score for missing information; draft/private records excluded |
 | P12 | Trip value | Optional 1–5 opinion with the documented scale; distinct from match scores and community ratings; does not override essential constraints |
-| P13 | Local collection and about | Eligibility follows confirmed, dated, sourced location-count policy; unknown counts receive no badge; selection method, curator context and correction channel are explained |
+| P13 | Local collection and about | Eligibility follows confirmed, dated, sourced location-count policy; unknown counts receive no count-based badge; independent ownership requires separate evidence and defaults to unknown; selection method, curator context and correction channel are explained |
 | P14 | Directions | Validated destination in an external provider link; no automatic origin coordinates; checked address fallback or unavailable state; provider clearly identified |
 
 See F01–F09 in [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md) for the adaptation and proposed trip/local-collection definitions. These are planned pilot requirements, not currently available features.
@@ -74,9 +74,9 @@ Listed opening hours are informational and timestamped. Live “open now” clai
 |---|---|
 | Discover | Area shortcuts, purpose, preferences, name search and synchronized map/list results |
 | Preference onboarding/edit | Short, skippable profile setup |
-| Café detail/dialog | Drinks, price estimates, amenities, dates, explanation, curator notes/scores and directions |
+| Café detail/dialog | Drinks, price estimates, amenities, dates, explanation, curator notes/scores, save, Log visit and directions |
 | Saved cafés | A member's private shortlist |
-| Visit feedback | A brief visit log and return feedback |
+| Visit feedback | A brief private visit log with optional coffee/vibe scores, drink/purpose context and explicit return feedback |
 | Account/data settings | Privacy choices, export, deletion and support |
 | Editor dashboard | Catalogue maintenance and correction review |
 | Collection/about | Original stories, selection policy, curator context and correction route |
@@ -93,9 +93,13 @@ For community recommendations, use only opted-in records, limit each contributor
 
 Curator ratings are individual opinions, not community averages or verified objective quality. Keep them out of the initial matching formula. Public editorial notes must never be sourced from members' private visit feedback without a separately defined, authorized publishing workflow.
 
+The member coffee/vibe split records two useful aspects of a visit, but improved recommendation accuracy remains a hypothesis. An overall vibe score does not establish work amenities. Never generate 5/5 feedback from an unanswered form or mark a café independent merely because its ownership is unknown.
+
 ## 8. Excluded from the First Pilot
 
 Native iOS/Android apps, bank or UPI account access, automatic receipt ingestion, background location tracking, social feeds, in-app booking payments, paid memberships, owner dashboards, nationwide coverage, and large-model recommendation systems are deferred. This protects a manageable first scope; each addition needs its own hypothesis, requirements and decision record.
+
+Additional purpose-specific editorial badges and an Apple Maps provider option are later candidates. Define badge evidence/expiry rules and test provider destinations before adding them; neither is assumed in the current pilot estimate. The first pilot already includes the simpler trip-value scale.
 
 ## 9. Measurement and Pilot Exit
 

@@ -28,18 +28,39 @@ The initial default-user flow is username/password authentication. Email-only lo
 | User | Django authentication identity | No private histories in public profile responses |
 | TasteProfile | One user; drink preferences, preferred drink budget, soft ambience preferences, optional favourite café IDs | Favourites optional, up to three; preferences remain editable |
 | Area | City/area name, stable slug, display order, center/bounds and enabled status | Only enable areas with checked catalogue data; one-city pilot |
-| Cafe | Stable UUID, name, area, address, coordinates, active status, public contact/website, brand/group count provenance | Validate coordinates and their correspondence to address; unknown branch count gives no local badge |
+| Cafe | Stable UUID, name, area, address, coordinates, active status, public contact/website, brand-location count and separate ownership-status provenance | Validate coordinates and their correspondence to address; unknown count/status gives no corresponding verified badge |
 | CafeOffering | Café, drink category, brewing method, indicative price/currency, source and checking date | Prices are estimates, not guaranteed quotes; unknown stays unknown |
 | CafeObservation | Café, attribute, value, source type/link, checked date, notes | Amenities use yes/no/unknown; separate observations from facts |
 | EditorialReview | Café, curator, approved public display name, visit/publication dates, optional coffee/experience/trip scores, original notes, draft/published status | Scores nullable or 1–5; draft/private text excluded; permission to publish attribution recorded |
 | Bookmark | User and café | Unique pair; ownership checked server-side |
-| Visit | Stable UUID, user, café, local visit date, optional drink/spend band, purpose and structured feedback | Self-reported; prevent future dates; user can edit/delete |
+| Visit | Stable UUID, user, café, local visit date, optional drink/brewing context/spend band, purpose, coffee/vibe ratings and return feedback | Ratings optional 1–5, no numeric default; self-reported; prevent future dates; owner can edit/delete |
 | ConsentRecord | User, purpose, notice version, choice, timestamp, withdrawal time | Separate community contribution from core service choices |
 | CorrectionReport | Café, disputed field, proposed correction, optional contact, status | Restricted review queue; no reporter profile displayed publicly |
 | AdminAudit | Actor, time, operation, object ID, safe change summary | No secrets or full private histories in audit payloads |
 | PilotEvent | Event name, time, short-lived pseudonymous session/member key, allowlisted properties | Optional minimal measurement; retention and notice defined first |
 
 Use database constraints for unique relationships and valid values, and migrations for schema changes. Do not use café names as primary keys. Keep normalized attributes searchable; define controlled tags before using them in ranking. Raw interview material belongs outside the application database and Git.
+
+### Explicit fields and defaults
+
+The following are proposed Django field semantics, not an implemented migration or Prisma schema. See the [official field and constraint references](SOURCES.md#s18-django-fields-and-constraints) before writing models.
+
+| Field | Proposed value/default | Validation and meaning |
+|---|---|---|
+| `Cafe.brand_location_count` | Optional integer; unknown/null initially | At least 1 when known; worldwide brand count under the confirmed collection policy; source, scope and checking date required for a verified label |
+| `Cafe.independence_status` | Choice: `unknown`, `verified_independent`, `verified_not_independent`; default `unknown` | Ownership evidence and checking date required for either verified state; a low location count does not establish independence |
+| `Cafe.brand_count_source` / `brand_count_checked_on` | Empty source / null date until checked | Reference evidence without inventing a count or date; preserve count scope explicitly |
+| `Cafe.independence_source` / `independence_checked_on` | Empty source / null date until checked | Record ownership evidence separately from branch-count evidence |
+| `EditorialReview.coffee_rating` / `EditorialReview.experience_rating` | Optional integers 1–5; null when omitted | Public curator opinion only after authorized publication; no default score |
+| `EditorialReview.notes` | Original text; empty when absent | Single source for curator notes; do not duplicate a mutable `Cafe.curatorNote` |
+| `Visit.coffee_rating` / `Visit.vibe_rating` | Optional integers 1–5; null when omitted | Member's private experience of this visit; no preselection and no default 5 |
+| `Visit.would_return` | Optional yes/no; null until explicitly answered | Missing feedback is neither a positive vote nor an explicit negative answer |
+
+For optional numeric/boolean values, use `null=True` and `blank=True` so both storage and forms allow omission. Use controlled choices and form validation, plus database constraints permitting null or integers within 1–5 for ratings, and null or values at least 1 for counts. Validate evidence requirements when publishing verified labels. Adding a field to existing visits must leave old, unanswered values null; never backfill 5/5 scores.
+
+Derive count-based small-group eligibility from a checked count of at most five. A filter explicitly promising independent ownership also requires `independence_status == verified_independent` and current evidence. There is no `isIndependent=True` default. Do not persist a second badge boolean that can diverge from its evidence without an explicit invalidation rule.
+
+Capture optional drink/brewing context and visit purpose alongside ratings. Keep member ratings separate from curator scores; neither is automatically added to the baseline or R. R still uses the defined consenting repeat/return signal. Missing `would_return` does not count as a positive vote. Compare feedback usefulness and ranking outcomes before proposing new weights or learned signals.
 
 Today's purpose and filters are request/session choices; a profile may provide editable defaults. Optional favourites give quick access to familiar places and can prompt the user to confirm known drink preferences. Do not silently infer a preference from a favourite or visit. The initial score uses explicit preferences; feedback can suggest profile edits and inform later tuning.
 
@@ -49,13 +70,17 @@ For this small catalogue, calculate distances in application code and filter aga
 
 Use one filtered queryset/result snapshot for list items and map markers. Apply active/area/name/essential filters before serialization, so a marker cannot bypass a requirement or reveal an archived café. Keep café UUIDs consistent between markers, list entries, dialogs and `/cafes/<uuid>/` pages. If live map refresh is needed, add the narrow read endpoint below; a separate general API is not required.
 
-The proposed Leaflet client loads on deliberate map activation, with clear attribution and a list fallback. Configure a licensed tile service, allowed domains, terms, request limits and costs. Use only provider-approved, restricted browser-visible keys; keep server credentials private. A free map library does not grant unrestricted tile service. See [map references](SOURCES.md#s15-leaflet-map-client) and [feature acceptance](FEATURES_REFERENCE.md).
+The proposed Leaflet client loads on deliberate map activation, with clear attribution and a list fallback. Once activated, offer a map-first layout using most of the available viewport and an obvious map/list toggle. Create original coffee-cup marker artwork with meaningful café-name labels and keyboard-accessible list equivalents; do not copy the reference's branding or rely on an icon alone. Configure a licensed tile service, allowed domains, terms, request limits and costs. Use only provider-approved, restricted browser-visible keys; keep server credentials private. A free map library does not grant unrestricted tile service. See [map references](SOURCES.md#s15-leaflet-map-client) and [feature acceptance](FEATURES_REFERENCE.md).
 
-Area controls fit the chosen area's configured bounds and update list scope. Name search trims input and applies a case-insensitive partial match; debounce client refresh and prevent an old response replacing newer results. Keep preferences unchanged, explain empty results, and make clearing search predictable. Do not treat panning alone as permission to silently broaden essential location filters.
+Floating area chips fit the chosen area's configured bounds and update list scope. Give them clear selected state and keyboard access without covering essential map/list controls on small screens. Name search trims input and applies a case-insensitive partial match; debounce client refresh and prevent an old response replacing newer results. Keep preferences unchanged, explain empty results, and make clearing search predictable. Do not treat panning alone as permission to silently broaden essential location filters.
 
 Dialogs reuse the full detail page content with proper labels, keyboard focus management, Escape/close handling and focus return. Render original review notes as escaped text; do not insert untrusted HTML into Leaflet popups or dialogs. Scores, dates and authorship are shown explicitly, with no icon-only meaning. The public serializer exposes only published café/editorial fields, never member identities, private visit logs, draft notes or contribution cohorts. Personalized responses must not use shared public caching.
 
+The Log visit action opens `/visits/` with the selected café prefilled using a validated ID. Opening the dialog or form never creates a Visit; only a CSRF-protected, authorized POST after deliberate submission does. For guests, preserve the selected café through sign-in using a same-origin return target, then revalidate the café on return. Private existing logs appear only in the member's authorized history.
+
 Directions use an allowlisted maps-provider URL constructed from validated café coordinates or an encoded checked address. Do not append an origin or precise member location. Verify the destination against the catalogue before publishing; omit the link when neither coordinates nor address is reliable. A directions link is external navigation, not an in-app routing/booking service. [Google Maps URL reference](SOURCES.md#s16-google-maps-urls).
+
+Google Maps is the initial candidate supported by the observed reference link. Apple Maps is a later provider option requiring current official URL/device checks and destination tests; its presence in the reference was not established. Do not add a routing API dependency for ordinary external links.
 
 Keep coffee, experience and trip-value editorial scores outside the initial ranking formula. Member visit feedback remains private; publishing it is not part of the curator workflow. Store original curator notes and public-attribution permission, with auditable revisions. Local-collection eligibility uses the recorded brand-location count, scope/source/date and confirmed policy in [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md).
 

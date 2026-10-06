@@ -23,12 +23,14 @@ Start with first-party observations, public factual information checked against 
 | Atmosphere | Noise, crowding, seating suitability | Dated observation with time/context; subjective, not a permanent fact |
 | Hours | Listed weekday/weekend hours and source | Staff/current café listing; label informational until live status is implemented |
 | Provenance | Source type, source URL where appropriate, permission/licence notes | Editor records during collection |
-| Local-collection eligibility | Brand/location count, count scope, source and checking date | Confirm the published criterion; unknown eligibility remains unbadged |
+| Local-collection eligibility | Brand/location count, count scope, source and checking date; separate independent-ownership status/evidence | Confirm the published criterion; unknown eligibility remains unbadged; location count alone does not prove ownership |
 | Editorial opinion | Original coffee/experience/trip scores and visit notes | Actual curator experience, dated and attributed with permission |
 
 Do not copy complete third-party review collections, menu photographs, personal reviewer profiles or other protected content without an appropriate right. A public page is not blanket permission to reuse its images or text. Use original descriptions, permitted assets, or no photographs initially. Names and factual attributes still need accuracy and a source.
 
 The Caffeine Chronicles reference supplies feature inspiration, not a dataset or content licence. Write original editorial notes; record actual visits and approved public attribution. Separate coffee/experience/trip opinions from verified facts, private member feedback and community averages. Do not label an unvisited café as a curator's personal visit. Draft reviews remain restricted; public correction handling can retain safe revisions without publishing private contact information.
+
+Count-based collection eligibility uses the proposed worldwide threshold of five locations. Store unknown counts as null and unknown ownership explicitly; never default unchecked cafés to independent. If a future badge promises independence or purpose suitability, retain the relevant evidence and checking date, publish its definition, and remove the badge when evidence is no longer current. Purpose-specific badges are later candidates.
 
 If OpenStreetMap is used, review its ODbL licence, attribution and any applicable database-sharing obligations. Its data licence is separate from tile/geocoding service usage policies. Do not assume an attribution line alone resolves every dataset or API obligation. [Official licence reference](SOURCES.md#s11-openstreetmap-licence).
 
@@ -49,7 +51,7 @@ Before pilot launch, recheck all included cafés. During the pilot, review repor
 | Username, email where supplied, password hash | Authentication, recovery and service contact | User and narrowly authorized support; never raw passwords |
 | Taste and purpose preferences | Personalized matching | User and matching service |
 | Saved cafés | Private shortlist | Owner only |
-| Visit date, café, optional drink/spending band and feedback | Personal history and preference learning | Owner only by default |
+| Visit date, café, optional drink/brewing context/spending band, purpose, coffee/vibe ratings and return feedback | Personal history and evaluation of preference fit | Owner only by default; skipped ratings/answers remain null |
 | Community contribution choice | Control eligible aggregate signals | User and restricted operations |
 | Optional temporary coordinates | Nearby results for that request/session | Used transiently; excluded from persistent analytics and routine logs |
 | Minimal event metadata | Pilot journey and usefulness measurement | Restricted analysis; pseudonymous where possible |
@@ -59,6 +61,8 @@ Before pilot launch, recheck all included cafés. During the pilot, review repor
 Prefer a selected area to exact coordinates. If optional browser location is used, avoid writing it to database records, URLs, logs or analytics. Validate what hosting and monitoring services receive; disabling an app field alone does not prove infrastructure collects nothing.
 
 Guest preferences can expire with a short session; propose a maximum 24-hour server-side lifetime and a process to clear expired sessions. State the actual behaviour when implemented.
+
+Coffee and vibe ratings must come from a member's explicit choices, with no default 5/5. Opening details, directions or Log visit is not evidence that a visit occurred. Record a visit only after the member submits the private form. Do not copy private feedback into public curator notes or use new rating fields in aggregate matching without a documented purpose, notice and algorithm decision.
 
 ## 4. Community Matching Controls
 

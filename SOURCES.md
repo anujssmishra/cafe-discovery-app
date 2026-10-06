@@ -110,6 +110,14 @@ Reference for external directions links. Construct and validate the café destin
 
 Reference for the standard tile service's separate attribution/usage requirements. Select a provider appropriate to real traffic and terms; do not infer unlimited tile access from the open map-data licence.
 
+## S18: Django Fields and Constraints
+
+[Official Django 5.2 model field reference](https://docs.djangoproject.com/en/5.2/ref/models/fields/)
+
+[Official Django 5.2 model constraint reference](https://docs.djangoproject.com/en/5.2/ref/models/constraints/)
+
+Reference for nullable storage, optional form values, controlled choices, defaults and database constraints. Used for the proposed rating/count fields: unanswered ratings remain null, known scores must be 1–5, and unknown ownership is never converted into verified independence. A schema proposal in this guide is not an implemented migration.
+
 ## Updating References
 
 Record the date, URL, relevant fact and affected decision when a source changes. Replace broken links with the current authoritative source and revise any dependent instructions. Do not leave a new source beside an outdated factual claim without resolving the discrepancy.

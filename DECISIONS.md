@@ -38,6 +38,9 @@ Last updated: 2026-10-06. Use this file as the handover record. A documented pro
 | P13 | Separate nullable coffee/experience/trip opinions, outside matching weights | Editorial context without conflating public opinions and private fit | Curator workflow and pilot evaluation |
 | P14 | Local collection starts with a dated worldwide brand-count threshold of five locations | Proposed small-group definition; independent ownership needs separate evidence | Owner confirms policy before publishing |
 | P15 | Additional map reserve ₹0–₹1,000 per month | Planning allocation only; no selected provider quote | Tile service selection and actual usage |
+| P16 | Explicit nullable member coffee/vibe ratings with drink/purpose context; ownership defaults to unknown | Avoid manufactured 5/5 feedback and unverified independent labels | Form/schema implementation and pilot feedback evaluation |
+| P17 | Map-first mode, original named coffee-cup pins, floating area chips and café-prefilled Log visit | Make implicit map/detail UX requirements concrete | Mobile/accessibility validation before release |
+| P18 | Purpose-specific badges and Apple Maps remain later candidates | Badge evidence rules and provider validation need separate scope | After pilot usefulness and implementation effort are reviewed |
 
 Detailed scoring thresholds, retention targets and release criteria remain proposals in their respective files. The owner can change them; update all affected documents together and retain the reason.
 
@@ -77,6 +80,7 @@ Selecting an accountable role is not the same as assigning a named person. Fill 
 | Hosting/cash plan is unrealistic | Durable database and cost review before purchase | Complete quotes and actual monthly usage |
 | Map tiles fail, exceed quotas or disclose unexpected location data | Deliberate map loading, provider review, area-based center and list fallback | Tile-failure tests, request inspection and actual cost |
 | Editorial scores look like objective or community evidence | Clear opinion attribution, dates and separate match ordering | Usability checks and publication review |
+| Split ratings create more form effort without better decisions | Optional unanswered values remain null; keep current scoring unchanged | Completion/friction and usefulness against simple feedback |
 | Scope expands into restaurant software | Maintain café-first pilot acceptance criteria | Every proposed addition has a distinct user need |
 
 ## 6. Decision Record Template
@@ -99,3 +103,4 @@ When superseding a material choice, preserve its reason and link to the replacem
 - Initial repository: private café concept README uploaded; no application code.
 - 2026-10-06: expanded into a ten-file planning and startup guide, with explicit proposed scope, setup, design, data operations, roadmap, budget and contribution rules. This entry records documentation work, not completion of the product milestones.
 - 2026-10-06: added FEATURES_REFERENCE.md and integrated the requested Caffeine Chronicles feature concepts across the now eleven-file guide. Revised requirements, data flows, estimates and release gates; the application remains unimplemented.
+- 2026-10-06: reviewed the supplied feature list against F01–F09; clarified map-first UX, original pins, area chips, Log visit, explicit nullable member ratings and separate ownership/count evidence. Documented purpose-specific badges and Apple Maps as later candidates, and distinguished unverified rubric/API assumptions from the proposed Django design. This is a documentation refinement, with no new implemented app features.
