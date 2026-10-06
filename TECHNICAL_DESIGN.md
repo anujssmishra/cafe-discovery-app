@@ -4,17 +4,17 @@ Last updated: 2026-10-06. Status: proposed architecture; none of the components 
 
 ## 1. Architecture and Boundaries
 
-Start with one Django application serving responsive HTML/CSS and ordinary forms, with small amounts of JavaScript only where useful. Use Django authentication, sessions, CSRF protection, ORM and a restricted admin. This is sufficient to test catalogue discovery and feedback without operating separate mobile apps, an API gateway, background workers or a large-model service.
+Start with one Django application serving responsive HTML/CSS and ordinary forms, enhanced with a map and accessible café detail dialogs. Use Django authentication, sessions, CSRF protection, ORM and a restricted admin. This is sufficient to test catalogue discovery and feedback without operating separate mobile apps, an API gateway, background workers or a large-model service.
 
 | Component | Proposed choice | Reason and limit |
 |---|---|---|
 | Runtime | Python 3.13, maintained micro release | Supported by Django 5.2; check compatibility when dependencies change |
 | Framework | Latest maintained Django 5.2 LTS patch | Built-in forms, auth and admin; support ends April 2028, so schedule a version review |
-| Presentation | Server-rendered templates, responsive CSS | One web product for mobile and desktop; dedicated frontend optional later |
+| Presentation | Server-rendered templates, responsive CSS, map/dialog JavaScript | Progressive enhancement; usable list and full detail pages remain available |
 | Database | SQLite only for initial local skeleton; PostgreSQL for pilot | Pilot needs durable multi-user storage and production-equivalent tests |
 | Authentication | Default Django user plus a one-to-one taste profile | Avoid custom authentication requirements during initial migrations |
 | Matching | Deterministic feature scores, followed later by an optional aggregate signal | Useful with no interaction history; easy to inspect and compare |
-| Location | Selected area or temporary optional coordinates | Small catalogue can use Haversine distance; map/PostGIS optional later |
+| Location and map | Selected area, optional temporary coordinates for distance, proposed Leaflet client with licensed tiles | Small catalogue uses Haversine distance; map included in pilot, PostGIS optional later |
 | Hosting | Managed web process plus persistent database; provider undecided | Choose for backups, reliability, cost and data handling |
 
 PostgreSQL 17 is a proposed starting version if supported by the selected host; choose a maintained version compatible with the actual Django and database-driver releases. Record the final dependencies and versions in code. See [SOURCES.md](SOURCES.md) for framework and deployment references.
@@ -26,12 +26,14 @@ The initial default-user flow is username/password authentication. Email-only lo
 | Entity | Core fields and responsibility | Important rules |
 |---|---|---|
 | User | Django authentication identity | No private histories in public profile responses |
-| TasteProfile | One user; drink preferences, soft ambience preferences, optional favourite café IDs | Favourites optional, up to three; preferences remain editable |
-| Cafe | Stable UUID, name, area, address, coordinates, active status, public contact/website | Latitude/longitude validation; archived cafés excluded from normal ranking |
+| TasteProfile | One user; drink preferences, preferred drink budget, soft ambience preferences, optional favourite café IDs | Favourites optional, up to three; preferences remain editable |
+| Area | City/area name, stable slug, display order, center/bounds and enabled status | Only enable areas with checked catalogue data; one-city pilot |
+| Cafe | Stable UUID, name, area, address, coordinates, active status, public contact/website, brand/group count provenance | Validate coordinates and their correspondence to address; unknown branch count gives no local badge |
 | CafeOffering | Café, drink category, brewing method, indicative price/currency, source and checking date | Prices are estimates, not guaranteed quotes; unknown stays unknown |
 | CafeObservation | Café, attribute, value, source type/link, checked date, notes | Amenities use yes/no/unknown; separate observations from facts |
+| EditorialReview | Café, curator, approved public display name, visit/publication dates, optional coffee/experience/trip scores, original notes, draft/published status | Scores nullable or 1–5; draft/private text excluded; permission to publish attribution recorded |
 | Bookmark | User and café | Unique pair; ownership checked server-side |
-| Visit | User, café, local visit date, optional drink/spend band, purpose and structured feedback | Self-reported; prevent future dates; user can edit/delete |
+| Visit | Stable UUID, user, café, local visit date, optional drink/spend band, purpose and structured feedback | Self-reported; prevent future dates; user can edit/delete |
 | ConsentRecord | User, purpose, notice version, choice, timestamp, withdrawal time | Separate community contribution from core service choices |
 | CorrectionReport | Café, disputed field, proposed correction, optional contact, status | Restricted review queue; no reporter profile displayed publicly |
 | AdminAudit | Actor, time, operation, object ID, safe change summary | No secrets or full private histories in audit payloads |
@@ -39,14 +41,30 @@ The initial default-user flow is username/password authentication. Email-only lo
 
 Use database constraints for unique relationships and valid values, and migrations for schema changes. Do not use café names as primary keys. Keep normalized attributes searchable; define controlled tags before using them in ranking. Raw interview material belongs outside the application database and Git.
 
+Today's purpose and filters are request/session choices; a profile may provide editable defaults. Optional favourites give quick access to familiar places and can prompt the user to confirm known drink preferences. Do not silently infer a preference from a favourite or visit. The initial score uses explicit preferences; feedback can suggest profile edits and inform later tuning.
+
 For this small catalogue, calculate distances in application code and filter against the user's chosen radius. Validate coordinates and handle absent location. Store café coordinates; avoid persisting exact user coordinates. Add spatial indexing only if scale and measured query behaviour justify it.
+
+### Map, search and detail delivery
+
+Use one filtered queryset/result snapshot for list items and map markers. Apply active/area/name/essential filters before serialization, so a marker cannot bypass a requirement or reveal an archived café. Keep café UUIDs consistent between markers, list entries, dialogs and `/cafes/<uuid>/` pages. If live map refresh is needed, add the narrow read endpoint below; a separate general API is not required.
+
+The proposed Leaflet client loads on deliberate map activation, with clear attribution and a list fallback. Configure a licensed tile service, allowed domains, terms, request limits and costs. Use only provider-approved, restricted browser-visible keys; keep server credentials private. A free map library does not grant unrestricted tile service. See [map references](SOURCES.md#s15-leaflet-map-client) and [feature acceptance](FEATURES_REFERENCE.md).
+
+Area controls fit the chosen area's configured bounds and update list scope. Name search trims input and applies a case-insensitive partial match; debounce client refresh and prevent an old response replacing newer results. Keep preferences unchanged, explain empty results, and make clearing search predictable. Do not treat panning alone as permission to silently broaden essential location filters.
+
+Dialogs reuse the full detail page content with proper labels, keyboard focus management, Escape/close handling and focus return. Render original review notes as escaped text; do not insert untrusted HTML into Leaflet popups or dialogs. Scores, dates and authorship are shown explicitly, with no icon-only meaning. The public serializer exposes only published café/editorial fields, never member identities, private visit logs, draft notes or contribution cohorts. Personalized responses must not use shared public caching.
+
+Directions use an allowlisted maps-provider URL constructed from validated café coordinates or an encoded checked address. Do not append an origin or precise member location. Verify the destination against the catalogue before publishing; omit the link when neither coordinates nor address is reliable. A directions link is external navigation, not an in-app routing/booking service. [Google Maps URL reference](SOURCES.md#s16-google-maps-urls).
+
+Keep coffee, experience and trip-value editorial scores outside the initial ranking formula. Member visit feedback remains private; publishing it is not part of the curator workflow. Store original curator notes and public-attribution permission, with auditable revisions. Local-collection eligibility uses the recorded brand-location count, scope/source/date and confirmed policy in [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md).
 
 ## 3. Matching Baseline
 
 ### Eligibility before scoring
 
 1. Select active cafés within the chosen area/radius.
-2. Apply explicitly marked essential requirements. A required attribute with unknown evidence does not qualify.
+2. Apply explicitly marked essential requirements. A required attribute with unknown or stale evidence does not qualify; use the catalogue's proposed 30-day freshness policy.
 3. For a hard budget ceiling, require a recently checked price for at least one selected drink within that ceiling. Explain that the listed price is indicative; no hard budget match is possible with unknown pricing.
 4. If nothing qualifies, explain the constraints and offer user-controlled changes. Never silently change them.
 
@@ -107,6 +125,9 @@ These are interface plans, not existing endpoints. Prefer server-rendered forms 
 |---|---|---|
 | `/` | GET | Guest/member discovery; validated query preferences |
 | `/cafes/<uuid>/` | GET | Active public café details |
+| `/cafes/map-data/` | GET | Guest/member read of the same validated result set, serialized public café fields only; personalized responses privately cached or uncached |
+| `/collections/local/` | GET | Published eligible local/small-group collection, with criteria and checking dates |
+| `/about/` | GET | Collection method, curator context, limitations and correction route |
 | `/preferences/` | GET, POST | Member reads/updates own profile |
 | `/saved/` | GET | Member's own shortlist |
 | `/cafes/<uuid>/save/` | POST | Member toggles own bookmark; CSRF protected |
@@ -132,6 +153,10 @@ Necessary behavioural checks include:
 - Consent withdrawal and visit/account deletion remove the user from derived signals and explanations.
 - Catalogue editors cannot inspect private histories through the admin, exports or search.
 - Forms work on mobile and keyboard; error messages preserve non-sensitive input.
+- Map/list IDs remain identical across name, area, purpose and essential filters; clearing/no-results and missing-coordinate cases work.
+- Tile/key/network failures preserve list and full-detail access; area controls work with real pilot data.
+- Dialogs and named markers are keyboard accessible; malicious review text renders harmlessly; drafts/private fields never enter public map payloads.
+- Directions links identify the correct café and omit user coordinates; editorial scores stay out of personalized ranking.
 - Migrations, transactions and main journeys pass against PostgreSQL before deployment.
 - A backup can actually be restored, with deletion records reapplied before serving restored data.
 
@@ -139,7 +164,7 @@ Run the implemented project's tests and Django system checks; use `python manage
 
 ## 6. Deployment and Operations
 
-Before hosting: choose the provider, configure persistent PostgreSQL and its driver, store secrets in provider configuration, disable debug, configure allowed hosts, HTTPS and secure session/CSRF cookies, collect static files, run migrations, and configure transactional email. Use a production WSGI/ASGI server supported by the host rather than `runserver`.
+Before hosting: choose the provider, configure persistent PostgreSQL and its driver, store secrets in provider configuration, disable debug, configure allowed hosts, HTTPS and secure session/CSRF cookies, collect static files, run migrations, and configure transactional email. Configure map tiles, attribution, browser-key restrictions and spend alerts, and check the list fallback with the tile service disabled. Use a production WSGI/ASGI server supported by the host rather than `runserver`.
 
 Add error reporting with sensitive fields excluded, uptime checks, a restricted admin, database backups and a restore procedure. Separate development, staging and production credentials. For any later media uploads, use durable object storage with controlled access and documented rights.
 

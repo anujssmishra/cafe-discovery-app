@@ -23,6 +23,8 @@ The initial pilot is proposed for adults aged 18 and over. Eligibility handling 
 
 Choose an area or optionally grant location permission, select today's purpose, choose drinks and a spending range, then view a ranked list. Each result shows relevant attributes, indicative prices, the last verification date, and reasons for the match. A member can save a result.
 
+The same eligible results appear in an interactive map view. Name search and configured area shortcuts keep both views synchronized. A marker or list item opens an accessible detail dialog with a full-page alternative. Users can inspect original curator notes and deliberately open directions in an external maps provider.
+
 For the first pilot, the budget refers to one selected drink per person, not a full meal or total bill. Label whether the checked price includes taxes/add-ons; unknown extras cannot be guaranteed within a ceiling.
 
 ### B. Create a taste profile
@@ -37,11 +39,13 @@ Select a café, enter the visit date and optionally the drink and spending band,
 
 An authorized editor adds or updates a café, records the source and checking date, and reviews user corrections. Facts, subjective observations, and unverified details must remain distinguishable.
 
+An authorized curator can add original visit notes, optional coffee/experience ratings and trip-value opinions, with public attribution and dates. Draft reviews remain private to authorized staff. Public collection criteria and branch-count provenance must be recorded before granting a local/small-group badge.
+
 ## 4. MVP Feature Requirements
 
 | ID | Feature | Minimum acceptance criteria |
 |---|---|---|
-| P1 | Catalogue browsing | Search by café name/area; show active records, indicative prices and verification date; closed or archived cafés do not appear as normal recommendations |
+| P1 | Catalogue browsing | Case-insensitive partial-name/area search; show active records, indicative prices and verification date; clear and no-result states work; archived cafés do not appear as normal recommendations |
 | P2 | Preferences and purpose | Store chosen drinks, budget, atmosphere and purpose; onboarding works without favourites or a friend network |
 | P3 | Matching | Apply essential filters, rank eligible cafés, explain known matches; a user with no history still gets content-based results |
 | P4 | Saved cafés | Members can save and unsave their own cafés; duplicate bookmarks are prevented |
@@ -49,6 +53,14 @@ An authorized editor adds or updates a café, records the source and checking da
 | P6 | Data choices | Private histories by default; optional community contribution is separate; users can export and request/delete their account data |
 | P7 | Catalogue operations | Editors record provenance and checking dates; corrections are queued and resolved without exposing a reporter's private profile |
 | P8 | Pilot measurement | Record minimal events with defined purposes; exclude secrets, exact location and free-text feedback from routine analytics payloads |
+| P9 | Map and area navigation | Labelled markers, pan/zoom and configured area shortcuts; map/list show identical eligible IDs; list remains available when tiles/JavaScript fail; no location permission required |
+| P10 | Detail dialog/page | Checked address, offerings and dates, save action and editorial context; keyboard/Escape/close/focus return work; same café has a full detail URL |
+| P11 | Curator ratings and notes | Optional separate 1–5 coffee/experience scores, original notes, real visit date and approved attribution; no score for missing information; draft/private records excluded |
+| P12 | Trip value | Optional 1–5 opinion with the documented scale; distinct from match scores and community ratings; does not override essential constraints |
+| P13 | Local collection and about | Eligibility follows confirmed, dated, sourced location-count policy; unknown counts receive no badge; selection method, curator context and correction channel are explained |
+| P14 | Directions | Validated destination in an external provider link; no automatic origin coordinates; checked address fallback or unavailable state; provider clearly identified |
+
+See F01–F09 in [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md) for the adaptation and proposed trip/local-collection definitions. These are planned pilot requirements, not currently available features.
 
 ## 5. Essential Constraints and Unknown Information
 
@@ -60,21 +72,26 @@ Listed opening hours are informational and timestamped. Live “open now” clai
 
 | Screen | Main purpose |
 |---|---|
-| Discover | Area, purpose, preferences and ranked results |
+| Discover | Area shortcuts, purpose, preferences, name search and synchronized map/list results |
 | Preference onboarding/edit | Short, skippable profile setup |
-| Café detail | Drinks, price estimates, amenities, verification date and explanation |
+| Café detail/dialog | Drinks, price estimates, amenities, dates, explanation, curator notes/scores and directions |
 | Saved cafés | A member's private shortlist |
 | Visit feedback | A brief visit log and return feedback |
 | Account/data settings | Privacy choices, export, deletion and support |
 | Editor dashboard | Catalogue maintenance and correction review |
+| Collection/about | Original stories, selection policy, curator context and correction route |
 
 Prefer a usable mobile layout with readable text, labelled controls, keyboard access and adequate colour contrast. Core forms must work without optional browser location access.
+
+Give search an explicit accessible label and markers meaningful café names. Do not rely on colour or icons alone to distinguish coffee, experience and trip-value scores. A failed basemap must not hide usable café details or imply that no cafés exist.
 
 ## 7. Recommendations and Trust
 
 “Why this café?” explanations must use actual features or eligible evidence. Never invent friend visits, peer counts, ratings, verification, or percentage match claims. Self-reported visits are not payment-verified visits.
 
 For community recommendations, use only opted-in records, limit each contributor's influence, and apply the aggregation threshold in [DATA_AND_PRIVACY.md](DATA_AND_PRIVACY.md). Until sufficient evidence exists, explain the user's own preference matches instead.
+
+Curator ratings are individual opinions, not community averages or verified objective quality. Keep them out of the initial matching formula. Public editorial notes must never be sourced from members' private visit feedback without a separately defined, authorized publishing workflow.
 
 ## 8. Excluded from the First Pilot
 

@@ -6,6 +6,8 @@ Last updated: 2026-10-06. This repository currently contains planning documents 
 
 Read [README.md](README.md), [PROJECT_BRIEF.md](PROJECT_BRIEF.md) and [DECISIONS.md](DECISIONS.md). Developers should also read [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md), [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) and [DATA_AND_PRIVACY.md](DATA_AND_PRIVACY.md). The bootstrap recipe is in [GETTING_STARTED.md](GETTING_STARTED.md).
 
+Read [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md) before map or editorial work. Implement the documented behaviours with original content; do not assume permission to reuse another site's café records, reviews, code or assets. Keep individual curator opinions distinct from private member feedback and personalized scores.
+
 Keep the focus on cafés and the first pilot. Larger menus, restaurant ordering, table management and full hospitality operations are outside the current concept. A café's drink/snack preferences may inform discovery without turning this into restaurant management software.
 
 ## 2. Repository Access and Working Method

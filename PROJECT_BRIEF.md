@@ -8,6 +8,8 @@ Build a personalized café-discovery app that helps a person find a café suited
 
 The internal analogy is “Spotify for cafés”: learn preferences and make relevant discoveries. The actual product promise is **“Find your kind of coffee. Find your kind of café.”** The brand and app name have not been selected.
 
+The product also includes geographic browsing and an original curated café journal: map/list search, area shortcuts, detail dialogs, directions, coffee/experience notes and a separate trip-value assessment. These additions are specified in [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md). They provide context for discovery while taste and purpose remain the personalization basis.
+
 ## 2. The Customer Problem
 
 A single average rating combines people with different tastes and reasons for visiting. A popular café can still be unsuitable for someone who wants a quiet work session, a specific brewing method, a place for a date, or an affordable daily coffee.
@@ -34,9 +36,9 @@ Repeat visits can indicate satisfaction, but can also reflect proximity, conveni
 ## 5. How the Product Works
 
 1. A person chooses drinks, budget, atmosphere, and today's purpose.
-2. The app filters cafés by the person's location or selected area and any essential requirements.
+2. The app filters cafés by the person's location or selected area and any essential requirements, displaying the same eligible cafés on a map and list.
 3. It ranks eligible cafés using known attributes, with a content-based fallback for new users.
-4. Each recommendation explains its strongest relevant reasons.
+4. Each recommendation explains its strongest relevant reasons. A detail page/dialog adds checked facts, attributed curator opinions and an optional external directions link.
 5. The person saves a café or visits it and optionally records whether they would return.
 6. Feedback supports matching evaluation and suggested preference updates; shared signals are used only under the data policy.
 

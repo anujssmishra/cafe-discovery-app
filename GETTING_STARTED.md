@@ -14,6 +14,7 @@ Last updated: 2026-10-06. This is a startup guide for a documentation-only repos
 | Pilot data | Proposed 20–30 checked café records in one area, with sources and dates | Manual test and pilot |
 | Participants | Proposed 30–50 adults, with clear recruitment and data notices | Pilot |
 | Production services | Web host, PostgreSQL, domain if desired, email delivery, monitoring and backups | Before a hosted pilot |
+| Maps and editorial content | Proposed Leaflet client, licensed tile service, checked café coordinates, original curator visits/notes and public-attribution permission | Before map/editorial pilot release |
 | Operating arrangements | Data contact, correction process, privacy review and an agreed cash/time budget | Before participant data collection |
 
 These are planning requirements, not purchases already made. The proposed baseline needs no GPU, large-model API, payment integration or native app-store account. One person may cover several roles; outside design, security or legal help depends on that person's experience and the launch context.
@@ -33,7 +34,7 @@ Do not wait for community visit data to begin. Taste, purpose, budget and verifi
 
 Start with repository access and a local development environment. Before the hosted pilot, select a provider for the web process and a persistent PostgreSQL database, define who controls the accounts, enable suitable account protection, and arrange backups and transactional email.
 
-Maps, analytics vendors and paid APIs are optional. A list with area selection can test discovery without a map. Record any service's cost, permissions, terms and data handling before integrating it. Keep production and development data separate.
+The manual validation stage can use a list and area selection. The expanded pilot includes a map, so select a tile service, review its licence/attribution and privacy, configure allowed browser keys if required, and set request/spending limits. Analytics vendors and other paid APIs remain optional. Keep list browsing usable when maps fail. Record any service's cost, permissions, terms and data handling before integrating it; keep production and development data separate.
 
 ## 4. Developer Bootstrap Recipe
 
@@ -171,11 +172,13 @@ This document does not claim the recipe has been executed or that tests for appl
 | Order | Work | Evidence of completion |
 |---|---|---|
 | 1 | Café models, provenance and restricted catalogue admin | An editor can maintain checked records; private user data is inaccessible to that role |
-| 2 | Mobile catalogue, area selection and café detail | Works with no account and no location permission |
+| 2 | Mobile catalogue, area selection, name search and full café detail | Works with no account and no location permission |
 | 3 | Preferences, purpose and content-based ranking | New users receive explainable matches; essential constraints are respected |
 | 4 | Member saves, private visits and return feedback | Ownership checks and editing/deletion work |
 | 5 | Data settings, export/deletion and minimal measurement | Consent changes affect derived signals; data flows match the notice |
-| 6 | PostgreSQL, deployment, backups and pilot usability | Real restore exercise, production checks and mobile journeys pass |
+| 6 | Map/list synchronization, area shortcuts, detail dialogs and external directions | Same eligible IDs, accessible navigation, correct destinations and tile-failure fallback |
+| 7 | Original curator reviews, trip value and local collection/about | Optional scores are attributed/dated; eligibility has checked provenance; drafts stay private |
+| 8 | PostgreSQL, deployment, backups and pilot usability | Real restore exercise, production checks and mobile journeys pass |
 | Later | Opted-in aggregate community signal | Minimum evidence threshold is met and privacy safeguards are tested |
 
 Use [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md) for acceptance criteria, [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) for implementation, and [ROADMAP_AND_BUDGET.md](ROADMAP_AND_BUDGET.md) for effort and release gates.
@@ -190,5 +193,9 @@ Use [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md) for acceptance criteria, 
 | Disallowed host | Add the intended local host to the development environment variable; do not use a production wildcard |
 | No café results | The catalogue and feature implementation do not exist until built; later distinguish an empty catalogue from strict filters |
 | Deployment loses data | Check for an ephemeral filesystem or local SQLite; the pilot requires persistent PostgreSQL and verified backups |
+| Map tiles fail or request a key | Check selected provider configuration, restrictions and quotas; preserve the list instead of removing valid cafés |
+| Map and list disagree | Use the same filtered result snapshot/IDs and prevent old search responses replacing current ones |
+
+Review [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md) before implementing map, rating or collection behaviour. The reference's café data and review text are not seed data for this project.
 
 If the recipe becomes stale, fix it together with the implementation and record the tested versions in the repository.

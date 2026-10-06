@@ -4,9 +4,11 @@ Last updated: 2026-10-06. All figures and dates below are planning assumptions. 
 
 ## 1. Planning Basis
 
-Proposed scope: one area, 20–30 checked cafés, mobile web discovery, content-based matching, private saves/visits, and 30–50 adult pilot participants. Start with a free invited pilot. Community matching is enabled only when sufficient consenting evidence exists; it is not a launch dependency.
+Proposed scope: one area, 20–30 checked cafés, mobile web discovery with map/list search and directions, original curator reviews/local collection, content-based matching, private saves/visits, and 30–50 adult pilot participants. Start with a free invited pilot. Community matching is enabled only when sufficient consenting evidence exists; it is not a launch dependency.
 
-A provisional 8–12-week sequence assumes regular founder/developer availability and accessible café information. The effort estimate below is 200–305 hours before contingency. At 10 hours per week it would take roughly 20–31 weeks, plus delays; a calendar target must be calculated from actual capacity rather than copied from this document.
+A provisional 12–18-week sequence assumes roughly 25 hours per week and accessible café information. The expanded estimate below is 235–365 hours before contingency, or 282–438 hours with 20% contingency. At 10 hours per week, the latter represents roughly 29–44 weeks, plus delays; calculate the calendar target from actual capacity.
+
+The [reference-feature expansion](FEATURES_REFERENCE.md) adds a proposed 35–60 hours to the earlier 200–305-hour baseline. This revision makes map/editorial work visible in the plan instead of assuming it has no scheduling or operating cost.
 
 ## 2. Roles and Accountability
 
@@ -29,10 +31,11 @@ One person covering several roles still needs time for each responsibility. Cont
 | M1: Validate the problem | Weeks 1–2 | 15–20 visitor interviews, 5 manager conversations, summarized evidence | Specific recurring problem and reachable cohort; evidence may justify changing/stopping |
 | M2: Check catalogue and manual matching | Weeks 2–3 | 20–30 sourced records, preference form, manual comparison | Enough accurate data; participants can identify useful matches |
 | M3: Build foundation | Weeks 3–4 | Django project, models, permissions and catalogue admin | Checked records editable; guest browsing works |
-| M4: Build core journeys | Weeks 4–7 | Preferences, explanations, saves, visits, data settings | Product acceptance and ownership/deletion checks pass |
-| M5: Prepare hosted pilot | Weeks 7–8 | PostgreSQL, production configuration, notice, support and restore exercise | Mobile usability, catalogue freshness and operational readiness pass |
-| M6: Run and assess pilot | Weeks 8–10 | Invited cohort, measured usage, interviews and error reports | Enough evidence to choose improve, expand or stop |
-| M7: Iterate | Weeks 10–12 if justified | Fixes, updated hypothesis and next milestone | Owner reviews outcomes and approves next scope/budget |
+| M4: Build core journeys | Weeks 4–8 | Preferences, explanations, saves, visits, data settings | Product acceptance and ownership/deletion checks pass |
+| M4b: Map and editorial experience | Weeks 8–10 | Map/list search, area controls, dialogs, directions, original reviews and collection/about | Same result IDs, safe public content, correct directions and tile-failure fallback |
+| M5: Prepare hosted pilot | Weeks 10–11 | PostgreSQL, production configuration, notice, support and restore exercise | Mobile usability, catalogue freshness and operational readiness pass |
+| M6: Run and assess pilot | Weeks 12–14 | Invited cohort, measured usage, interviews and error reports | Enough evidence to choose improve, expand or stop |
+| M7: Iterate | Weeks 15–18 if justified | Fixes, updated hypothesis and next milestone | Owner reviews outcomes and approves next scope/budget |
 
 Windows overlap and are illustrative. Recruitment, permission checks, limited working hours and technical learning can extend them. Do not enable payments or social sharing merely because a date in this table arrives.
 
@@ -46,9 +49,12 @@ Windows overlap and are illustrative. Recruitment, permission checks, limited wo
 | Core implementation | 80–110 |
 | Testing, deployment and data operations | 30–50 |
 | Pilot support and analysis | 25–40 |
-| **Total before contingency** | **200–305** |
+| Map/search/dialog integration | 15–25 |
+| Original curator content, ratings and local-collection support | 15–25 |
+| Additional map/privacy/accessibility validation | 5–10 |
+| **Total before contingency** | **235–365** |
 
-Add approximately 20% planning contingency for rework and uncertainty: about 240–366 hours in total. This is an estimate for the described scope, not a contractor quote or promised completion time. Re-estimate after the manual test and foundation milestone.
+Add approximately 20% planning contingency for rework and uncertainty: about 282–438 hours in total. This is an estimate for the expanded scope, not a contractor quote or promised completion time. Re-estimate after the manual test, foundation work and actual tile-provider selection. Recurring editorial/catalogue maintenance continues after initial delivery.
 
 ## 5. Cash Budget
 
@@ -60,10 +66,11 @@ The following INR amounts are **suggested allocations**, not current vendor pric
 | Field research and catalogue checks | ₹0–₹5,000 one time | Travel or optional modest participant incentives; depends on area |
 | Web host, persistent database, basic email/monitoring/backups | ₹2,000–₹5,000 per month reserve | Compare complete provider configuration; reserve may be insufficient for particular plans |
 | Domain | ₹0 if using provider URL; reserve up to ₹2,000 annually | Optional; verify registration and renewal amounts |
-| Maps or other paid APIs | ₹0 baseline | Use area/list discovery initially; assess quotas and spend caps before adding APIs |
+| Map tiles | Reserve ₹0–₹1,000 per month in addition to hosting | ₹0 only if a selected service permits the intended usage within limits; verify prices, attribution, quotas and key restrictions |
+| Other paid APIs | ₹0 baseline | No geocoding/routing API needed for manual café coordinates and external directions links |
 | Design, development, specialist review | Unpriced until scope and rate agreed | External labour/review can dominate total cost |
 
-An illustrative first three months could allocate ₹5,000 research + ₹15,000 services + ₹2,000 domain = **₹22,000 before labour, taxes and specialist work**. This is a budget scenario, not evidence that a launch will cost that amount. It excludes hardware, events, advertising, app stores, payments and unforeseen work.
+An illustrative first three months could allocate ₹5,000 research + ₹15,000 services + ₹3,000 map reserve + ₹2,000 domain = **₹25,000 before labour, taxes and specialist work**. This is a budget scenario, not evidence that a launch will cost that amount. It excludes hardware, events, advertising, app stores, payments and unforeseen work. Editorial fieldwork may require revising the research allocation.
 
 Use this calculation for an actual decision:
 
@@ -90,6 +97,9 @@ Define a monthly spending cap, account owner and warning thresholds. Verify data
 | Next | Bookmarks and structured visit feedback | Ownership, duplicates, edit/delete and dates handled |
 | Next | Contribution choice, export and deletion | End-to-end data flow and derived-signal removal checked |
 | Next | Correction queue and freshness flags | Report reaches staff; stale essential data excluded |
+| Before pilot | Map/list search, pilot-area shortcuts and detail dialogs | Same eligible IDs, keyboard support and full-page fallback |
+| Before pilot | External directions and tile-provider setup | Destination checked; no member origin in URLs; tile failure does not block discovery |
+| Before pilot | Original curator reviews, trip scale and local collection/about | Published opinions attributed/dated; unknown scores/counts unbadged; no copied reference content |
 | Before pilot | Minimal events, notices and eligibility | Event purposes/denominators agreed and payloads inspected |
 | Before pilot | PostgreSQL, deploy and backup restore | Production-equivalent journeys and restore exercise pass |
 | Later | Aggregate peer repeat signal | Enough eligible participants and tested withdrawal behaviour |
@@ -110,6 +120,8 @@ Freeze metric definitions and cohort dates before collecting results. Report cou
 | Voluntary visit feedback | Participants submitting a valid log / participants shown recommendations | Contribution feasibility; self-reported and potentially incomplete |
 | 14-day return | Activated participants with another discovery session within 14 days / activated participants with full 14-day observation | Proposed exploratory target 30%, preferably ≥20 eligible participants |
 | Catalogue errors/freshness | Confirmed error reports and share of important fields checked in last 30 days | Data-maintenance burden and reliability |
+| Map reliability | Failed map-load attempts / deliberate map-load attempts, with list fallback completion | Distinguish provider failure from an empty catalogue; no precise location in event payloads |
+| Directions intent | Sessions clicking directions / eligible café-detail sessions | Interest only; not proof of arrival or a completed visit |
 | Operating cost | Cash spent and staff hours / reporting period | Determine whether a larger catalogue is sustainable |
 
 For return measurement, define activation as a participant viewing at least one eligible recommendation after selecting preferences/purpose. Exclude staff/test accounts and count each participant once. Minimal guest measurement may require a short-lived pseudonymous session; do not silently introduce persistent cross-site tracking. These targets are project hypotheses, not industry benchmarks or current results.

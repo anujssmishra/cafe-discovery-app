@@ -86,6 +86,30 @@ Government context for the rules and implementation. It does not certify this pr
 
 This is the inspiration link, not technical, legal or market evidence. The café adaptation and complete project plan are original planning work. This repository does not include a verbatim transcript of the reel, and it makes no claim of affiliation with its creator.
 
+## S14: Caffeine Chronicles Feature Reference
+
+[Caffeine Chronicles](https://caffeinechronicles.vercel.app/)
+
+Reviewed in the browser on 2026-10-06 because text retrieval did not expose its interface. [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md) records visible observations and our separate implementation requirements. It is feature inspiration, not a content/data licence or evidence that the backend and every control work. No source code, café records, branding or review text are copied into this project.
+
+## S15: Leaflet Map Client
+
+[Official Leaflet API reference](https://leafletjs.com/reference.html)
+
+Reference for client-side maps, markers, controls and interaction. Choose and record a compatible stable version at implementation. Leaflet does not determine the tile service's licence, pricing or privacy.
+
+## S16: Google Maps URLs
+
+[Official Google Maps URL documentation](https://developers.google.com/maps/documentation/urls/get-started)
+
+Reference for external directions links. Construct and validate the café destination; this project does not automatically include a member origin or implement a routing API.
+
+## S17: OpenStreetMap Tile Service Policy
+
+[Official OSM standard tile-service usage policy](https://operations.osmfoundation.org/policies/tiles/)
+
+Reference for the standard tile service's separate attribution/usage requirements. Select a provider appropriate to real traffic and terms; do not infer unlimited tile access from the open map-data licence.
+
 ## Updating References
 
 Record the date, URL, relevant fact and affected decision when a source changes. Replace broken links with the current authoritative source and revise any dependent instructions. Do not leave a new source beside an outdated factual claim without resolving the discrepancy.

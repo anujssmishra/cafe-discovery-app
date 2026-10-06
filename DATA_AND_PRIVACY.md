@@ -23,10 +23,18 @@ Start with first-party observations, public factual information checked against 
 | Atmosphere | Noise, crowding, seating suitability | Dated observation with time/context; subjective, not a permanent fact |
 | Hours | Listed weekday/weekend hours and source | Staff/current café listing; label informational until live status is implemented |
 | Provenance | Source type, source URL where appropriate, permission/licence notes | Editor records during collection |
+| Local-collection eligibility | Brand/location count, count scope, source and checking date | Confirm the published criterion; unknown eligibility remains unbadged |
+| Editorial opinion | Original coffee/experience/trip scores and visit notes | Actual curator experience, dated and attributed with permission |
 
 Do not copy complete third-party review collections, menu photographs, personal reviewer profiles or other protected content without an appropriate right. A public page is not blanket permission to reuse its images or text. Use original descriptions, permitted assets, or no photographs initially. Names and factual attributes still need accuracy and a source.
 
+The Caffeine Chronicles reference supplies feature inspiration, not a dataset or content licence. Write original editorial notes; record actual visits and approved public attribution. Separate coffee/experience/trip opinions from verified facts, private member feedback and community averages. Do not label an unvisited café as a curator's personal visit. Draft reviews remain restricted; public correction handling can retain safe revisions without publishing private contact information.
+
 If OpenStreetMap is used, review its ODbL licence, attribution and any applicable database-sharing obligations. Its data licence is separate from tile/geocoding service usage policies. Do not assume an attribution line alone resolves every dataset or API obligation. [Official licence reference](SOURCES.md#s11-openstreetmap-licence).
+
+Map tiles are an additional third-party data flow: the provider may receive IP/browser request information and the viewed geographic area. Load the map on deliberate activation, identify the provider in the notice, and keep list browsing available. The pilot map uses area/café locations; centering on precise member coordinates requires a further data-flow review. Do not send profiles, visits or private feedback to a tile provider. OSM's public tile service has its own usage restrictions and is not an assumed unlimited commercial service. [Tile policy reference](SOURCES.md#s17-openstreetmap-tile-service-policy).
+
+External directions links disclose the chosen destination to the selected maps provider after the user clicks. Do not include a member's origin coordinates, account ID or preference data. Validate the destination and identify the external provider. Store no navigation history beyond a justified, minimal event if pilot measurement requires one.
 
 ### Catalogue workflow
 
@@ -46,6 +54,7 @@ Before pilot launch, recheck all included cafés. During the pilot, review repor
 | Optional temporary coordinates | Nearby results for that request/session | Used transiently; excluded from persistent analytics and routine logs |
 | Minimal event metadata | Pilot journey and usefulness measurement | Restricted analysis; pseudonymous where possible |
 | Correction/support submissions | Resolve errors or requests | Restricted staff queue |
+| Curator display name, visit date and published review | Original editorial context | Public only under the curator's publishing permission; private email/account details omitted |
 
 Prefer a selected area to exact coordinates. If optional browser location is used, avoid writing it to database records, URLs, logs or analytics. Validate what hosting and monitoring services receive; disabling an app field alone does not prove infrastructure collects nothing.
 
@@ -72,6 +81,7 @@ The precise scoring rules are in [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md). At 
 | Security/operational logs | Normally up to 30 days, with documented incident exceptions | Rotate/delete; redact sensitive payloads from collection |
 | Raw research recordings/notes | Up to 90 days after analysis, unless a different agreed need exists | Delete raw identifiable material; keep consented/de-identified findings |
 | Correction contact details | Up to 30 days after resolution | Remove contact details while keeping safe catalogue change history |
+| Published curator review/attribution | While useful, accurate and authorized; review with catalogue freshness | Unpublish on correction/permission withdrawal; retain only justified, restricted audit detail |
 | Database backups | Rolling maximum 30 days, subject to selected provider capability | Expire on schedule; reapply deletion records after any restore |
 
 Aim to complete ordinary account deletion from active systems within seven days of a validated request, with community contribution stopped immediately. This is an internal proposed service target, not a legal deadline. Before publishing it, confirm the team and provider can meet it. Document any necessary, limited exception and the actual backup expiry behaviour.

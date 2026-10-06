@@ -21,6 +21,7 @@ The architecture, budgets, thresholds, and timeline below are proposed starting 
 | The idea, customer problem, validation, and business model | [PROJECT_BRIEF.md](PROJECT_BRIEF.md) |
 | What is needed and what to do first | [GETTING_STARTED.md](GETTING_STARTED.md) |
 | User journeys, features, scope, and acceptance criteria | [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md) |
+| Features adapted from Caffeine Chronicles and how to implement them | [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md) |
 | Architecture, database, matching logic, testing, and deployment | [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) |
 | Café information, consent, privacy, and operational data handling | [DATA_AND_PRIVACY.md](DATA_AND_PRIVACY.md) |
 | People, effort, milestones, costs, and pilot measurement | [ROADMAP_AND_BUDGET.md](ROADMAP_AND_BUDGET.md) |
@@ -40,11 +41,15 @@ Users can browse, choose their drink and atmosphere preferences, set today's pur
 
 - Taste and purpose profiles: espresso, pour-over, cold brew, milk-based drinks, tea, matcha, snacks, work, reading, dates, or socialising.
 - A manually checked catalogue with drink availability, indicative prices, amenities, and verification dates.
+- Map and list browsing with name search, pilot-area shortcuts, café detail dialogs and external directions.
+- Original curator notes with separate coffee/experience scores, trip-value opinions and a documented local-café collection.
 - Explained recommendations and a clear response when no café fits the requested constraints.
 - Private saved cafés and self-reported visit/return feedback.
 - Staff catalogue management, account data deletion, and basic pilot measurement.
 
 Friends, café owner dashboards, native mobile apps, receipt imports, payment-history connections, subscriptions, and booking payments are later candidates. They are not required to test the first version.
+
+The feature expansion requested from [Caffeine Chronicles](https://caffeinechronicles.vercel.app/) is specified in [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md). Editorial opinions remain distinct from verified facts and personalized ranking. The first pilot still covers one area; additional city shortcuts depend on new verified catalogue data.
 
 ## What You Need to Begin
 
