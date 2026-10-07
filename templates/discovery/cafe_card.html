@@ -1,0 +1,14 @@
+<article class="cafe-card">
+  <div class="card-top"><span class="card-cup">{% include 'includes/cup.html' %}</span><span class="area-label">{{ cafe.area.name }}</span></div>
+  {% if cafe.is_demo %}<span class="demo-badge">Synthetic example</span>{% endif %}
+  <h3><a href="{% url 'discovery:cafe_detail' cafe.pk %}">{{ cafe.name }}</a></h3>
+  <p class="card-summary">{% if cafe.summary %}{{ cafe.summary|truncatechars:155 }}{% else %}A café in {{ cafe.area.name }}. More details have not been recorded yet.{% endif %}</p>
+  <p class="card-address">{% if cafe.address %}{{ cafe.address }}{% else %}Address not recorded{% endif %}</p>
+  <ul class="offering-tags" aria-label="Recorded drink offerings">
+    {% for offering in cafe.offerings.all|slice:':3' %}<li>{{ offering.get_drink_type_display }}</li>{% empty %}<li class="unknown-tag">Offerings not recorded</li>{% endfor %}
+  </ul>
+  <div class="card-bottom">
+    <p class="check-note">{% if cafe.is_current %}{% if cafe.is_demo %}Example date{% else %}Catalogue checked{% endif %}<span>{{ cafe.checked_on|date:'j M Y' }}</span>{% elif cafe.evidence_status == 'stale' %}Recheck needed<span>Last recorded {{ cafe.checked_on|date:'j M Y' }}</span>{% else %}Verification incomplete<span>Check details before visiting</span>{% endif %}</p>
+    <a class="card-link" href="{% url 'discovery:cafe_detail' cafe.pk %}" aria-label="View details for {{ cafe.name }}">View café <span aria-hidden="true">↗</span></a>
+  </div>
+</article>

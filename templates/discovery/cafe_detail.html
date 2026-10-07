@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}{{ cafe.name }} · Café Discovery{% endblock %}
+{% block content %}
+<div class="shell detail-shell">
+  <a class="back-link" href="{% url 'discovery:catalogue' %}">← Back to all cafés</a>
+  <header class="detail-heading">
+    <p class="eyebrow">{{ cafe.area.name }}{% if cafe.area.city %} · {{ cafe.area.city }}{% endif %}</p>
+    {% if cafe.is_demo %}<span class="demo-badge">Synthetic example · Fictional café</span>{% endif %}
+    <h1>{{ cafe.name }}</h1>
+    {% if cafe.summary %}<p class="detail-summary">{{ cafe.summary }}</p>{% endif %}
+  </header>
+  {% if cafe.is_demo %}<div class="detail-demo-note"><strong>This is test content.</strong> The café, address, offerings and any evidence shown here are synthetic examples. Do not use them to plan a visit.</div>{% endif %}
+  <div class="detail-layout">
+    <div class="detail-main">
+      <section class="detail-section" aria-labelledby="offerings-heading">
+        <p class="eyebrow">What’s in the cup</p>
+        <h2 id="offerings-heading">Recorded offerings</h2>
+        <p class="section-description">Indicative prices for the listed drink. Availability, taxes and extras may change; confirm with the café.</p>
+        <div class="offering-list">
+          {% for offering in cafe.offerings.all %}
+          <article class="offering">
+            <div class="offering-title"><h3>{{ offering.get_drink_type_display }}</h3><p class="price">{% if offering.price is not None %}{{ offering.currency }} {{ offering.price|floatformat:2 }}{% else %}<span class="muted">Price not recorded</span>{% endif %}</p></div>
+            {% if offering.brewing_method %}<p class="brewing-method">{{ offering.brewing_method }}</p>{% endif %}
+            <p class="offering-evidence"><strong>{% if offering.is_current %}{% if cafe.is_demo %}Synthetic evidence example{% else %}Checked within 30 days{% endif %}{% elif offering.evidence_status == 'stale' %}Recheck needed — evidence is older than 30 days{% else %}Verification incomplete{% endif %}</strong><br>{% if offering.checked_on %}{% if cafe.is_demo %}Example date{% else %}Checking date{% endif %}: {{ offering.checked_on|date:'j M Y' }}{% else %}Checking date not recorded{% endif %}<br>{% if offering.source %}Source: {{ offering.source }}{% else %}Source not recorded; this offering is not verified.{% endif %}</p>
+          </article>
+          {% empty %}<p class="inline-empty">Drink offerings and prices have not been recorded for this café.</p>{% endfor %}
+        </div>
+      </section>
+      <section class="detail-section" aria-labelledby="evidence-heading">
+        <p class="eyebrow">Know what you’re seeing</p>
+        <h2 id="evidence-heading">Catalogue information</h2>
+        <dl class="evidence-list">
+          <div><dt>Verification</dt><dd>{% if cafe.is_current %}{% if cafe.is_demo %}Synthetic evidence example{% else %}Checked within 30 days{% endif %}{% elif cafe.evidence_status == 'stale' %}Recheck needed — evidence is older than 30 days{% else %}Verification incomplete{% endif %}</dd></div>
+          <div><dt>Checking date</dt><dd>{% if cafe.checked_on %}{{ cafe.checked_on|date:'j M Y' }}{% if cafe.is_demo %} (example only){% endif %}{% else %}Checking date not recorded{% endif %}</dd></div>
+          <div><dt>Source</dt><dd>{% if cafe.source %}{{ cafe.source }}{% else %}Source not recorded{% endif %}</dd></div>
+          <div><dt>Ownership</dt><dd>{{ ownership_label }}{% if ownership_evidence_status == 'stale' %}<small>Recheck needed — ownership evidence is older than 30 days.</small>{% endif %}{% if has_ownership_evidence %}<small>Evidence date: {{ cafe.independence_checked_on|date:'j M Y' }}<br>Source: {{ cafe.independence_source }}</small>{% endif %}</dd></div>
+        </dl>
+        <p class="source-note">A listing is not an endorsement or proof of a partnership. Checks are current for 30 days; older evidence needs rechecking. Incomplete evidence includes missing sources or invalid dates. Information can still change between checks. Missing facts remain unknown.</p>
+      </section>
+    </div>
+    <aside class="location-panel" aria-labelledby="location-heading">
+      <span class="location-cup">{% include 'includes/cup.html' %}</span>
+      <h2 id="location-heading">The address</h2>
+      <address>{% if cafe.address %}{{ cafe.address|linebreaksbr }}{% else %}Address not recorded{% endif %}</address>
+      <p class="location-area">{{ cafe.area.name }}{% if cafe.area.city %}<br>{{ cafe.area.city }}{% endif %}</p>
+      {% if website_url and not cafe.is_demo %}<a class="button button-secondary external-link" href="{{ website_url }}" rel="noopener noreferrer nofollow">Visit café website <span aria-hidden="true">↗</span></a><p class="external-note">Opens the external website recorded for this café.</p>{% endif %}
+      <div class="location-note">{% if cafe.is_demo %}Fictional address for development only.{% elif cafe.is_current %}Check the café’s latest information before travelling.{% else %}This address has incomplete verification. Confirm it before travelling.{% endif %}</div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

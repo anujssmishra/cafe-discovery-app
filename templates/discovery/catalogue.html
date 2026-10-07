@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Explore cafés · Café Discovery{% endblock %}
+{% block content %}
+<div class="shell">
+  <section class="hero" aria-labelledby="discover-heading">
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> The café catalogue</p>
+      <h1 id="discover-heading">Find your next<br><em>coffee corner.</em></h1>
+      <p class="hero-description">A little space to explore cafés, discover what’s on the menu, and make time for a good cup.</p>
+      <p class="hero-note">Start with a name or neighbourhood. Every listing shows what is known—and what still needs checking.</p>
+    </div>
+    <div class="coffee-art" aria-hidden="true">
+      <div class="art-ring"></div>
+      <svg viewBox="0 0 280 240" fill="none" class="hero-cup">
+        <ellipse cx="137" cy="193" rx="102" ry="22" fill="#DFD8C8"/>
+        <path d="M200 80h18c35 0 38 55-1 59h-23" stroke="#6F8172" stroke-width="15"/>
+        <path d="M68 71h139l-9 90c-2 20-27 34-60 34s-59-14-61-34L68 71Z" fill="#667B6C"/>
+        <ellipse cx="137.5" cy="71" rx="69.5" ry="19" fill="#A6B3A0"/>
+        <ellipse cx="137.5" cy="73" rx="57.5" ry="12" fill="#573C30"/>
+        <path d="M135 77c-22-11-9-18 2-8 13-10 23-1-2 8Z" fill="#EEDCC0"/>
+        <path d="M114 39c-16-19 15-16 0-34M155 38c-15-18 15-16 0-33" stroke="#AAAB95" stroke-width="3" stroke-linecap="round"/>
+        <path d="M82 107c2 38 6 54 18 62" stroke="#B4C0AC" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <span class="art-note">One good cup.<br>A place to linger.</span>
+    </div>
+  </section>
+
+  <section class="search-panel" aria-labelledby="search-heading">
+    <div class="section-label"><h2 id="search-heading">Where shall we look?</h2><span>Browse at your own pace</span></div>
+    <form action="{% url 'discovery:catalogue' %}" method="get" class="search-form">
+      <div class="field search-field">
+        <label for="cafe-search">Café name</label>
+        <input type="search" id="cafe-search" name="q" value="{{ q }}" maxlength="100" placeholder="Search for a café…" {% if errors %}aria-describedby="filter-errors"{% endif %}>
+      </div>
+      <div class="field area-field">
+        <label for="cafe-area">Area</label>
+        <select id="cafe-area" name="area" {% if invalid_area %}aria-invalid="true" aria-describedby="filter-errors"{% endif %}>
+          <option value="">All available areas</option>
+          {% for item in areas %}<option value="{{ item.area.slug }}" {% if item.selected %}selected{% endif %}>{{ item.area.name }}{% if item.area.city %} · {{ item.area.city }}{% endif %}</option>{% endfor %}
+        </select>
+      </div>
+      <button class="button button-primary" type="submit">Find cafés <span aria-hidden="true">→</span></button>
+    </form>
+    {% if areas %}
+    <nav class="area-chips" aria-label="Quick area filters">
+      <a class="chip {% if not selected_area and not invalid_area %}selected{% endif %}" href="{{ all_areas_url }}" {% if not selected_area and not invalid_area %}aria-current="true"{% endif %}>All areas</a>
+      {% for item in areas %}<a class="chip {% if item.selected %}selected{% endif %}" href="{{ item.url }}" {% if item.selected %}aria-current="true"{% endif %}>{{ item.area.name }}</a>{% endfor %}
+    </nav>
+    {% endif %}
+  </section>
+
+  <section class="results-section" aria-labelledby="results-heading">
+    <div class="results-heading">
+      <div>
+        <p class="eyebrow">Explore the catalogue</p>
+        <h2 id="results-heading">{% if selected_area %}Cafés in {{ selected_area.name }}{% else %}A place to start{% endif %}</h2>
+      </div>
+      <div class="results-meta"><span>{{ result_count }} café{{ result_count|pluralize }}{% if q %} matching “{{ q }}”{% endif %}</span>{% if has_filters %}<a class="text-link" href="{% url 'discovery:catalogue' %}">Clear filters</a>{% endif %}</div>
+    </div>
+    {% if errors %}
+    <div class="form-errors" id="filter-errors" role="alert">
+      <strong>Let’s adjust those filters.</strong>
+      {% for error in errors %}<p>{{ error }}</p>{% endfor %}
+    </div>
+    {% endif %}
+    {% if cafes %}
+    <p class="results-explainer">Listed alphabetically. These are catalogue entries, not personalized recommendations.</p>
+    <div class="cafe-grid">
+      {% for cafe in cafes %}{% include 'discovery/cafe_card.html' %}{% endfor %}
+    </div>
+    {% if page_obj.has_other_pages %}
+    <nav class="pagination" aria-label="Catalogue pages">
+      <div>{% if page_obj.has_previous %}<a class="button button-secondary" href="?{{ query_string }}page={{ page_obj.previous_page_number }}">← Previous</a>{% endif %}</div>
+      <span aria-current="page">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      <div>{% if page_obj.has_next %}<a class="button button-secondary" href="?{{ query_string }}page={{ page_obj.next_page_number }}">Next →</a>{% endif %}</div>
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">{% include 'includes/cup.html' %}</span>
+      <h3>{% if has_filters %}No cafés match this search.{% else %}The catalogue is taking shape.{% endif %}</h3>
+      <p>{% if has_filters %}Try another name, choose an available area, or clear your filters to browse again.{% else %}There are no public café entries to show yet. The first collection will appear here as information is added.{% endif %}</p>
+      <a class="button button-secondary" href="{% if has_filters %}{% url 'discovery:catalogue' %}{% else %}{% url 'discovery:about' %}{% endif %}">{% if has_filters %}Clear filters{% else %}Read about the project{% endif %} <span aria-hidden="true">→</span></a>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
