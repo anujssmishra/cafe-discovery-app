@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}About the guide · Café Discovery{% endblock %}
+{% block content %}
+<div class="shell about-shell">
+  <p class="eyebrow">The idea behind the guide</p>
+  <h1>Your kind of coffee.<br><em>Your kind of café.</em></h1>
+  <p class="about-intro">The right café depends on the drink you enjoy and the moment you’re making room for. Café Discovery is being built to help you find that fit.</p>
+  <div class="about-sections">
+    <section aria-labelledby="today-heading"><span class="about-number" aria-hidden="true">01</span><div><h2 id="today-heading">What you can do today</h2><p>Browse the catalogue, search a café’s name, filter by available area, and read recorded offerings and checking information. This is an early development build. The first pilot area and real catalogue are still being prepared.</p>{% if demo_mode %}<p><strong>Demo mode is on.</strong> Any listing marked “Synthetic example” is fictional test content. Its prices, address and dates must not be treated as real café information.</p>{% endif %}</div></section>
+    <section aria-labelledby="evidence-about-heading"><span class="about-number" aria-hidden="true">02</span><div><h2 id="evidence-about-heading">Information with context</h2><p>Listings show their recorded sources and checking dates. Missing information stays unknown. Prices are indicative, and a checking date does not guarantee that a menu or location remains current.</p><p>A small location count does not prove independent ownership. Ownership claims need their own evidence. Individual curator opinions and private visitor feedback will have separate roles as the guide develops.</p></div></section>
+    <section aria-labelledby="future-heading"><span class="about-number" aria-hidden="true">03</span><div><h2 id="future-heading">Where we’re heading</h2><p>The plan includes preferences for drinks, budget and visit purpose; explained recommendations; map browsing; original curator notes; and private saved cafés and visit feedback. These features are planned and are not available in this build.</p><p>The initial goal is a carefully checked collection in one area. We will test whether it helps people choose before expanding coverage.</p></div></section>
+    <section aria-labelledby="feedback-heading"><span class="about-number" aria-hidden="true">04</span><div><h2 id="feedback-heading">Before a public pilot</h2><p>A correction channel, operator contact and participant data notice must be in place before recruitment. This build does not yet accept public corrections or create member accounts. Development feedback can go to the project owner through your existing project channel.</p></div></section>
+  </div>
+  <a class="button button-primary" href="{% url 'discovery:catalogue' %}">Explore the catalogue <span aria-hidden="true">→</span></a>
+</div>
+{% endblock %}
