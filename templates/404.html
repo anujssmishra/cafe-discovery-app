@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}Page not found · Café Discovery{% endblock %}
+{% block content %}<div class="shell empty-state error-page"><span class="empty-icon">{% include 'includes/cup.html' %}</span><p class="eyebrow">Page not found</p><h1>This page isn’t available.</h1><p>The café may no longer be listed, or the address may be incorrect.</p><a class="button button-primary" href="{% url 'discovery:catalogue' %}">Back to the catalogue →</a></div>{% endblock %}
