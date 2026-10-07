@@ -1,0 +1,40 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A developing café discovery guide. Explore café details, drink offerings and the evidence behind each listing.">
+  <title>{% block title %}Café Discovery{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'discovery/site.css' %}">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="{% url 'discovery:catalogue' %}">
+        <span class="brand-icon">{% include 'includes/cup.html' %}</span>
+        <span>Café Discovery<span class="brand-subtitle">A place for your next pause</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="{% url 'discovery:catalogue' %}" {% if request.resolver_match.url_name == 'catalogue' or request.resolver_match.url_name == 'cafe_detail' %}aria-current="page"{% endif %}>Explore cafés</a>
+        <a href="{% url 'discovery:about' %}" {% if request.resolver_match.url_name == 'about' %}aria-current="page"{% endif %}>About the guide</a>
+      </nav>
+    </div>
+  </header>
+  {% if demo_mode %}
+  <div class="demo-notice">
+    <div class="shell"><strong>Development preview · Demo mode</strong><span> Entries labelled “Synthetic example” are fictional and are for testing only.</span></div>
+  </div>
+  {% else %}
+  <div class="build-notice"><div class="shell">Early catalogue build · Information may be incomplete. Check the source and dates on each listing.</div></div>
+  {% endif %}
+  <main id="main-content" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer shell">
+    <div><strong>Café Discovery</strong><p>Thoughtful coffee breaks start with useful information.</p></div>
+    <a href="{% url 'discovery:about' %}">How this guide is taking shape <span aria-hidden="true">↗</span></a>
+  </footer>
+</body>
+</html>
