@@ -8,9 +8,11 @@ It answers: **“Which café suits my taste and what I want to do today?”** So
 
 ## Project Status
 
-**Stage: concept and planning documentation. Last updated: 2026-10-06.**
+**Stage: first local catalogue increment in review. Last updated: 2026-10-07.**
 
-This repository contains the project brief, product specification, technical design, startup instructions, data plan, and roadmap. The café application, café catalogue, recommendation engine, and live deployment have **not** been implemented. No pilot results, customers, revenue, or partnerships are claimed.
+The source now includes a Django catalogue with `Area`, `Cafe` and `CafeOffering`, staff administration, a guarded synthetic-data command, guest name/area search, pagination, full café detail pages and an about page. This is the first local development slice. The recommendation engine, member journeys, maps, editorial workflow and hosted pilot are still future work.
+
+The included demo contains eight fictional cafés, sixteen synthetic offerings and two fictional areas. It is not a verified café directory. The final integrated local run passed 49 tests on Python 3.12.14 and Django 5.2.18, with clean Django checks and migration drift checks. Seed reruns retained the expected counts. Check [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) and [QUALITY_REVIEW.md](QUALITY_REVIEW.md) for the reviewed revision, remaining browser checks and remote publication/CI status. No hosted pilot, customers, revenue or partnerships are claimed.
 
 The architecture, budgets, thresholds, and timeline below are proposed starting decisions. The pilot city, team availability, spending limit, brand, and launch date still need the project owner's decisions. See [DECISIONS.md](DECISIONS.md).
 
@@ -18,6 +20,9 @@ The architecture, budgets, thresholds, and timeline below are proposed starting 
 
 | You want to understand… | Read |
 |---|---|
+| Phases, agile cadence, agent roles and Definition of Done | [AGILE_DELIVERY.md](AGILE_DELIVERY.md) |
+| Selected Sprint 1 stories, dependencies and actual progress | [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) |
+| Verification evidence and remaining quality checks | [QUALITY_REVIEW.md](QUALITY_REVIEW.md) |
 | The idea, customer problem, validation, and business model | [PROJECT_BRIEF.md](PROJECT_BRIEF.md) |
 | What is needed and what to do first | [GETTING_STARTED.md](GETTING_STARTED.md) |
 | User journeys, features, scope, and acceptance criteria | [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md) |
@@ -28,8 +33,15 @@ The architecture, budgets, thresholds, and timeline below are proposed starting 
 | How to contribute and keep these documents current | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | Which choices are settled, proposed, or still open | [DECISIONS.md](DECISIONS.md) |
 | Official references and when to recheck them | [SOURCES.md](SOURCES.md) |
+| Agent file ownership and handovers | [AGENTS.md](AGENTS.md) |
 
-**Suggested reading order:** project brief, getting started, product requirements, then the document relevant to your role. A developer should also read the technical design and data plan before implementing models.
+**Suggested reading order:** this README, getting started, agile delivery and backlog, then the document relevant to your role. A developer should read the agent agreement, technical design and data plan before editing source.
+
+## Run the Current Increment
+
+Follow [GETTING_STARTED.md](GETTING_STARTED.md) to clone the development branch, create a Python 3.12 or 3.13 environment, install `requirements-dev.txt`, set the required environment variables, migrate, optionally seed the fictional catalogue, run checks and start Django locally. Settings do not automatically read `.env`.
+
+The current public routes are `/`, `/cafes/<uuid>/` and `/about/`; authorized staff use `/admin/`. The catalogue is alphabetically ordered, with combined partial-name and area filters. It does not yet rank personal matches. The full planned product is described below.
 
 ## First Pilot
 
@@ -37,7 +49,7 @@ The proposed pilot is a mobile-friendly web app covering **20–30 verified caf�
 
 Users can browse, choose their drink and atmosphere preferences, set today's purpose and budget, optionally add up to three favourite cafés, receive explained recommendations, save cafés, and log visits with short feedback. A fresh user receives preference-based matches immediately; recommendations do not depend on having a transaction history or friends on the app.
 
-## MVP Scope
+## Planned Pilot Scope
 
 - Taste and purpose profiles: espresso, pour-over, cold brew, milk-based drinks, tea, matcha, snacks, work, reading, dates, or socialising.
 - A manually checked catalogue with drink availability, indicative prices, amenities, and verification dates.
@@ -55,13 +67,13 @@ The feature expansion requested from [Caffeine Chronicles](https://caffeinechron
 
 At minimum: a product owner, Python/web development capability, a laptop, access to this repository, a small café catalogue, pilot participants, and time for customer interviews and usability testing. One person can cover multiple roles. A GPU, a large language model service, and banking integrations are not prerequisites for the proposed matching baseline.
 
-The proposed build uses Python 3.13, Django 5.2 LTS, responsive HTML/CSS, and SQLite for the initial local skeleton; the pilot uses PostgreSQL and a production web host. These choices require owner confirmation and periodic version review. [GETTING_STARTED.md](GETTING_STARTED.md) explains the bootstrap recipe; it does not imply that app code already exists.
+The local build uses Django 5.2 LTS, responsive HTML/CSS and SQLite, with Python 3.12/3.13 as the development targets. Exact dependency pins live in `requirements.txt` and `requirements-dev.txt`. PostgreSQL and a production host remain later implementation and provider decisions. [GETTING_STARTED.md](GETTING_STARTED.md) runs the existing application; it does not create a replacement Django project.
 
 ## Next Three Actions
 
-1. Select the pilot area, assign an owner, and agree on a time and spending budget.
-2. Interview café visitors and managers; build the first catalogue and test manual recommendations.
-3. Create the application foundation on a development branch, then implement catalogue browsing and preference-based matching before adding community signals.
+1. Complete the first increment's integrated checks and review the synthetic catalogue against Sprint 1 acceptance criteria.
+2. Anuj, as Product Owner, selects the pilot area/segment and review capacity; research and checking real café information can proceed alongside development.
+3. Refine factual amenities, guest preferences and explained content matching. Accounts/private feedback, maps/editorial and pilot operations follow the phase gates in the agile plan.
 
 ## Keeping This Repository Useful
 
