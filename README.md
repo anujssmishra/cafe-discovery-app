@@ -8,11 +8,11 @@ It answers: **“Which café suits my taste and what I want to do today?”** So
 
 ## Project Status
 
-**Stage: first local catalogue increment in review. Last updated: 2026-10-07.**
+**Stage: first catalogue increment published for review in [draft PR #1](https://github.com/anujssmishra/cafe-discovery-app/pull/1). Last updated: 2026-10-07 UTC.**
 
 The source now includes a Django catalogue with `Area`, `Cafe` and `CafeOffering`, staff administration, a guarded synthetic-data command, guest name/area search, pagination, full café detail pages and an about page. This is the first local development slice. The recommendation engine, member journeys, maps, editorial workflow and hosted pilot are still future work.
 
-The included demo contains eight fictional cafés, sixteen synthetic offerings and two fictional areas. It is not a verified café directory. The final integrated local run passed 49 tests on Python 3.12.14 and Django 5.2.18, with clean Django checks and migration drift checks. Seed reruns retained the expected counts. Check [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) and [QUALITY_REVIEW.md](QUALITY_REVIEW.md) for the reviewed revision, remaining browser checks and remote publication/CI status. No hosted pilot, customers, revenue or partnerships are claimed.
+The included demo contains eight fictional cafés, sixteen synthetic offerings and two fictional areas. It is not a verified café directory. The final integrated local run passed 49 tests on Python 3.12.14 and Django 5.2.18, with clean Django checks and migration drift checks. Seed reruns retained the expected counts. Hosted CI passed on Python 3.12 and 3.13 for implementation snapshot `c1fc831`. Check [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) and [QUALITY_REVIEW.md](QUALITY_REVIEW.md) for exact evidence and the PR for checks on its latest revision. Browser/mobile/keyboard review remains open. No hosted pilot, customers, revenue or partnerships are claimed.
 
 The architecture, budgets, thresholds, and timeline below are proposed starting decisions. The pilot city, team availability, spending limit, brand, and launch date still need the project owner's decisions. See [DECISIONS.md](DECISIONS.md).
 

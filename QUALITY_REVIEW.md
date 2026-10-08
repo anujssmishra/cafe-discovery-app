@@ -43,7 +43,15 @@ Environment: Python **3.12.14**, Django **5.2.18**, SQLite's isolated in-memory 
 | `.venv/bin/python -m ruff format tests` | Reformatted two files; two were already formatted. |
 | `.venv/bin/python -m ruff check tests` and `.venv/bin/python -m ruff format --check tests` | Both passed, exit 0; all four files are formatted. Ruff version is 0.16.10. Earlier code-139 invocations were an executable installation failure, resolved before these passing checks. |
 
-Root subsequently ran the complete integrated suite: **49 tests passed in 1.372 seconds**, exit 0. Django checks and migration drift checks were clean; full-repository Ruff lint and formatting checks passed. The setup sequence migrated the local database and seeded twice without duplicates. Root owns CI configuration and publication evidence. These local QA results do not establish a successful remote CI run. No unresolved functional defect was found in the selected catalogue acceptance scope after the evidence-presentation fix.
+Root subsequently ran the complete integrated suite: **49 tests passed in 1.372 seconds**, exit 0. Django checks and migration drift checks were clean; full-repository Ruff lint and formatting checks passed. The setup sequence migrated the local database and seeded twice without duplicates. No unresolved functional defect was found in the selected catalogue acceptance scope after the evidence-presentation fix.
+
+## Publication and hosted checks
+
+Root verified [draft PR #1](https://github.com/anujssmishra/cafe-discovery-app/pull/1), from `feat/sprint-1-catalogue` into `main`. The complete implementation snapshot is `c1fc831f47e4961dc3c1b7b312b52d7c402ba9a6`; GitHub's comparison showed 58 changed files, 2,628 additions and 169 deletions. Publication used authenticated GitHub UI uploads after private-repository connector access failed. Main was not merged or rewritten.
+
+On 2026-10-07 UTC (2026-10-08 IST), GitHub showed successful Catalogue checks for Python 3.12 and 3.13 on both the push run `37684620010` and pull-request run `37685123786`. GitGuardian also reported success. These are observed hosted results, separate from the local 49-test run. This evidence refers to the implementation snapshot above; this record is a later documentation-only update and the PR displays checks for its latest revision.
+
+The source archive download failed in this environment. File count/change statistics and hosted checks were verified, but a byte-for-byte remote archive comparison was not completed. Mobile, keyboard and real browser application inspection remain open; the PR stays draft and selected stories stay **Verify**.
 
 ## Release boundary
 

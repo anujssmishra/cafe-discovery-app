@@ -23,7 +23,7 @@ Anuj owns product ordering. Developers refine and select feasible work against t
 
 **Sprint 1 Goal:** a guest can search and inspect an explicitly synthetic café catalogue, and another developer can reproduce and verify the local application.
 
-These seven selected stories form five active work packages: root foundation, backend catalogue/seed, frontend browsing/details, QA verification, and delivery planning. They are recorded as **Verify**: implementation and automated checks are complete locally, while mobile/keyboard inspection and publication checks remain. No story is marked Done until its complete acceptance criteria and Definition of Done are evidenced. Their selection does not indicate that the full P1/P7/P10/P13/F03/F04/F09 requirements have been implemented.
+These seven selected stories form five active work packages: root foundation, backend catalogue/seed, frontend browsing/details, QA verification, and delivery planning. They are recorded as **Verify**: implementation, local automated checks, publication and hosted CI are evidenced below; mobile/keyboard inspection remains. No story is marked Done until its complete acceptance criteria and Definition of Done are evidenced. Their selection does not indicate that the full P1/P7/P10/P13/F03/F04/F09 requirements have been implemented.
 
 | ID | User outcome and acceptance criteria | Lead / package | Dependencies | Mapping | Status |
 |---|---|---|---|---|---|
@@ -49,8 +49,9 @@ Root reviewed the combined backend, frontend and independent QA change set on 20
 | Lint / format | `python -m ruff check .` and `python -m ruff format --check .` passed |
 | Seed rerun / catalogue journey | Seeded twice with 8 cafés, 16 offerings and 2 areas each time; search/filter/detail/empty/invalid/visibility journeys covered through Django HTTP tests |
 | Mobile / keyboard inspection | Pending real browser/device checks; server-side tests do not establish this acceptance criterion |
-| Remote branch / review | Branch `feat/sprint-1-catalogue` created from remote main `3c9670e`; file publication and PR verification pending at this checkpoint |
-| Hosted CI execution | Workflow provided for Python 3.12 and 3.13; no remote execution result claimed here |
+| Remote branch / review | Published all 58 changed files on `feat/sprint-1-catalogue`, based on remote main `3c9670e`. [Draft PR #1](https://github.com/anujssmishra/cafe-discovery-app/pull/1) verified; implementation snapshot `c1fc831f47e4961dc3c1b7b312b52d7c402ba9a6`. Main remains unmerged. |
+| Hosted CI execution | At implementation snapshot `c1fc831`, GitHub showed successful Catalogue checks on Python 3.12 and 3.13 for both push (run `37684620010`) and pull request (run `37685123786`). GitGuardian also reported success. Observed 2026-10-07 UTC / 2026-10-08 IST. This record is a later documentation-only update; use the PR checks for the latest revision. |
+| Publication method / limitation | Files uploaded through GitHub's authenticated UI because connector access to this private repository failed. The comparison showed 58 files, 2,628 additions and 169 deletions at `c1fc831`, matching the local implementation change count. Source archive download failed, so a byte-for-byte remote archive comparison is not claimed. |
 | Deployment / real pilot | Not deployed; real catalogue and participant validation remain later work |
 
 ## 3. Ordered Remaining Backlog

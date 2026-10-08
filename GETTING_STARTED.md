@@ -34,7 +34,7 @@ git fetch origin
 git switch feat/sprint-1-catalogue
 ```
 
-`feat/sprint-1-catalogue` is the current integration branch. Its remote publication status is recorded in the backlog. If it has not yet been published, use the provided local source and wait for that branch before cloning this increment; do not assume the older `main` documentation contains the new code. Contributors should branch from the current integrated revision for their assigned task. Do not overwrite an existing checkout or discard someone else's changes.
+`feat/sprint-1-catalogue` is published and is the current integration branch, under review in [draft PR #1](https://github.com/anujssmishra/cafe-discovery-app/pull/1). Clone that branch as shown above; the older `main` branch does not yet contain this increment. See the backlog and quality review for validation evidence. Contributors should branch from the current integrated revision for their assigned task. Do not overwrite an existing checkout or discard someone else's changes.
 
 ## 4. Create an Isolated Python Environment
 
