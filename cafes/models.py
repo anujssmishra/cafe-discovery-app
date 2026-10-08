@@ -341,3 +341,75 @@ class CorrectionReport(models.Model):
 
     def __str__(self):
         return f"Correction for {self.cafe} ({self.get_status_display()})"
+
+
+class EditorialReview(models.Model):
+    cafe = models.ForeignKey(Cafe, on_delete=models.CASCADE, related_name="editorial_reviews")
+    curator = models.ForeignKey(
+        "auth.User", on_delete=models.PROTECT, related_name="editorial_reviews"
+    )
+    display_name = models.CharField(max_length=120)
+    visit_date = models.DateField()
+    publication_date = models.DateField(null=True, blank=True)
+    coffee_rating = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    experience_rating = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    trip_rating = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    notes = models.TextField(blank=True)
+    is_published = models.BooleanField(default=False)
+    has_permission = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ("-publication_date", "-visit_date", "pk")
+        constraints = [
+            models.CheckConstraint(
+                check=Q(coffee_rating__isnull=True)
+                | Q(coffee_rating__gte=1, coffee_rating__lte=5),
+                name="editorial_coffee_rating_range",
+            ),
+            models.CheckConstraint(
+                check=Q(experience_rating__isnull=True)
+                | Q(experience_rating__gte=1, experience_rating__lte=5),
+                name="editorial_experience_rating_range",
+            ),
+            models.CheckConstraint(
+                check=Q(trip_rating__isnull=True)
+                | Q(trip_rating__gte=1, trip_rating__lte=5),
+                name="editorial_trip_rating_range",
+            ),
+            models.CheckConstraint(
+                check=Q(is_published=False)
+                | (Q(has_permission=True) & Q(publication_date__isnull=False)),
+                name="editorial_published_requirements",
+            ),
+        ]
+
+    def __str__(self):
+        status = "Published" if self.is_published else "Draft"
+        return f"Review of {self.cafe} by {self.display_name} ({status})"
+
+    def clean(self):
+        super().clean()
+        self.notes = self.notes.strip()
+        self.display_name = self.display_name.strip()
+        errors = {}
+        
+        today = timezone.localdate()
+        if self.visit_date and self.visit_date > today:
+            errors["visit_date"] = "Visit date cannot be in the future."
+            
+        if self.is_published:
+            if not self.has_permission:
+                errors["has_permission"] = "Cannot publish without permission."
+            if not self.publication_date:
+                errors["publication_date"] = "Published reviews require a publication date."
+            elif self.publication_date > today:
+                errors["publication_date"] = "Publication date cannot be in the future."
+                
+        if errors:
+            raise ValidationError(errors)
