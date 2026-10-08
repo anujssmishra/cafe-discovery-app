@@ -1,6 +1,6 @@
 # Decisions, Assumptions and Open Questions
 
-Last updated: 2026-10-07. Use this file as the handover record. A documented proposal is not automatically an approved decision or implemented feature.
+Last updated: 2026-10-08. Use this file as the decision record and [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) for a new coding session. A documented proposal is not automatically an approved decision or implemented feature.
 
 ## 1. Status Definitions
 
@@ -20,9 +20,10 @@ Last updated: 2026-10-07. Use this file as the handover record. A documented pro
 | D05 | Add the reference site's map, search, detail, editorial and local-collection feature concepts | Owner requested features from Caffeine Chronicles; adaptation documented in FEATURES_REFERENCE.md | Confirmed scope direction; implementation choices proposed |
 | D06 | Begin development through phased agile delivery with multiple developer agents | Owner explicitly requested building, phase-wise implementation and multiple agents, then asked to continue | Confirmed direction |
 | D07 | Anuj is Product Owner; root integrates bounded backend, frontend, QA and planning work | Current agent team and working agreement; acceptance/status recorded in AGILE_DELIVERY.md and PRODUCT_BACKLOG.md | Confirmed current working arrangement |
-| D08 | First increment is a local synthetic catalogue before member, matching, map and editorial work | Area/Cafe/CafeOffering, admin, guarded seed, guest filters/pagination/details/about are present; first integrated run passed 48 tests on Python 3.12.14 / Django 5.2.18 | Implemented locally; remaining review/publication evidence in backlog |
+| D08 | First increment is a synthetic catalogue before member, matching, map and editorial work | Area/Cafe/CafeOffering, admin, guarded seed, guest filters/pagination/details/about are present; final integrated run passed 49 tests on Python 3.12.14 / Django 5.2.18 | Published in draft PR #1; hosted CI passed through `3ccb330`; browser/mobile/keyboard review remains open |
 | D09 | Use generated environment secrets, explicit local debug/hosts, and demo mode restricted to debug | Current settings and command guards; `.env` is a reference file, not an automatic loader | Implemented locally |
 | D10 | Use `feat/sprint-1-catalogue` as the first integration branch | Keeps the first source increment reviewable; root owns remote publication and integration | Confirmed workflow; remote status recorded separately |
+| D11 | Keep continuation context tool-neutral so Anuj can code with Codex, Claude, Gemini or another developer | Owner requested transfer for coding, then explicitly requested generic use across assistants on 2026-10-08 | Confirmed direction; shared DEVELOPMENT_HANDOFF/STARTER_PROMPT and assistant pointer files |
 
 ## 3. Proposed Starting Choices
 
@@ -104,6 +105,8 @@ Review trigger:
 When superseding a material choice, preserve its reason and link to the replacement. Avoid leaving incompatible instructions in different files.
 
 ## 7. Documentation History
+
+- 2026-10-08: published the complete source and handover evidence in draft PR #1; all five GitHub checks passed at remote `3ccb330`. Prepared a tool-neutral development handoff, starter prompt and thin Claude/Gemini pointers to the shared agreement. Browser/mobile/keyboard acceptance remains open. This transfers project context through Git, not live chats, sessions or credentials.
 
 - Initial repository: private café concept README uploaded; no application code.
 - 2026-10-06: expanded into a ten-file planning and startup guide, with explicit proposed scope, setup, design, data operations, roadmap, budget and contribution rules. This entry records documentation work, not completion of the product milestones.

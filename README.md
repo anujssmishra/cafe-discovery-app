@@ -20,6 +20,7 @@ The architecture, budgets, thresholds, and timeline below are proposed starting 
 
 | You want to understand… | Read |
 |---|---|
+| Continue in Codex, Claude, Gemini or another development environment | [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) and [STARTER_PROMPT.md](STARTER_PROMPT.md) |
 | Phases, agile cadence, agent roles and Definition of Done | [AGILE_DELIVERY.md](AGILE_DELIVERY.md) |
 | Selected Sprint 1 stories, dependencies and actual progress | [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) |
 | Verification evidence and remaining quality checks | [QUALITY_REVIEW.md](QUALITY_REVIEW.md) |

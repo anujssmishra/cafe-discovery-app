@@ -1,6 +1,8 @@
 # Agent Working Agreement
 
-Last updated: 2026-10-07. Applies to work in this repository. Follow the user's current instructions and the active assignment; this file documents collaboration rules and does not expand user authorization.
+Last updated: 2026-10-08. Applies to human developers and any coding assistant working in this repository. Follow the user's current instructions and the active assignment; this file documents collaboration rules and does not expand user authorization.
+
+For a new project session, read [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) for the verified branch/checkpoint and next work, then the documents relevant to the active task. [STARTER_PROMPT.md](STARTER_PROMPT.md) provides an optional tool-neutral continuation prompt. `CLAUDE.md` and `GEMINI.md` point here; all tools share these same project rules. Prior live agent sessions are not assumed to exist. Anuj is now also coding directly: preserve his edits and coordinate file ownership before parallel changes.
 
 ## Product and Current Increment
 
