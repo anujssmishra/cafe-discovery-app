@@ -1,7 +1,10 @@
 from decimal import Decimal
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.http import HttpResponseRedirect
+from cafes.models import Cafe
 from .forms import CustomUserCreationForm
 from .models import TasteProfile
 
@@ -48,3 +51,30 @@ def register(request):
     else:
         form = CustomUserCreationForm()
     return render(request, "registration/register.html", {"form": form})
+
+@require_POST
+@login_required
+def toggle_favourite(request, cafe_id):
+    cafe = get_object_or_404(Cafe, id=cafe_id, is_active=True)
+    profile, _ = TasteProfile.objects.get_or_create(user=request.user)
+    
+    if profile.favourites.filter(id=cafe.id).exists():
+        profile.favourites.remove(cafe)
+    else:
+        if profile.favourites.count() >= 3:
+            # Maybe show an error message using messages framework, but for now just don't add
+            from django.contrib import messages
+            messages.error(request, "You can only save up to 3 cafés to your shortlist.")
+        else:
+            profile.favourites.add(cafe)
+        
+    # Also update the session to keep it in sync for the matching engine
+    prefs = request.session.get("preferences", {})
+    prefs["favourites"] = [str(f.id) for f in profile.favourites.all()]
+    request.session["preferences"] = prefs
+    
+    # Redirect back to where the user came from, or catalogue
+    next_url = request.POST.get("next") or request.META.get('HTTP_REFERER')
+    if next_url:
+        return HttpResponseRedirect(next_url)
+    return redirect("discovery:catalogue")

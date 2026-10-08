@@ -6,8 +6,27 @@
   <header class="detail-heading">
     <p class="eyebrow">{{ cafe.area.name }}{% if cafe.area.city %} · {{ cafe.area.city }}{% endif %}</p>
     {% if cafe.is_demo %}<span class="demo-badge">Synthetic example · Fictional café</span>{% endif %}
-    <h1>{{ cafe.name }}</h1>
-    {% if cafe.summary %}<p class="detail-summary">{{ cafe.summary }}</p>{% endif %}
+    
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <h1 style="margin-bottom: 0;">{{ cafe.name }}</h1>
+      {% if user.is_authenticated %}
+        <form action="{% url 'members:toggle_favourite' cafe.id %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="button" style="background:none; border:2px solid var(--interactive); padding:0.5rem 1rem; border-radius: 4px; font-weight: bold; cursor:pointer;">
+            {% with cafe_id_str=cafe.id|stringformat:"s" %}
+              {% if cafe_id_str in request.session.preferences.favourites %}
+                ♥ Saved to Shortlist
+              {% else %}
+                ♡ Save to Shortlist
+              {% endif %}
+            {% endwith %}
+          </button>
+        </form>
+      {% endif %}
+    </div>
+
+    {% if cafe.summary %}<p class="detail-summary" style="margin-top: 1rem;">{{ cafe.summary }}</p>{% endif %}
   </header>
   {% if cafe.is_demo %}<div class="detail-demo-note"><strong>This is test content.</strong> The café, address, offerings and any evidence shown here are synthetic examples. Do not use them to plan a visit.</div>{% endif %}
   <div class="detail-layout">

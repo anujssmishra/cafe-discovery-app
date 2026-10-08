@@ -38,6 +38,15 @@
   <div class="build-notice"><div class="shell">Early catalogue build · Information may be incomplete. Check the source and dates on each listing.</div></div>
   {% endif %}
   <main id="main-content" tabindex="-1">
+    {% if messages %}
+      <div class="shell" style="margin-top: 1rem;">
+        {% for message in messages %}
+          <div class="form-errors" role="alert" style="padding: 0.5rem; background: #fff3cd; color: #856404; border-radius: 4px; margin-bottom: 0.5rem;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
   <footer class="site-footer shell">

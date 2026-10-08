@@ -59,3 +59,50 @@ class RegistrationAndLoginTests(TestCase):
         profile.refresh_from_db()
         self.assertEqual(profile.drink, "filter")
         self.assertEqual(profile.budget, Decimal("5.00"))
+
+    def test_toggle_favourite(self):
+        user = User.objects.create_user(username="favuser", password="password123")
+        self.client.login(username="favuser", password="password123")
+        
+        from cafes.models import Area, Cafe
+        area = Area.objects.create(name="Fav Area", slug="fav-area")
+        cafe = Cafe.objects.create(name="Fav Cafe", area=area)
+        
+        # Add favourite
+        response = self.client.post(reverse("members:toggle_favourite", args=[cafe.id]))
+        self.assertEqual(response.status_code, 302) # redirect
+        
+        profile = TasteProfile.objects.get(user=user)
+        self.assertIn(cafe, profile.favourites.all())
+        
+        # Check session sync
+        self.assertIn(str(cafe.id), self.client.session["preferences"]["favourites"])
+        
+        # Remove favourite
+        response = self.client.post(reverse("members:toggle_favourite", args=[cafe.id]))
+        self.assertNotIn(cafe, profile.favourites.all())
+        self.assertNotIn(str(cafe.id), self.client.session["preferences"]["favourites"])
+
+    def test_max_three_favourites(self):
+        user = User.objects.create_user(username="favuser3", password="password123")
+        self.client.login(username="favuser3", password="password123")
+        from cafes.models import Area, Cafe
+        area = Area.objects.create(name="Area 3", slug="area-3")
+        c1 = Cafe.objects.create(name="C1", area=area)
+        c2 = Cafe.objects.create(name="C2", area=area)
+        c3 = Cafe.objects.create(name="C3", area=area)
+        c4 = Cafe.objects.create(name="C4", area=area)
+        
+        self.client.post(reverse("members:toggle_favourite", args=[c1.id]))
+        self.client.post(reverse("members:toggle_favourite", args=[c2.id]))
+        self.client.post(reverse("members:toggle_favourite", args=[c3.id]))
+        response = self.client.post(reverse("members:toggle_favourite", args=[c4.id]))
+        
+        profile = TasteProfile.objects.get(user=user)
+        self.assertEqual(profile.favourites.count(), 3)
+        self.assertNotIn(c4, profile.favourites.all())
+        
+        # Test messages (check if message was sent)
+        messages = list(response.wsgi_request._messages)
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "You can only save up to 3 cafés to your shortlist.")
