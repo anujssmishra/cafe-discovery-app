@@ -80,3 +80,19 @@ The local build uses PHP 5.2 LTS, responsive HTML/CSS and SQLite, with PHP 3.12/
 
 Update the project status and decision log when assumptions become decisions or features become implemented. Keep setup commands aligned with actual code. Never present proposed capabilities as completed work. The maintenance rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+
+## Agent Prompts for PHP Rebuild
+
+To distribute the work of the PHP rewrite among parallel agents without causing file conflicts, copy and paste these exact prompts when launching your agents:
+
+**1. Database Agent (CAFE-102):**
+> "You are the Database Agent. Your task is to execute CAFE-102. Look at the legacy Django models in legacy_django/cafes/models.py and create raw MySQL .sql schema files for the Area, Cafe, and CafeOffering tables. Place your .sql files strictly inside the php_app/schema/ directory. Do not write PHP code."
+
+**2. Backend API Agent (CAFE-103):**
+> "You are the Backend Agent. Your task is to execute CAFE-103. Create the core PHP controllers and database connection logic using PDO. Place your db.php connection file in php_app/includes/ and create the main routing file index.php in php_app/public/ that handles fetching cafes from the database. Output JSON or pass variables to views. Do not write HTML structures."
+
+**3. Frontend UI Agent (CAFE-104):**
+> "You are the Frontend Agent. Your task is to execute CAFE-104. Look at the legacy Django HTML templates in legacy_django/templates/ and convert them into native PHP view files. Replace Django {% block %} tags with standard PHP include tags. Place your UI files strictly inside the php_app/templates/ directory. Do not touch the database schema."
+
+**4. Data Seed Agent (CAFE-105):**
+> "You are the Data Agent. Your task is to execute CAFE-105. Look at the verified pilot data inside legacy_django/cafes/management/commands/seed_lucknow_cafes.py and write a new seed.php CLI script. Place it in php_app/scripts/. The script should connect to MySQL using PDO and insert those 19 real Lucknow cafes into the database."
