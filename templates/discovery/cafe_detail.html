@@ -63,6 +63,11 @@
       <h2 id="location-heading">The address</h2>
       <address>{% if cafe.address %}{{ cafe.address|linebreaksbr }}{% else %}Address not recorded{% endif %}</address>
       <p class="location-area">{{ cafe.area.name }}{% if cafe.area.city %}<br>{{ cafe.area.city }}{% endif %}</p>
+      {% if cafe.directions_url %}
+      <a class="button button-secondary external-link" href="{{ cafe.directions_url }}" target="_blank" rel="noopener noreferrer nofollow" style="margin-bottom:0.5rem; display:block; text-align:center;">Get Directions <span aria-hidden="true">↗</span></a>
+      {% else %}
+      <p class="external-note">Directions unavailable.</p>
+      {% endif %}
       {% if website_url and not cafe.is_demo %}<a class="button button-secondary external-link" href="{{ website_url }}" rel="noopener noreferrer nofollow">Visit café website <span aria-hidden="true">↗</span></a><p class="external-note">Opens the external website recorded for this café.</p>{% endif %}
       <div class="location-note">{% if cafe.is_demo %}Fictional address for development only.{% elif cafe.is_current %}Check the café’s latest information before travelling.{% else %}This address has incomplete verification. Confirm it before travelling.{% endif %}</div>
     </aside>

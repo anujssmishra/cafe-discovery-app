@@ -184,7 +184,8 @@ def map_data(request):
                     "id": str(cafe.id),
                     "name": cafe.name,
                     "url": reverse("discovery:cafe_detail", args=[cafe.id]),
-                    "address": cafe.address
+                    "address": cafe.address,
+                    "directions_url": cafe.directions_url
                 }
             })
             

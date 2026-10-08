@@ -88,6 +88,7 @@
       <p id="dialog-cafe-address" style="margin-bottom: 1.5rem; color: #555;"></p>
       <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
         <a id="dialog-cafe-link" href="#" class="button button-primary">View full details</a>
+        <a id="dialog-cafe-directions" href="#" target="_blank" rel="noopener noreferrer nofollow" class="button button-secondary" style="display:none;">Get Directions ↗</a>
         
         {% if request.user.is_authenticated %}
         <a id="dialog-cafe-visit" href="#" class="button button-secondary">Log Visit</a>
@@ -167,6 +168,7 @@
     var dLink = document.getElementById('dialog-cafe-link');
     var dVisit = document.getElementById('dialog-cafe-visit');
     var dClose = document.getElementById('dialog-close');
+    var dDirections = document.getElementById('dialog-cafe-directions');
     
     var dSaveForm = document.getElementById('dialog-cafe-save-form');
     
@@ -179,6 +181,16 @@
       dName.textContent = cafe.name;
       dAddress.textContent = cafe.address;
       dLink.href = cafe.url;
+      
+      if (dDirections) {
+        if (cafe.directions_url) {
+          dDirections.href = cafe.directions_url;
+          dDirections.style.display = 'inline-block';
+        } else {
+          dDirections.style.display = 'none';
+        }
+      }
+      
       if (dVisit) {
         dVisit.href = "{% url 'members:visits' %}?cafe=" + cafe.id;
       }
@@ -250,7 +262,8 @@
                   id: f.properties.id,
                   name: f.properties.name,
                   address: f.properties.address,
-                  url: f.properties.url
+                  url: f.properties.url,
+                  directions_url: f.properties.directions_url
                 });
               });
               marker.addTo(group);

@@ -167,6 +167,16 @@ class Cafe(models.Model):
         return self.latitude is not None and self.longitude is not None
 
     @property
+    def directions_url(self):
+        import urllib.parse
+        base_url = "https://www.google.com/maps/dir/?api=1&destination="
+        if self.has_coordinates:
+            return f"{base_url}{self.latitude},{self.longitude}"
+        if self.address:
+            return f"{base_url}{urllib.parse.quote(self.address)}"
+        return None
+
+    @property
     def is_current(self):
         return bool(self.source.strip()) and evidence_is_current(self.checked_on)
 
