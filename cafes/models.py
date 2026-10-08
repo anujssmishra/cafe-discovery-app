@@ -189,7 +189,7 @@ class Cafe(models.Model):
         """Checked worldwide count, never a claim about independent ownership."""
         return (
             self.brand_location_count is not None
-            and 1 <= self.brand_location_count <= 5
+            and 1 <= self.brand_location_count <= 6
             and self.brand_count_scope == "worldwide"
             and bool(self.brand_count_source.strip())
             and evidence_is_current(self.brand_count_checked_on)

@@ -81,10 +81,11 @@
     </div>
     
     <dialog id="cafe-preview-dialog" aria-labelledby="dialog-cafe-name" style="max-width: 600px; padding: 2rem; border-radius: 8px; border: 1px solid #ccc; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
         <h2 id="dialog-cafe-name" style="margin: 0;"></h2>
         <button id="dialog-close" class="button" aria-label="Close dialog" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 0;">&times;</button>
       </div>
+      <div id="dialog-cafe-badges" style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;"></div>
       <p id="dialog-cafe-address" style="margin-bottom: 1.5rem; color: #555;"></p>
       <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
         <a id="dialog-cafe-link" href="#" class="button button-primary">View full details</a>
@@ -169,6 +170,7 @@
     var dVisit = document.getElementById('dialog-cafe-visit');
     var dClose = document.getElementById('dialog-close');
     var dDirections = document.getElementById('dialog-cafe-directions');
+    var dBadges = document.getElementById('dialog-cafe-badges');
     
     var dSaveForm = document.getElementById('dialog-cafe-save-form');
     
@@ -181,6 +183,24 @@
       dName.textContent = cafe.name;
       dAddress.textContent = cafe.address;
       dLink.href = cafe.url;
+      
+      if (dBadges) {
+        dBadges.innerHTML = '';
+        if (cafe.is_independent) {
+          var ind = document.createElement('span');
+          ind.className = 'badge';
+          ind.style.cssText = 'background:#e8f5e9; color:#1b5e20; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.875rem; font-weight:bold;';
+          ind.textContent = 'Independent';
+          dBadges.appendChild(ind);
+        }
+        if (cafe.is_small_group) {
+          var sg = document.createElement('span');
+          sg.className = 'badge';
+          sg.style.cssText = 'background:#e3f2fd; color:#0d47a1; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.875rem; font-weight:bold;';
+          sg.textContent = 'Small group';
+          dBadges.appendChild(sg);
+        }
+      }
       
       if (dDirections) {
         if (cafe.directions_url) {
@@ -263,7 +283,9 @@
                   name: f.properties.name,
                   address: f.properties.address,
                   url: f.properties.url,
-                  directions_url: f.properties.directions_url
+                  directions_url: f.properties.directions_url,
+                  is_independent: f.properties.is_independent,
+                  is_small_group: f.properties.is_small_group
                 });
               });
               marker.addTo(group);

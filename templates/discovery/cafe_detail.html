@@ -6,7 +6,10 @@
   <header class="detail-heading">
     <p class="eyebrow">{{ cafe.area.name }}{% if cafe.area.city %} · {{ cafe.area.city }}{% endif %}</p>
     {% if cafe.is_demo %}<span class="demo-badge">Synthetic example · Fictional café</span>{% endif %}
-    
+    <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      {% if cafe.is_verified_independent %}<span class="badge" style="background:#e8f5e9; color:#1b5e20; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.875rem; font-weight:bold;">Independent</span>{% endif %}
+      {% if cafe.is_small_group %}<span class="badge" style="background:#e3f2fd; color:#0d47a1; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.875rem; font-weight:bold;">Small group</span>{% endif %}
+    </div>
     <div style="display: flex; justify-content: space-between; align-items: baseline;">
       <h1 style="margin-bottom: 0;">{{ cafe.name }}</h1>
       {% if user.is_authenticated %}

@@ -1,6 +1,10 @@
 <article class="cafe-card">
   <div class="card-top"><span class="card-cup">{% include 'includes/cup.html' %}</span><span class="area-label">{{ cafe.area.name }}</span></div>
   {% if cafe.is_demo %}<span class="demo-badge">Synthetic example</span>{% endif %}
+  <div style="margin-bottom: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    {% if cafe.is_verified_independent %}<span class="badge" style="background:#e8f5e9; color:#1b5e20; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:bold;">Independent</span>{% endif %}
+    {% if cafe.is_small_group %}<span class="badge" style="background:#e3f2fd; color:#0d47a1; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:bold;">Small group</span>{% endif %}
+  </div>
   <div style="display: flex; justify-content: space-between; align-items: baseline;">
     <h3 style="margin: 0;"><a href="{% url 'discovery:cafe_detail' cafe.pk %}">{{ cafe.name }}</a></h3>
     {% if user.is_authenticated %}
