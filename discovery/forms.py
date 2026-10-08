@@ -42,12 +42,26 @@ class PreferencesForm(forms.Form):
         widget=forms.CheckboxSelectMultiple,
         label="Essential amenities",
     )
+    preferred_amenities = forms.MultipleChoiceField(
+        choices=CafeObservation.Attribute.choices,
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label="Preferred amenities",
+    )
     favourites = forms.ModelMultipleChoiceField(
         queryset=Cafe.objects.filter(is_active=True),
         required=False,
         widget=forms.SelectMultiple,
         label="Favourite cafés (up to 3)",
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        essentials = set(cleaned_data.get("essential_amenities") or [])
+        preferred = set(cleaned_data.get("preferred_amenities") or [])
+        if essentials & preferred:
+            self.add_error("preferred_amenities", "An amenity cannot be both essential and preferred.")
+        return cleaned_data
 
     def clean_favourites(self):
         favs = self.cleaned_data.get("favourites")

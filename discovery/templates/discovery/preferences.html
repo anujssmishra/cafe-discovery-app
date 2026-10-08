@@ -50,10 +50,16 @@
     </fieldset>
 
     <fieldset>
-      <legend>Essential Amenities</legend>
+      <legend>Amenities</legend>
       <div class="form-group checkbox-group">
+        <label>Essential Amenities</label>
         {{ form.essential_amenities }}
         {{ form.essential_amenities.errors }}
+      </div>
+      <div class="form-group checkbox-group">
+        <label>Preferred Amenities</label>
+        {{ form.preferred_amenities }}
+        {{ form.preferred_amenities.errors }}
       </div>
     </fieldset>
 

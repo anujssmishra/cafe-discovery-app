@@ -2,6 +2,11 @@
   <div class="card-top"><span class="card-cup">{% include 'includes/cup.html' %}</span><span class="area-label">{{ cafe.area.name }}</span></div>
   {% if cafe.is_demo %}<span class="demo-badge">Synthetic example</span>{% endif %}
   <h3><a href="{% url 'discovery:cafe_detail' cafe.pk %}">{{ cafe.name }}</a></h3>
+  {% if has_preferences %}
+  <div class="match-explanation" style="background: #f0f7f4; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 4px; font-size: 0.9em;">
+    <strong>Match ({{ cafe.match_score|default:0|floatformat:2 }}):</strong> {{ cafe.match_explanation }}
+  </div>
+  {% endif %}
   <p class="card-summary">{% if cafe.summary %}{{ cafe.summary|truncatechars:155 }}{% else %}A café in {{ cafe.area.name }}. More details have not been recorded yet.{% endif %}</p>
   <p class="card-address">{% if cafe.address %}{{ cafe.address }}{% else %}Address not recorded{% endif %}</p>
   <ul class="offering-tags" aria-label="Recorded drink offerings">

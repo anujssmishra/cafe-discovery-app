@@ -72,8 +72,21 @@ def catalogue(request):
         if selected_area:
             queryset = queryset.filter(area=selected_area)
 
-    queryset = queryset.order_by(Lower("name"), "id")
-    page = Paginator(queryset, 12).get_page(request.GET.get("page"))
+    preferences = request.session.get("preferences", {})
+    from .matching import rank_cafes
+    
+    # We must prefetch observations for ranking
+    queryset = queryset.prefetch_related("observations")
+    cafes_list = list(queryset.order_by(Lower("name"), "id"))
+    
+    has_active_prefs = any(preferences.get(k) for k in ["drink", "budget", "essential_amenities", "preferred_amenities"])
+    
+    if has_active_prefs:
+        cafes_list, is_empty_due_to_constraints = rank_cafes(cafes_list, preferences)
+        if is_empty_due_to_constraints:
+            errors.append("No cafés match your essential requirements or hard budget. Try clearing or changing your preferences.")
+            
+    page = Paginator(cafes_list, 12).get_page(request.GET.get("page"))
     active_params = {key: value for key, value in (("q", q), ("area", raw_area)) if value}
     query_string = urlencode(active_params)
     context = {
@@ -91,6 +104,7 @@ def catalogue(request):
         "result_count": page.paginator.count,
         "query_string": query_string + "&" if query_string else "",
         "has_filters": bool(raw_q or raw_area),
+        "has_preferences": has_active_prefs,
         "demo_mode": getattr(settings, "DEMO_MODE", False),
     }
     return render(request, "discovery/catalogue.html", context)
