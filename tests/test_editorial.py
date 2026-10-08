@@ -87,7 +87,7 @@ class EditorialReviewTests(TestCase):
             review.full_clean()
 
     def test_view_displays_published_reviews(self):
-        review = EditorialReview.objects.create(
+        EditorialReview.objects.create(
             cafe=self.cafe,
             curator=self.curator,
             display_name="Expert",
@@ -104,7 +104,7 @@ class EditorialReviewTests(TestCase):
         self.assertContains(response, "Coffee:</strong> 4/5")
 
     def test_view_hides_draft_reviews(self):
-        review = EditorialReview.objects.create(
+        EditorialReview.objects.create(
             cafe=self.cafe,
             curator=self.curator,
             display_name="Secret Expert",

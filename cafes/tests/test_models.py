@@ -122,7 +122,7 @@ class CatalogueModelTests(TestCase):
     def test_observation_unique_per_attribute_and_enforces_choices(self):
         from cafes.models import CafeObservation
 
-        obs = CafeObservation.objects.create(cafe=self.cafe, attribute="wifi", value="yes")
+        CafeObservation.objects.create(cafe=self.cafe, attribute="wifi", value="yes")
         with self.assertRaises(IntegrityError), transaction.atomic():
             CafeObservation.objects.create(cafe=self.cafe, attribute="wifi", value="no")
         with self.assertRaises(IntegrityError), transaction.atomic():

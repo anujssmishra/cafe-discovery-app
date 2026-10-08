@@ -321,7 +321,7 @@ class CatalogueAcceptanceTests(TestCase):
 
     def test_map_data_endpoint(self):
         a = Area.objects.create(name="Map Area", slug="map-area", is_active=True)
-        c1 = Cafe.objects.create(
+        Cafe.objects.create(
             name="Map Cafe 1", area=a, is_active=True, latitude=51.5074, longitude=-0.1278
         )
 

@@ -26,7 +26,7 @@ class RegistrationAndLoginTests(TestCase):
         session.save()
 
         # Register user
-        response = self.client.post(
+        self.client.post(
             reverse("members:register"),
             {
                 "username": "newuser",
@@ -117,7 +117,7 @@ class RegistrationAndLoginTests(TestCase):
 
     def test_visit_creation_and_authorization(self):
         user1 = User.objects.create_user(username="u1", password="pw")
-        user2 = User.objects.create_user(username="u2", password="pw")
+        User.objects.create_user(username="u2", password="pw")
         from cafes.models import Area, Cafe
 
         area = Area.objects.create(name="Area", slug="area")
@@ -206,7 +206,7 @@ class RegistrationAndLoginTests(TestCase):
         self.assertNotEqual(consent.id, consent2.id)  # Auditable log
 
     def test_account_data_export_and_delete(self):
-        user = User.objects.create_user(username="u4", password="pw")
+        User.objects.create_user(username="u4", password="pw")
         self.client.login(username="u4", password="pw")
 
         # Test Export
