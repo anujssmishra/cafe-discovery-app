@@ -159,3 +159,61 @@ class RegistrationAndLoginTests(TestCase):
         response = self.client.post(reverse("members:visit_delete", args=[visit.id]))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Visit.objects.count(), 0)
+
+    def test_account_data_consent(self):
+        user = User.objects.create_user(username="u3", password="pw")
+        self.client.login(username="u3", password="pw")
+        
+        # Test default is False
+        response = self.client.get(reverse("members:account_data"))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["is_contributing"])
+        
+        # Opt-in
+        response = self.client.post(reverse("members:account_data"), {
+            "update_consent": "1",
+            "community_contribution": "on"
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        from members.models import ConsentRecord
+        consent = ConsentRecord.objects.filter(user=user, purpose="community_signal").order_by("-timestamp").first()
+        self.assertTrue(consent.choice)
+        self.assertIsNone(consent.withdrawal_time)
+        
+        # Opt-out
+        response = self.client.post(reverse("members:account_data"), {
+            "update_consent": "1"
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        consent2 = ConsentRecord.objects.filter(user=user, purpose="community_signal").order_by("-timestamp").first()
+        self.assertFalse(consent2.choice)
+        self.assertIsNotNone(consent2.withdrawal_time)
+        self.assertNotEqual(consent.id, consent2.id) # Auditable log
+
+    def test_account_data_export_and_delete(self):
+        user = User.objects.create_user(username="u4", password="pw")
+        self.client.login(username="u4", password="pw")
+        
+        # Test Export
+        response = self.client.post(reverse("members:account_data"), {
+            "export_data": "1"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], "application/json")
+        import json
+        data = json.loads(response.content)
+        self.assertEqual(data["user"]["username"], "u4")
+        self.assertIn("profile", data)
+        self.assertIn("visits", data)
+        self.assertIn("consents", data)
+        
+        # Test Delete Account
+        response = self.client.post(reverse("members:account_data"), {
+            "delete_account": "1"
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        # Verify user is deleted
+        self.assertFalse(User.objects.filter(username="u4").exists())

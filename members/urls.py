@@ -9,5 +9,6 @@ urlpatterns = [
     path("visits/", views.visit_list, name="visits"),
     path("visits/<uuid:visit_id>/edit/", views.visit_edit, name="visit_edit"),
     path("visits/<uuid:visit_id>/delete/", views.visit_delete, name="visit_delete"),
+    path("account/data/", views.account_data, name="account_data"),
     path("", include("django.contrib.auth.urls")),
 ]

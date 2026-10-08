@@ -119,3 +119,91 @@ def visit_delete(request, visit_id):
     visit = get_object_or_404(Visit, id=visit_id, user=request.user)
     visit.delete()
     return redirect("members:visits")
+
+@login_required
+def account_data(request):
+    # Handle community contribution consent
+    from .models import ConsentRecord, Visit, TasteProfile
+    from django.utils import timezone
+    from django.contrib.auth import logout
+    from django.contrib.auth.models import User
+    from django.http import JsonResponse
+    import json
+    
+    current_consent = ConsentRecord.objects.filter(
+        user=request.user, 
+        purpose="community_signal"
+    ).order_by("-timestamp").first()
+    
+    is_contributing = current_consent.choice if current_consent else False
+    
+    if request.method == "POST":
+        if "update_consent" in request.POST:
+            new_choice = request.POST.get("community_contribution") == "on"
+            if new_choice != is_contributing:
+                ConsentRecord.objects.create(
+                    user=request.user,
+                    purpose="community_signal",
+                    notice_version="1.0",
+                    choice=new_choice,
+                    withdrawal_time=timezone.now() if not new_choice else None
+                )
+                from django.contrib import messages
+                messages.success(request, "Your privacy settings have been updated.")
+                return redirect("members:account_data")
+        elif "export_data" in request.POST:
+            # Gather data
+            profile = getattr(request.user, "taste_profile", None)
+            visits = Visit.objects.filter(user=request.user).order_by("visit_date")
+            consents = ConsentRecord.objects.filter(user=request.user).order_by("timestamp")
+            
+            data = {
+                "user": {
+                    "username": request.user.username,
+                    "email": request.user.email,
+                    "date_joined": request.user.date_joined.isoformat()
+                },
+                "profile": {
+                    "drink": profile.drink if profile else "",
+                    "budget": str(profile.budget) if profile and profile.budget else None,
+                    "essential_amenities": profile.essential_amenities if profile else [],
+                    "preferred_amenities": profile.preferred_amenities if profile else [],
+                    "favourites": [str(c.id) for c in profile.favourites.all()] if profile else []
+                },
+                "visits": [{
+                    "id": str(v.id),
+                    "cafe_id": str(v.cafe_id),
+                    "visit_date": v.visit_date.isoformat(),
+                    "drink": v.drink,
+                    "brewing_method": v.brewing_method,
+                    "purpose": v.purpose,
+                    "spend_band": v.spend_band,
+                    "coffee_rating": v.coffee_rating,
+                    "vibe_rating": v.vibe_rating,
+                    "would_return": v.would_return
+                } for v in visits],
+                "consents": [{
+                    "purpose": c.purpose,
+                    "notice_version": c.notice_version,
+                    "choice": c.choice,
+                    "timestamp": c.timestamp.isoformat(),
+                    "withdrawal_time": c.withdrawal_time.isoformat() if c.withdrawal_time else None
+                } for c in consents]
+            }
+            
+            response = JsonResponse(data, json_dumps_params={'indent': 2})
+            response['Content-Disposition'] = f'attachment; filename="cafediscovery_{request.user.username}_data.json"'
+            return response
+        elif "delete_account" in request.POST:
+            # In a real app we might ask for password confirmation
+            user = request.user
+            logout(request)
+            user.delete()
+            # Deletion cascades to profile, visits, and consents.
+            from django.contrib import messages
+            messages.success(request, "Your account and all associated data have been permanently deleted.")
+            return redirect("discovery:catalogue")
+            
+    return render(request, "members/account_data.html", {
+        "is_contributing": is_contributing
+    })

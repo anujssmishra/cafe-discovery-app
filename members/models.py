@@ -41,3 +41,17 @@ class Visit(models.Model):
         
     def __str__(self):
         return f"{self.user.username} visited {self.cafe.name} on {self.visit_date}"
+
+class ConsentRecord(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="consents")
+    purpose = models.CharField(max_length=100)
+    notice_version = models.CharField(max_length=50)
+    choice = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    withdrawal_time = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        pass
+
+    def __str__(self):
+        return f"{self.user.username} - {self.purpose} (v{self.notice_version}): {self.choice}"
