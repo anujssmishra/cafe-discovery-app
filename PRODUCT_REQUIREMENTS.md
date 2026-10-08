@@ -1,12 +1,20 @@
 # Product Requirements
 
-Last updated: 2026-10-06. Status: proposed MVP specification; no features are implemented.
+Last updated: 2026-10-07. Status: full pilot specification with a first local catalogue increment under integration review. Most requirements below remain future scope; presence of a related model or page does not complete the entire requirement.
+
+## Current Slice and Acceptance Boundary
+
+The source includes catalogue models/admin, a guarded fictional seed, active-only guest name/area filtering, pagination, full UUID detail pages and an about page. It covers the local catalogue portions of P1/P7/P10/P13 and F03/F04/F09. List-area chips also provide part of the later F02 interaction; they do not recenter a map. There are no product member accounts, preferences, personalized matching, saves/visits, maps, detail dialogs, directions or editorial publication yet.
+
+Sprint 1's selected stories and their acceptance criteria are in [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md). Its goal is a guest-searchable synthetic catalogue and reproducible local setup. Full pilot release still depends on the remaining phases in [AGILE_DELIVERY.md](AGILE_DELIVERY.md). Check [QUALITY_REVIEW.md](QUALITY_REVIEW.md) for actual test/browser evidence; source availability alone does not establish a completed story.
 
 ## 1. Product Goal
 
 Help an adult café visitor choose a café suited to their drinks, budget, atmosphere, location, and current purpose. A successful first version provides useful recommendations even with few users and makes the basis of each recommendation understandable.
 
 ## 2. Scope and Roles
+
+The role table is the target pilot design. Guest catalogue browsing and staff catalogue editing are the roles supported by the initial source; member tools and correction/audit workflows are future work.
 
 | Role | Allowed activity |
 |---|---|
@@ -18,6 +26,8 @@ Help an adult café visitor choose a café suited to their drinks, budget, atmos
 The initial pilot is proposed for adults aged 18 and over. Eligibility handling and notices must be decided before recruitment. Café owner self-service and social connections are later work.
 
 ## 3. Main User Journeys
+
+These describe the intended pilot journeys. The current guest journey is limited to alphabetical catalogue search by name/area and full details; it does not yet compute a personal match.
 
 ### A. Discover a café
 
@@ -60,7 +70,7 @@ An authorized curator can add original visit notes, optional coffee/experience r
 | P13 | Local collection and about | Eligibility follows confirmed, dated, sourced location-count policy; unknown counts receive no count-based badge; independent ownership requires separate evidence and defaults to unknown; selection method, curator context and correction channel are explained |
 | P14 | Directions | Validated destination in an external provider link; no automatic origin coordinates; checked address fallback or unavailable state; provider clearly identified |
 
-See F01–F09 in [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md) for the adaptation and proposed trip/local-collection definitions. These are planned pilot requirements, not currently available features.
+See F01–F09 in [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md) for the adaptation and proposed trip/local-collection definitions. This is the full pilot acceptance contract; the first catalogue slice does not complete all criteria for any broader feature it touches.
 
 ## 5. Essential Constraints and Unknown Information
 
@@ -109,4 +119,4 @@ Do not call the MVP ready until the principal journeys work on mobile, authoriza
 
 ## 10. Related Documents
 
-[TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) specifies the data and matching approach. [GETTING_STARTED.md](GETTING_STARTED.md) gives the starting steps. Changes to scope belong in [DECISIONS.md](DECISIONS.md).
+[TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) distinguishes current models/routes from the future matching approach. [GETTING_STARTED.md](GETTING_STARTED.md) runs the local source. [AGILE_DELIVERY.md](AGILE_DELIVERY.md) and [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) order implementation and record acceptance. Changes to scope belong in [DECISIONS.md](DECISIONS.md).

@@ -1,15 +1,29 @@
 # Technical Design
 
-Last updated: 2026-10-06. Status: proposed architecture; none of the components below are implemented.
+Last updated: 2026-10-07. Status: first local catalogue source under integration review, with the remaining pilot architecture proposed. [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) and [QUALITY_REVIEW.md](QUALITY_REVIEW.md) record actual verification and publication evidence.
+
+## Current Implementation Boundary
+
+| Area | Present in the current source | Remaining scope |
+|---|---|---|
+| Foundation | Django 5.2.18; locally checked on Python 3.12.14, with 3.12/3.13 CI targets; server templates and CSS; SQLite; a single environment-configured `config/settings.py` | PostgreSQL, hosted deployment and provider-specific production operations |
+| Catalogue | `Area`, UUID `Cafe`, `CafeOffering`; admin; optional coordinates/prices; source/date and separate branch-count/ownership fields | Factual amenities, corrections, real checked pilot records and audited publication workflow |
+| Local demonstration | Guarded, repeatable `seed_demo`; eight fictional cafés, sixteen offerings and two fictional areas; no seeded accounts | Real café sourcing and consent-aware participant work |
+| Guest discovery | Active records only; trimmed case-insensitive name search, area selection/chips, alphabetical results, twelve-result pagination, UUID details and about page | Preferences, T/P/B matching, maps, dialogs and directions |
+| Staff access | Django admin and `setup_catalogue_editors`, which sets twelve model permissions without creating users or granting staff status | Deployment identity procedures and future editorial roles |
+| Member and editorial | None of the product-specific profile, bookmark, visit, consent or editorial models yet | Private accounts/data controls, nullable feedback, curator publication and community signal |
+| Quality | Model, command, admin and independent acceptance tests are included | Check actual execution evidence; remote CI and browser/pilot validation need their own records |
+
+The current settings require a generated `DJANGO_SECRET_KEY` of at least 50 characters. Local work explicitly sets `DJANGO_DEBUG=true`, `DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1` and optionally `DJANGO_DEMO_MODE=true`. Settings read process environment only; `.env` is not loaded automatically. Demo mode is blocked outside debug and public non-demo queries exclude synthetic cafés. A non-debug settings path is not a complete production deployment. See [GETTING_STARTED.md](GETTING_STARTED.md) for commands.
 
 ## 1. Architecture and Boundaries
 
-Start with one Django application serving responsive HTML/CSS and ordinary forms, enhanced with a map and accessible café detail dialogs. Use Django authentication, sessions, CSRF protection, ORM and a restricted admin. This is sufficient to test catalogue discovery and feedback without operating separate mobile apps, an API gateway, background workers or a large-model service.
+The current Django project serves responsive HTML/CSS and ordinary search forms using `cafes` and `discovery` apps. It uses Django's ORM, admin, session and CSRF middleware. Add the planned map, accessible detail dialogs and member feedback in later increments within these framework boundaries; there is no current need for separate mobile apps, an API gateway, background workers or a large-model service.
 
 | Component | Proposed choice | Reason and limit |
 |---|---|---|
-| Runtime | Python 3.13, maintained micro release | Supported by Django 5.2; check compatibility when dependencies change |
-| Framework | Latest maintained Django 5.2 LTS patch | Built-in forms, auth and admin; support ends April 2028, so schedule a version review |
+| Runtime | Python 3.12/3.13 development targets; 3.13 preferred | Supported by Django 5.2; record actual tested micro versions in the quality review |
+| Framework | Django 5.2 LTS, exact maintained patch pinned in `requirements.txt` | Built-in forms, auth and admin; support ends April 2028, so schedule a version review |
 | Presentation | Server-rendered templates, responsive CSS, map/dialog JavaScript | Progressive enhancement; usable list and full detail pages remain available |
 | Database | SQLite only for initial local skeleton; PostgreSQL for pilot | Pilot needs durable multi-user storage and production-equivalent tests |
 | Authentication | Default Django user plus a one-to-one taste profile | Avoid custom authentication requirements during initial migrations |
@@ -19,9 +33,11 @@ Start with one Django application serving responsive HTML/CSS and ordinary forms
 
 PostgreSQL 17 is a proposed starting version if supported by the selected host; choose a maintained version compatible with the actual Django and database-driver releases. Record the final dependencies and versions in code. See [SOURCES.md](SOURCES.md) for framework and deployment references.
 
-The initial default-user flow is username/password authentication. Email-only login, verification and password recovery require deliberate implementation and email delivery; do not assume the default skeleton provides them. Restrict staff roles explicitly and do not grant catalogue editors superuser access.
+Current authentication is staff admin access only. Product member registration/login is future work, proposed initially with Django's default username/password user. Email-only login, verification and password recovery require deliberate implementation and email delivery. The `setup_catalogue_editors` command creates/resets only the Area/Cafe/CafeOffering permissions group; an administrator separately assigns group membership and staff status. Do not grant routine catalogue editors superuser access.
 
 ## 2. Proposed Data Model
+
+This table describes the full target model. Only `Area`, `Cafe` and `CafeOffering` are currently implemented as product models, alongside Django's built-in auth tables. `Area` currently has name, slug, city, active status and display order; map center/bounds are future fields. The source files and committed migrations define the exact current schema.
 
 | Entity | Core fields and responsibility | Important rules |
 |---|---|---|
@@ -43,7 +59,7 @@ Use database constraints for unique relationships and valid values, and migratio
 
 ### Explicit fields and defaults
 
-The following are proposed Django field semantics, not an implemented migration or Prisma schema. See the [official field and constraint references](SOURCES.md#s18-django-fields-and-constraints) before writing models.
+The Cafe count/ownership fields below are present in the first source increment. EditorialReview and Visit fields remain proposed; neither model exists yet. These are Django semantics, not a Prisma schema. See the [official field and constraint references](SOURCES.md#s18-django-fields-and-constraints) when extending models.
 
 | Field | Proposed value/default | Validation and meaning |
 |---|---|---|
@@ -60,6 +76,8 @@ For optional numeric/boolean values, use `null=True` and `blank=True` so both st
 
 Derive count-based small-group eligibility from a checked count of at most five. A filter explicitly promising independent ownership also requires `independence_status == verified_independent` and current evidence. There is no `isIndependent=True` default. Do not persist a second badge boolean that can diverge from its evidence without an explicit invalidation rule.
 
+Current model helpers require a nonempty source and a checking date from today through 30 days ago for current evidence, and use a worldwide count for `is_small_group`. Dates older than 30 days are stale; missing sources/dates, whitespace-only sources and future dates give incomplete evidence. Public café/offerings views display these states. Ownership labels require current separate evidence; stale ownership requests a recheck. Model validation checks date/coordinate ranges and separate ownership evidence; database constraints cover selected invariants. The actual independent/small-group collection/filter and owner policy confirmation remain future work. Programmatic imports must call validation explicitly; saving through the ORM alone does not replace `full_clean()`.
+
 Capture optional drink/brewing context and visit purpose alongside ratings. Keep member ratings separate from curator scores; neither is automatically added to the baseline or R. R still uses the defined consenting repeat/return signal. Missing `would_return` does not count as a positive vote. Compare feedback usefulness and ranking outcomes before proposing new weights or learned signals.
 
 Today's purpose and filters are request/session choices; a profile may provide editable defaults. Optional favourites give quick access to familiar places and can prompt the user to confirm known drink preferences. Do not silently infer a preference from a favourite or visit. The initial score uses explicit preferences; feedback can suggest profile edits and inform later tuning.
@@ -67,6 +85,8 @@ Today's purpose and filters are request/session choices; a profile may provide e
 For this small catalogue, calculate distances in application code and filter against the user's chosen radius. Validate coordinates and handle absent location. Store café coordinates; avoid persisting exact user coordinates. Add spatial indexing only if scale and measured query behaviour justify it.
 
 ### Map, search and detail delivery
+
+Only ordinary server-rendered name/area search, list-area chips and full detail URLs exist now. The remaining map/dialog behaviour in this subsection is planned. The current query rejects unavailable area values and searches longer than 100 characters, preserves valid filters across pagination, and excludes inactive cafés and inactive areas. Browser GPS and JavaScript are unnecessary for this slice.
 
 Use one filtered queryset/result snapshot for list items and map markers. Apply active/area/name/essential filters before serialization, so a marker cannot bypass a requirement or reveal an archived café. Keep café UUIDs consistent between markers, list entries, dialogs and `/cafes/<uuid>/` pages. If live map refresh is needed, add the narrow read endpoint below; a separate general API is not required.
 
@@ -142,9 +162,18 @@ Create explanations directly from the features used: a confirmed drink, a select
 
 Version the score configuration and record the version alongside test/pilot results. Compare the baseline against a simple location-and-purpose list before increasing complexity. Experiment changes must preserve essential filters and consent handling.
 
-## 4. Proposed Web Routes
+## 4. Web Routes: Current and Planned
 
-These are interface plans, not existing endpoints. Prefer server-rendered forms first; add a JSON API only when an actual client needs it.
+The four current routes are listed below. They serve the catalogue/admin increment only; product member routes and JSON/map endpoints remain planned. Prefer server-rendered forms first; add a JSON API only when an actual client needs it.
+
+| Current route | Methods | Current behaviour |
+|---|---|---|
+| `/` | GET, HEAD | Public alphabetical list with validated `q`, `area` and `page` inputs; twelve results per page |
+| `/cafes/<uuid>/` | GET, HEAD | Active café in an active area; hidden demo/inactive/missing records return 404 |
+| `/about/` | GET, HEAD | Project purpose, current limitations and fictional-data notice |
+| `/admin/` | Django admin methods | Authorized staff and model permissions; catalogue editing |
+
+The target interface below expands current routes and adds later ones; it is not an availability list:
 
 | Route | Method | Access and effect |
 |---|---|---|
@@ -167,7 +196,7 @@ State-changing operations use CSRF protection and server-side authorization. Nev
 
 ## 5. Implementation and Testing Priorities
 
-Keep catalogue access, eligibility and score computation testable without HTTP requests. Implement content-based matching first. Cache only when measured need exists; any cached personal/community results require invalidation on changes and deletion.
+Complete integrated catalogue checks first, then add testable eligibility and content score computation. Content-based matching precedes community signals. Cache only when measured need exists; any cached personal/community results require invalidation on changes and deletion. Current commands and test evidence are linked from [GETTING_STARTED.md](GETTING_STARTED.md) and [QUALITY_REVIEW.md](QUALITY_REVIEW.md). The cases below describe broader pilot requirements; they are not all present in the first suite.
 
 Necessary behavioural checks include:
 
@@ -200,3 +229,4 @@ Release sequence: staging checks → catalogue review → backup/restore exercis
 ## 7. Future Expansion Triggers
 
 Use PostgreSQL indexing/query improvements when measured load needs them. Consider asynchronous jobs for genuine long-running tasks, spatial storage for a larger geographic catalogue, native clients after web retention is demonstrated, and more complex recommendation models only after sufficient legitimate data and a baseline comparison. Each addition needs an owner, benefit, cost and privacy review in [DECISIONS.md](DECISIONS.md).
+

@@ -1,6 +1,6 @@
 # Sources and Verification Notes
 
-Last reviewed: 2026-10-06 (Asia/Kolkata). These are primary references checked while writing this planning guide. Version support, provider terms, pricing and legal commencement can change; recheck them before implementation, purchase or launch.
+Last updated: 2026-10-07 (Asia/Kolkata). Original planning references were reviewed on 2026-10-06; Django patch/compatibility and agile framework references were checked again during first-increment integration. Unchanged provider/legal references are not claimed to have been freshly rechecked. Version support, terms, pricing and legal commencement can change; recheck relevant references before purchase or launch.
 
 The product concept, architecture trade-offs, weights, thresholds, cohort sizes, effort and INR allocations are **project proposals**, not facts supplied by these references. No market-demand study, customer result or revenue evidence is claimed.
 
@@ -8,19 +8,25 @@ The product concept, architecture trade-offs, weights, thresholds, cohort sizes,
 
 [Official Django 5.2 release notes](https://docs.djangoproject.com/en/5.2/releases/5.2/)
 
-Used to check the LTS release and Python/database compatibility. Use a current patch and recheck the compatibility table for the actual dependencies selected.
+Used to check the LTS release and Python/database compatibility.
+
+[Official Django 5.2.18 release notes](https://docs.djangoproject.com/en/5.2/releases/5.2.18/)
+
+[Official Django 5.2 Python compatibility FAQ](https://docs.djangoproject.com/en/5.2/faq/install/)
+
+Checked during integration on 2026-10-07: application requirements pin Django 5.2.18; Python 3.12 and 3.13 are supported targets. The first local run used Python 3.12.14. Recheck compatibility and maintained patches when updating dependencies; a CI matrix is not evidence that both runtimes were executed.
 
 ## S2: Django Version Support
 
 [Official Django downloads and support schedule](https://www.djangoproject.com/download/)
 
-Django 5.2 extended support is scheduled through April 2028. The documentation proposes the maintained 5.2 line, not an indefinitely safe frozen patch.
+Django 5.2 extended support is scheduled through April 2028. The project uses a pinned maintained patch in the 5.2 line and requires periodic version review.
 
 ## S3: Django Project Bootstrap
 
 [Official Django 5.2 tutorial, part 1](https://docs.djangoproject.com/en/5.2/intro/tutorial01/)
 
-Reference for project/app creation and local development workflow. [GETTING_STARTED.md](GETTING_STARTED.md) is a project-specific recipe; it has not created or run the application.
+Background reference for project/app structure and local development. The project now contains its Django source; [GETTING_STARTED.md](GETTING_STARTED.md) runs that existing application. Do not repeat project/app creation commands over it.
 
 ## S4: Django Production Checks
 
@@ -116,7 +122,13 @@ Reference for the standard tile service's separate attribution/usage requirement
 
 [Official Django 5.2 model constraint reference](https://docs.djangoproject.com/en/5.2/ref/models/constraints/)
 
-Reference for nullable storage, optional form values, controlled choices, defaults and database constraints. Used for the proposed rating/count fields: unanswered ratings remain null, known scores must be 1–5, and unknown ownership is never converted into verified independence. A schema proposal in this guide is not an implemented migration.
+Reference for nullable storage, optional form values, controlled choices, defaults and database constraints. Cafe count/ownership fields and selected constraints are present in the initial source; proposed Visit/EditorialReview ratings remain future work. Unanswered ratings must remain null, known scores must be 1–5, and unknown ownership must never become verified independence by default.
+
+## S19: Scrum Framework
+
+[Official Scrum Guide](https://scrumguides.org/scrum-guide.html)
+
+Reference for Product Goal, Product Backlog, Sprint Goal, Sprint Backlog, Increment, accountabilities, events and Definition of Done. The project's two-week cadence proposal, brief event timeboxes, agent file ownership and working limits are team choices documented in [AGILE_DELIVERY.md](AGILE_DELIVERY.md), not additional Scrum requirements. Writing these documents does not establish that a Sprint event occurred or that unfinished work meets the Definition of Done.
 
 ## Updating References
 

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}My Data & Privacy · Café Discovery{% endblock %}
+
+{% block content %}
+<div class="shell">
+  <header style="margin: 2rem 0;">
+    <h1>My Data & Privacy</h1>
+    <p>Control how your data is used.</p>
+  </header>
+  
+  <div style="display: grid; grid-template-columns: 1fr; gap: 2rem; max-width: 800px;">
+    
+    <div class="form-panel">
+      <h2>Community Contribution</h2>
+      <p>
+        By default, your visit history and preferences are entirely private and used only to personalize your own experience.
+      </p>
+      <p>
+        If you choose to opt in, your anonymized visit feedback will be included in the aggregate "repeat visitor" community score for cafes you visit. We require at least 5 distinct peers before showing any aggregate score, and your individual identity or visit history is never exposed.
+      </p>
+      
+      <form method="post" action="{% url 'members:account_data' %}">
+        {% csrf_token %}
+        <input type="hidden" name="update_consent" value="1">
+        
+        <div style="margin: 1.5rem 0;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: bold; font-size: 1.1rem; cursor: pointer;">
+            <input type="checkbox" name="community_contribution" {% if is_contributing %}checked{% endif %} style="width: 1.25rem; height: 1.25rem;">
+            Include my anonymized feedback in community scores
+          </label>
+        </div>
+        
+        <button type="submit" class="button button-primary">Save Privacy Settings</button>
+      </form>
+    </div>
+    
+    <div class="form-panel" style="margin-top: 2rem;">
+      <h2>Data Export</h2>
+      <p>Download a machine-readable copy of your personal data, including your profile, visits, and privacy choices.</p>
+      <form method="post" action="{% url 'members:account_data' %}">
+        {% csrf_token %}
+        <input type="hidden" name="export_data" value="1">
+        <button type="submit" class="button">Export my data</button>
+      </form>
+    </div>
+
+    <div class="form-panel" style="margin-top: 2rem; border-left: 4px solid #cc0000;">
+      <h2 style="color: #cc0000;">Danger Zone</h2>
+      <p>Permanently delete your account and all associated data (visits, favorites, profile, and consent records). This action cannot be undone.</p>
+      <form method="post" action="{% url 'members:account_data' %}" onsubmit="return confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.');">
+        {% csrf_token %}
+        <input type="hidden" name="delete_account" value="1">
+        <button type="submit" class="button" style="background-color: #ffe6e6; color: #cc0000; border-color: #ffcccc;">Delete my account</button>
+      </form>
+    </div>
+    
+  </div>
+</div>
+{% endblock %}

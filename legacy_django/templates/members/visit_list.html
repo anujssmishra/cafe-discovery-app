@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}My Visits · Café Discovery{% endblock %}
+
+{% block content %}
+<div class="shell">
+  <header style="margin: 2rem 0;">
+    <h1>My Visits</h1>
+  </header>
+  
+  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+    <div>
+      <div class="form-panel">
+        <h2>Log a visit</h2>
+        <form method="post" action="{% url 'members:visits' %}">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button class="button button-primary" type="submit">Save visit</button>
+        </form>
+      </div>
+    </div>
+    
+    <div>
+      <h2>History</h2>
+      {% if visits %}
+        <ul style="list-style: none; padding: 0;">
+          {% for visit in visits %}
+            <li style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
+              <h3 style="margin: 0 0 0.5rem 0;">{{ visit.cafe.name }}</h3>
+              <p style="margin: 0 0 0.5rem 0;"><strong>{{ visit.visit_date }}</strong></p>
+              
+              {% if visit.drink or visit.purpose %}
+                <p style="margin: 0 0 0.5rem 0;">
+                  {% if visit.drink %}{{ visit.drink }}{% endif %}
+                  {% if visit.drink and visit.purpose %} · {% endif %}
+                  {% if visit.purpose %}{{ visit.purpose }}{% endif %}
+                </p>
+              {% endif %}
+              
+              <div style="margin-bottom: 0.5rem;">
+                {% if visit.coffee_rating %}Coffee: {{ visit.coffee_rating }}/5{% endif %}
+                {% if visit.vibe_rating %}Vibe: {{ visit.vibe_rating }}/5{% endif %}
+              </div>
+              
+              <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem;">
+                <a href="{% url 'members:visit_edit' visit.id %}" class="button" style="padding: 0.25rem 0.5rem;">Edit</a>
+                <form method="post" action="{% url 'members:visit_delete' visit.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="button" style="padding: 0.25rem 0.5rem; background: none; border: none; color: #cc0000; cursor: pointer;">Delete</button>
+                </form>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>You haven't logged any visits yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

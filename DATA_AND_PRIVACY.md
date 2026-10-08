@@ -1,6 +1,6 @@
 # Data, Privacy and Catalogue Operations
 
-Last updated: 2026-10-06. Status: proposed operating policy and implementation requirements. No user data or café dataset has been collected for this repository.
+Last updated: 2026-10-07. Status: proposed operating policy and later implementation requirements. The first catalogue increment contains explicitly fictional development examples; no real café dataset or participant histories have been collected for this repository. See [QUALITY_REVIEW.md](QUALITY_REVIEW.md) for controls actually checked.
 
 ## 1. Data Principles
 

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Register · Café Discovery{% endblock %}
+
+{% block content %}
+<div class="shell">
+  <div class="form-panel" style="max-width: 400px; margin: 2rem auto;">
+    <h2>Register</h2>
+    <p>Create an account to save your preferences and shortlist cafes.</p>
+    
+    <form method="post" action="{% url 'members:register' %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="button button-primary" type="submit">Create account</button>
+    </form>
+    
+    <p style="margin-top: 1rem;">
+      <a href="{% url 'members:login' %}" class="text-link">Already have an account? Log in.</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

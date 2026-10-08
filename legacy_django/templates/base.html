@@ -1,0 +1,63 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A developing café discovery guide. Explore café details, drink offerings and the evidence behind each listing.">
+  <title>{% block title %}Café Discovery{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'discovery/site.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="{% url 'discovery:catalogue' %}">
+        <span class="brand-icon">{% include 'includes/cup.html' %}</span>
+        <span>Café Discovery<span class="brand-subtitle">A place for your next pause</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="{% url 'discovery:catalogue' %}" {% if request.resolver_match.url_name == 'catalogue' or request.resolver_match.url_name == 'cafe_detail' %}aria-current="page"{% endif %}>Explore cafés</a>
+        <a href="{% url 'discovery:about' %}" {% if request.resolver_match.url_name == 'about' %}aria-current="page"{% endif %}>About the guide</a>
+        {% if user.is_authenticated %}
+        <form action="{% url 'members:logout' %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="button" style="background:none; border:none; padding:0; color:var(--interactive); font:inherit; cursor:pointer;">Log out ({{ user.username }})</button>
+        </form>
+        {% else %}
+        <a href="{% url 'members:login' %}">Log in</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  {% if demo_mode %}
+  <div class="demo-notice">
+    <div class="shell"><strong>Development preview · Demo mode</strong><span> Entries labelled “Synthetic example” are fictional and are for testing only.</span></div>
+  </div>
+  {% else %}
+  <div class="build-notice"><div class="shell">Early catalogue build · Information may be incomplete. Check the source and dates on each listing.</div></div>
+  {% endif %}
+  <main id="main-content" tabindex="-1">
+    {% if messages %}
+      <div class="shell" style="margin-top: 1rem;">
+        {% for message in messages %}
+          <div class="form-errors" role="alert" style="padding: 0.5rem; background: #fff3cd; color: #856404; border-radius: 4px; margin-bottom: 0.5rem;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer shell">
+    <div><strong>Café Discovery</strong><p>Thoughtful coffee breaks start with useful information.</p></div>
+    <div>
+        <a href="{% url 'discovery:about' %}">How this guide is taking shape <span aria-hidden="true">↗</span></a>
+        <br><br>
+        <a href="{% url 'discovery:privacy' %}">Privacy Notice & Support</a>
+    </div>
+  </footer>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

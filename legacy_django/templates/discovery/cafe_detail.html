@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}{{ cafe.name }} · Café Discovery{% endblock %}
+{% block content %}
+<div class="shell detail-shell">
+  <a class="back-link" href="{% url 'discovery:catalogue' %}">← Back to all cafés</a>
+  <header class="detail-heading">
+    <p class="eyebrow">{{ cafe.area.name }}{% if cafe.area.city %} · {{ cafe.area.city }}{% endif %}</p>
+    {% if cafe.is_demo %}<span class="demo-badge">Synthetic example · Fictional café</span>{% endif %}
+    <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      {% if cafe.is_verified_independent %}<span class="badge" style="background:#e8f5e9; color:#1b5e20; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.875rem; font-weight:bold;">Independent</span>{% endif %}
+      {% if cafe.is_small_group %}<span class="badge" style="background:#e3f2fd; color:#0d47a1; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.875rem; font-weight:bold;">Small group</span>{% endif %}
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <h1 style="margin-bottom: 0;">{{ cafe.name }}</h1>
+      {% if user.is_authenticated %}
+        <form action="{% url 'members:toggle_favourite' cafe.id %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="button" style="background:none; border:2px solid var(--interactive); padding:0.5rem 1rem; border-radius: 4px; font-weight: bold; cursor:pointer;">
+            {% with cafe_id_str=cafe.id|stringformat:"s" %}
+              {% if cafe_id_str in request.session.preferences.favourites %}
+                ♥ Saved to Shortlist
+              {% else %}
+                ♡ Save to Shortlist
+              {% endif %}
+            {% endwith %}
+          </button>
+        </form>
+        <a href="{% url 'members:visits' %}?cafe={{ cafe.id }}" class="button button-primary" style="margin-left: 0.5rem;">Log Visit</a>
+      {% endif %}
+    </div>
+
+    {% if cafe.summary %}<p class="detail-summary" style="margin-top: 1rem;">{{ cafe.summary }}</p>{% endif %}
+  </header>
+  {% if cafe.is_demo %}<div class="detail-demo-note"><strong>This is test content.</strong> The café, address, offerings and any evidence shown here are synthetic examples. Do not use them to plan a visit.</div>{% endif %}
+  <div class="detail-layout">
+    <div class="detail-main">
+      <section class="detail-section" aria-labelledby="offerings-heading">
+        <p class="eyebrow">What’s in the cup</p>
+        <h2 id="offerings-heading">Recorded offerings</h2>
+        <p class="section-description">Indicative prices for the listed drink. Availability, taxes and extras may change; confirm with the café.</p>
+        <div class="offering-list">
+          {% for offering in cafe.offerings.all %}
+          <article class="offering">
+            <div class="offering-title"><h3>{{ offering.get_drink_type_display }}</h3><p class="price">{% if offering.price is not None %}{{ offering.currency }} {{ offering.price|floatformat:2 }}{% else %}<span class="muted">Price not recorded</span>{% endif %}</p></div>
+            {% if offering.brewing_method %}<p class="brewing-method">{{ offering.brewing_method }}</p>{% endif %}
+            <p class="offering-evidence"><strong>{% if offering.is_current %}{% if cafe.is_demo %}Synthetic evidence example{% else %}Checked within 30 days{% endif %}{% elif offering.evidence_status == 'stale' %}Recheck needed — evidence is older than 30 days{% else %}Verification incomplete{% endif %}</strong><br>{% if offering.checked_on %}{% if cafe.is_demo %}Example date{% else %}Checking date{% endif %}: {{ offering.checked_on|date:'j M Y' }}{% else %}Checking date not recorded{% endif %}<br>{% if offering.source %}Source: {{ offering.source }}{% else %}Source not recorded; this offering is not verified.{% endif %}</p>
+          </article>
+          {% empty %}<p class="inline-empty">Drink offerings and prices have not been recorded for this café.</p>{% endfor %}
+        </div>
+      </section>
+      
+      {% if editorial_reviews %}
+      <section class="detail-section" aria-labelledby="editorial-heading">
+        <p class="eyebrow">Curator notes</p>
+        <h2 id="editorial-heading">Editorial reviews</h2>
+        {% for review in editorial_reviews %}
+        <article class="editorial-review" style="margin-bottom: 2rem; padding: 1.5rem; background: var(--surface-alt); border-radius: 8px;">
+          <header style="margin-bottom: 1rem;">
+            <h3 style="margin-bottom: 0.25rem;">Review by {{ review.display_name }}</h3>
+            <p style="font-size: 0.875rem; color: #555;">Visited: {{ review.visit_date|date:"j M Y" }} &middot; Published: {{ review.publication_date|date:"j M Y" }}</p>
+          </header>
+          
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+            {% if review.coffee_rating %}
+            <div class="rating-badge" style="background: white; padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid #ddd;">
+              <strong>Coffee:</strong> {{ review.coffee_rating }}/5
+            </div>
+            {% endif %}
+            {% if review.experience_rating %}
+            <div class="rating-badge" style="background: white; padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid #ddd;">
+              <strong>Experience:</strong> {{ review.experience_rating }}/5
+            </div>
+            {% endif %}
+            {% if review.trip_rating %}
+            <div class="rating-badge" style="background: white; padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid #ddd;">
+              <strong>Trip value:</strong> {{ review.trip_rating }}/5
+            </div>
+            {% endif %}
+          </div>
+          
+          {% if review.notes %}
+          <div class="review-notes" style="line-height: 1.6;">
+            {{ review.notes|linebreaks }}
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </section>
+      {% endif %}
+      
+      <section class="detail-section" aria-labelledby="evidence-heading">
+        <p class="eyebrow">Know what you’re seeing</p>
+        <h2 id="evidence-heading">Catalogue information</h2>
+        <dl class="evidence-list">
+          <div><dt>Verification</dt><dd>{% if cafe.is_current %}{% if cafe.is_demo %}Synthetic evidence example{% else %}Checked within 30 days{% endif %}{% elif cafe.evidence_status == 'stale' %}Recheck needed — evidence is older than 30 days{% else %}Verification incomplete{% endif %}</dd></div>
+          <div><dt>Checking date</dt><dd>{% if cafe.checked_on %}{{ cafe.checked_on|date:'j M Y' }}{% if cafe.is_demo %} (example only){% endif %}{% else %}Checking date not recorded{% endif %}</dd></div>
+          <div><dt>Source</dt><dd>{% if cafe.source %}{{ cafe.source }}{% else %}Source not recorded{% endif %}</dd></div>
+          <div><dt>Ownership</dt><dd>{{ ownership_label }}{% if ownership_evidence_status == 'stale' %}<small>Recheck needed — ownership evidence is older than 30 days.</small>{% endif %}{% if has_ownership_evidence %}<small>Evidence date: {{ cafe.independence_checked_on|date:'j M Y' }}<br>Source: {{ cafe.independence_source }}</small>{% endif %}</dd></div>
+        </dl>
+        <p class="source-note">A listing is not an endorsement or proof of a partnership. Checks are current for 30 days; older evidence needs rechecking. Incomplete evidence includes missing sources or invalid dates. Information can still change between checks. Missing facts remain unknown. <br><br><a href="{% url 'discovery:cafe_correction' cafe.id %}">Suggest a correction</a> for this café.</p>
+      </section>
+    </div>
+    <aside class="location-panel" aria-labelledby="location-heading">
+      <span class="location-cup">{% include 'includes/cup.html' %}</span>
+      <h2 id="location-heading">The address</h2>
+      <address>{% if cafe.address %}{{ cafe.address|linebreaksbr }}{% else %}Address not recorded{% endif %}</address>
+      <p class="location-area">{{ cafe.area.name }}{% if cafe.area.city %}<br>{{ cafe.area.city }}{% endif %}</p>
+      {% if cafe.directions_url %}
+      <a class="button button-secondary external-link" href="{{ cafe.directions_url }}" target="_blank" rel="noopener noreferrer nofollow" style="margin-bottom:0.5rem; display:block; text-align:center;">Get Directions <span aria-hidden="true">↗</span></a>
+      {% else %}
+      <p class="external-note">Directions unavailable.</p>
+      {% endif %}
+      {% if website_url and not cafe.is_demo %}<a class="button button-secondary external-link" href="{{ website_url }}" rel="noopener noreferrer nofollow">Visit café website <span aria-hidden="true">↗</span></a><p class="external-note">Opens the external website recorded for this café.</p>{% endif %}
+      <div class="location-note">{% if cafe.is_demo %}Fictional address for development only.{% elif cafe.is_current %}Check the café’s latest information before travelling.{% else %}This address has incomplete verification. Confirm it before travelling.{% endif %}</div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

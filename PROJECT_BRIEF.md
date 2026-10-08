@@ -1,6 +1,6 @@
 # Project Brief
 
-Last updated: 2026-10-06. Status: proposed product; validation and development have not started.
+Last updated: 2026-10-07. Status: first local catalogue increment implemented for review; customer validation and the hosted pilot have not started. See [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) for current evidence.
 
 ## 1. The Idea
 

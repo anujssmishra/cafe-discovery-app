@@ -1,0 +1,40 @@
+<article class="cafe-card">
+  <div class="card-top"><span class="card-cup">{% include 'includes/cup.html' %}</span><span class="area-label">{{ cafe.area.name }}</span></div>
+  {% if cafe.is_demo %}<span class="demo-badge">Synthetic example</span>{% endif %}
+  <div style="margin-bottom: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    {% if cafe.is_verified_independent %}<span class="badge" style="background:#e8f5e9; color:#1b5e20; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:bold;">Independent</span>{% endif %}
+    {% if cafe.is_small_group %}<span class="badge" style="background:#e3f2fd; color:#0d47a1; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:bold;">Small group</span>{% endif %}
+  </div>
+  <div style="display: flex; justify-content: space-between; align-items: baseline;">
+    <h3 style="margin: 0;"><a href="{% url 'discovery:cafe_detail' cafe.pk %}">{{ cafe.name }}</a></h3>
+    {% if user.is_authenticated %}
+      <form action="{% url 'members:toggle_favourite' cafe.id %}" method="post" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" class="button" style="background:none; border:1px solid #ccc; padding:0.25rem 0.5rem; font-size:0.8em; border-radius: 4px; cursor:pointer;">
+          {% with cafe_id_str=cafe.id|stringformat:"s" %}
+            {% if cafe_id_str in request.session.preferences.favourites %}
+              ♥ Saved
+            {% else %}
+              ♡ Save
+            {% endif %}
+          {% endwith %}
+        </button>
+      </form>
+    {% endif %}
+  </div>
+  {% if has_preferences %}
+  <div class="match-explanation" style="background: #f0f7f4; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 4px; font-size: 0.9em;">
+    <strong>Match ({{ cafe.match_score|default:0|floatformat:2 }}):</strong> {{ cafe.match_explanation }}
+  </div>
+  {% endif %}
+  <p class="card-summary">{% if cafe.summary %}{{ cafe.summary|truncatechars:155 }}{% else %}A café in {{ cafe.area.name }}. More details have not been recorded yet.{% endif %}</p>
+  <p class="card-address">{% if cafe.address %}{{ cafe.address }}{% else %}Address not recorded{% endif %}</p>
+  <ul class="offering-tags" aria-label="Recorded drink offerings">
+    {% for offering in cafe.offerings.all|slice:':3' %}<li>{{ offering.get_drink_type_display }}</li>{% empty %}<li class="unknown-tag">Offerings not recorded</li>{% endfor %}
+  </ul>
+  <div class="card-bottom">
+    <p class="check-note">{% if cafe.is_current %}{% if cafe.is_demo %}Example date{% else %}Catalogue checked{% endif %}<span>{{ cafe.checked_on|date:'j M Y' }}</span>{% elif cafe.evidence_status == 'stale' %}Recheck needed<span>Last recorded {{ cafe.checked_on|date:'j M Y' }}</span>{% else %}Verification incomplete<span>Check details before visiting</span>{% endif %}</p>
+    <a class="card-link" href="{% url 'discovery:cafe_detail' cafe.pk %}" aria-label="View details for {{ cafe.name }}">View café <span aria-hidden="true">↗</span></a>
+  </div>
+</article>

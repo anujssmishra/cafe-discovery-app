@@ -1,6 +1,8 @@
 # Caffeine Chronicles Feature Adaptation
 
-Reviewed: 2026-10-06. Reference: [Caffeine Chronicles](https://caffeinechronicles.vercel.app/). Status: features added to this project's plan; no application code has been implemented.
+Reference reviewed: 2026-10-06. Document updated: 2026-10-07. Reference: [Caffeine Chronicles](https://caffeinechronicles.vercel.app/). Status: full adaptation plan with the first local catalogue slice under integration review. This update does not claim a new review of the reference website.
+
+Current source provides ordinary list name/area search, list-area chips, full café details, a project about page, and branch-count/ownership data fields. These are foundations for F02–F04/F08/F09. No interactive map, detail overlay, member actions, directions or editorial scores have been built. See [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) and [QUALITY_REVIEW.md](QUALITY_REVIEW.md) for actual acceptance evidence.
 
 ## 1. What Was Observed
 
@@ -30,7 +32,7 @@ The specifications below are **our implementation choices**, including improveme
 | F08 | Local/small-group collection | A clearly described collection/filter uses sourced brand-location counts and checking dates; unknown eligibility does not receive a verified local badge | First pilot after policy confirmation |
 | F09 | Collection story and curator context | An about section explains how entries and opinions are selected, whose opinion is shown, dates, limitations and how corrections are handled | First pilot |
 
-F03 extends existing catalogue search. F04 expands existing café details. All nine features complement personalized taste/purpose matching and private visit logs; they do not replace them with a single public rating.
+F03 extends the first catalogue search with map consistency; F04 expands the current full details into an accessible dialog with the remaining pilot content/actions. All nine features complement planned personalized taste/purpose matching and private visit logs.
 
 ## 3. Ratings and Editorial Meaning
 
@@ -75,11 +77,11 @@ For example, a coffee badge needs an attributed, dated assessment identifying th
 
 ## 4. Implementation Dependencies
 
-Use the existing Django catalogue and café IDs for map/list/detail data. Leaflet is the proposed map client; choose a licensed tile service and review its usage, attribution, key restrictions, cost and privacy before launch. A map library does not supply a free unlimited basemap service. See [SOURCES.md](SOURCES.md).
+Build future map/dialog data on the current Django catalogue and café UUIDs. Leaflet is the proposed map client; choose a licensed tile service and review its usage, attribution, key restrictions, cost and privacy before launch. A map library does not supply a free unlimited basemap service. See [SOURCES.md](SOURCES.md).
 
-Add an area configuration, brand/group provenance fields, an editorial review model, and safe public serialization. Do not expose visits, member IDs, exact member coordinates, private notes or draft editor content through the map data endpoint. Escape review text when rendering dialogs.
+Area records and brand/count/ownership provenance fields are present in the first source increment. Map center/bounds, an editorial review model and safe public map serialization remain to be added. Do not expose visits, member IDs, exact member coordinates, private notes or draft editor content through a future map endpoint. Escape review text when rendering dialogs.
 
-Use the proposed Django `Cafe`, `EditorialReview` and `Visit` entities, with field definitions in [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md#explicit-fields-and-defaults). Keep curator notes on `EditorialReview` instead of duplicating a mutable `curatorNote` field on `Cafe`. The repository has no implemented `GET /api/cafes`, Prisma `VisitLog`, `S_drink` or `S_atmosphere` system; those names in the supplied review are conceptual examples.
+Use the current Django `Cafe` and proposed `EditorialReview` and `Visit` entities, with field definitions in [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md#explicit-fields-and-defaults). Keep future curator notes on `EditorialReview` instead of duplicating a mutable `curatorNote` field on `Cafe`. The repository has no implemented `GET /api/cafes`, Prisma `VisitLog`, `S_drink` or `S_atmosphere` system; those names in the supplied review are conceptual examples.
 
 The list remains useful without map access. Directions go to an external provider only after a click. Notices need to describe third-party map requests and destinations; precise-location handling needs a separate review before a map centers on the user's coordinates.
 
@@ -107,4 +109,4 @@ Implementation is tracked through P1 and P9–P14 in [PRODUCT_REQUIREMENTS.md](P
 | Descriptive conviction badges | F06: original trip-value scale | Purpose-specific editorial badges proposed for later evaluation |
 | Detail overlays and directions | F04/F07: dialog, full detail page and external directions | Explicit Log visit action; Google observed, Apple a later unverified option |
 
-All of these remain documentation requirements or proposals. This review does not mark any application feature as implemented.
+This follow-up table records the 2026-10-06 planning review. Implementation has since begun with the local catalogue foundations described at the top of this file; the full adaptations and later candidates remain subject to their story acceptance criteria. The current authoritative progress record is [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md).

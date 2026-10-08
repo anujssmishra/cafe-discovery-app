@@ -1,0 +1,1 @@
+"""Public café catalogue."""

@@ -1,6 +1,6 @@
 # Roadmap, Resources and Budget
 
-Last updated: 2026-10-06. All figures and dates below are planning assumptions. No funds have been committed, team hired or milestones completed.
+Last updated: 2026-10-07. Figures and windows below remain planning assumptions. The first local catalogue increment is implemented for review; no hosted pilot milestone is claimed. [AGILE_DELIVERY.md](AGILE_DELIVERY.md) and [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) now provide the phase sequence and actual progress. No funds have been committed or team hired.
 
 ## 1. Planning Basis
 

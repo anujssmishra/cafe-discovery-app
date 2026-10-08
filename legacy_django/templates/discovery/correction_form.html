@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Suggest a correction for {{ cafe.name }} · Café Discovery{% endblock %}
+{% block content %}
+<div class="shell">
+  <a class="back-link" href="{% url 'discovery:cafe_detail' cafe.id %}">← Back to {{ cafe.name }}</a>
+  <h1 style="margin-top: 1rem;">Suggest a correction</h1>
+  <p style="margin-bottom: 2rem;">If the information for <strong>{{ cafe.name }}</strong> is incorrect or out of date, let us know.</p>
+  
+  <form method="post" action="" style="max-width: 600px; background: var(--surface-alt); padding: 2rem; border-radius: 8px;">
+    {% csrf_token %}
+    {% if form.errors %}
+      <div class="form-errors" role="alert">
+        <strong>Please fix the errors below.</strong>
+      </div>
+    {% endif %}
+    
+    {% for field in form %}
+      <div class="field" style="margin-bottom: 1.5rem;">
+        <label for="{{ field.id_for_label }}" style="font-weight: bold; display: block; margin-bottom: 0.5rem;">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <div class="field-error" style="color: var(--error); margin-top: 0.25rem;">{{ field.errors.0 }}</div>
+        {% endif %}
+        {% if field.help_text %}
+          <p class="help-text" style="font-size: 0.875rem; color: #666; margin-top: 0.25rem;">{{ field.help_text }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+    
+    <button type="submit" class="button button-primary">Submit correction</button>
+  </form>
+</div>
+{% endblock %}

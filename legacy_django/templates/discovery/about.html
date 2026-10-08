@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}About the guide · Café Discovery{% endblock %}
+{% block content %}
+<div class="shell about-shell">
+  <p class="eyebrow">The idea behind the guide</p>
+  <h1>Your kind of coffee.<br><em>Your kind of café.</em></h1>
+  <p class="about-intro">The right café depends on the drink you enjoy and the moment you’re making room for. Café Discovery is being built to help you find that fit.</p>
+  <div class="about-sections">
+    <section aria-labelledby="today-heading"><span class="about-number" aria-hidden="true">01</span><div><h2 id="today-heading">What you can do today</h2><p>Browse the catalogue, search a café’s name, filter by available area, and read recorded offerings and checking information. This is an early development build. The first pilot area and real catalogue are still being prepared.</p>{% if demo_mode %}<p><strong>Demo mode is on.</strong> Any listing marked “Synthetic example” is fictional test content. Its prices, address and dates must not be treated as real café information.</p>{% endif %}</div></section>
+    <section aria-labelledby="evidence-about-heading"><span class="about-number" aria-hidden="true">02</span><div><h2 id="evidence-about-heading">Information with context</h2><p>Listings show their recorded sources and checking dates. Missing information stays unknown. Prices are indicative, and a checking date does not guarantee that a menu or location remains current.</p><p>A small location count does not prove independent ownership. Ownership claims need their own evidence. We clearly separate objective <strong>checked facts</strong> (address, offerings, independent status) from <strong>opinions</strong> (curator editorial reviews) and <strong>matching</strong> (how closely a café aligns with your preferences). Your private feedback (saved cafés and visit logs) is never shared publicly.</p></div></section>
+    <section aria-labelledby="selection-heading"><span class="about-number" aria-hidden="true">03</span><div><h2 id="selection-heading">Selection methods & Curator context</h2><p>Cafés are selected based on their focus on specialty coffee, independent ownership, and community value. Curator notes and ratings (for coffee, experience, and trip value) are clearly marked as opinions. All published text in these reviews is originally authored or explicitly permitted for use on this site.</p></div></section>
+    <section aria-labelledby="feedback-heading"><span class="about-number" aria-hidden="true">04</span><div><h2 id="feedback-heading">Corrections & Feedback</h2><p>Our data relies on periodic checks and can become stale. If you notice outdated or incorrect facts for a café, you can use the <strong>Suggest a correction</strong> link at the bottom of any café's detail page to submit a correction report.</p></div></section>
+  </div>
+  <a class="button button-primary" href="{% url 'discovery:catalogue' %}">Explore the catalogue <span aria-hidden="true">→</span></a>
+</div>
+{% endblock %}
