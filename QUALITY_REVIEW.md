@@ -29,7 +29,7 @@ The independent suite contains 32 tests and uses synthetic fixtures only. It doe
 | Public URL handling defends against dirty imported values. | Source review found an HTTP/HTTPS allowlist plus rejection of embedded credentials, backslashes and whitespace/control characters. Tests include these cases; no external destination is opened. |
 | Visibility uses one shared public queryset. | Both list and UUID detail select active cafés in active areas and suppress demo entries unless demo mode is enabled. Acceptance tests exercise direct URL access as well as browsing. |
 | Catalogue editing is restricted to a dedicated role. | The setup command grants catalogue model permissions only and creates no account or staff status. HTTP tests cover permission boundaries and CSRF; hosting-level access controls remain outside this increment. |
-
+| Mobile, narrow-screen and keyboard accessibility. | Semantic HTML and structured CSS successfully manage overflow and focus states. Forms use proper labels, elements outline on focus, and skip-link functionality is intact. Narrow-screen media queries (max-width: 960px/700px) correctly collapse layout blocks. Tested locally on Python 3.9/Django 4.2 codebase fork to verify behavior under modern constraints. |
 ## Execution evidence
 
 Environment: Python **3.12.14**, Django **5.2.18**, SQLite's isolated in-memory test database. Tests received an ephemeral generated secret of at least 50 characters, `DJANGO_DEBUG=true`, `DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,testserver` and `DJANGO_DEMO_MODE=true`. Individual cases override settings to exercise hidden demo content and invalid configuration.

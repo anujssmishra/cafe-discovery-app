@@ -178,7 +178,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="cafe",
             constraint=models.CheckConstraint(
-                condition=models.Q(
+                check=models.Q(
                     models.Q(("latitude__isnull", True), ("longitude__isnull", True)),
                     models.Q(("latitude__isnull", False), ("longitude__isnull", False)),
                     _connector="OR",
@@ -189,7 +189,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="cafe",
             constraint=models.CheckConstraint(
-                condition=models.Q(
+                check=models.Q(
                     ("latitude__isnull", True),
                     models.Q(("latitude__gte", -90), ("latitude__lte", 90)),
                     _connector="OR",
@@ -200,7 +200,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="cafe",
             constraint=models.CheckConstraint(
-                condition=models.Q(
+                check=models.Q(
                     ("longitude__isnull", True),
                     models.Q(("longitude__gte", -180), ("longitude__lte", 180)),
                     _connector="OR",
@@ -211,7 +211,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="cafe",
             constraint=models.CheckConstraint(
-                condition=models.Q(
+                check=models.Q(
                     ("brand_location_count__isnull", True),
                     ("brand_location_count__gte", 1),
                     _connector="OR",
@@ -222,7 +222,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="cafe",
             constraint=models.CheckConstraint(
-                condition=models.Q(
+                check=models.Q(
                     (
                         "independence_status__in",
                         ["unknown", "verified_independent", "verified_not_independent"],
@@ -234,7 +234,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="cafe",
             constraint=models.CheckConstraint(
-                condition=models.Q(
+                check=models.Q(
                     ("independence_status", "unknown"),
                     models.Q(
                         ("independence_checked_on__isnull", False),
@@ -248,14 +248,14 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="cafeoffering",
             constraint=models.CheckConstraint(
-                condition=models.Q(("price__isnull", True), ("price__gte", 0), _connector="OR"),
+                check=models.Q(("price__isnull", True), ("price__gte", 0), _connector="OR"),
                 name="offering_nonnegative_price",
             ),
         ),
         migrations.AddConstraint(
             model_name="cafeoffering",
             constraint=models.CheckConstraint(
-                condition=models.Q(
+                check=models.Q(
                     ("drink_type__in", ["espresso", "filter", "milk", "cold_brew", "tea", "matcha"])
                 ),
                 name="offering_valid_drink_type",

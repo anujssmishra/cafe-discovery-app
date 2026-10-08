@@ -102,24 +102,24 @@ class Cafe(models.Model):
         ordering = ("name", "id")
         constraints = [
             models.CheckConstraint(
-                condition=(Q(latitude__isnull=True) & Q(longitude__isnull=True))
+                check=(Q(latitude__isnull=True) & Q(longitude__isnull=True))
                 | (Q(latitude__isnull=False) & Q(longitude__isnull=False)),
                 name="cafe_coordinate_pair",
             ),
             models.CheckConstraint(
-                condition=Q(latitude__isnull=True) | Q(latitude__gte=-90, latitude__lte=90),
+                check=Q(latitude__isnull=True) | Q(latitude__gte=-90, latitude__lte=90),
                 name="cafe_latitude_range",
             ),
             models.CheckConstraint(
-                condition=Q(longitude__isnull=True) | Q(longitude__gte=-180, longitude__lte=180),
+                check=Q(longitude__isnull=True) | Q(longitude__gte=-180, longitude__lte=180),
                 name="cafe_longitude_range",
             ),
             models.CheckConstraint(
-                condition=Q(brand_location_count__isnull=True) | Q(brand_location_count__gte=1),
+                check=Q(brand_location_count__isnull=True) | Q(brand_location_count__gte=1),
                 name="cafe_positive_location_count",
             ),
             models.CheckConstraint(
-                condition=Q(
+                check=Q(
                     independence_status__in=[
                         "unknown",
                         "verified_independent",
@@ -129,7 +129,7 @@ class Cafe(models.Model):
                 name="cafe_valid_ownership_status",
             ),
             models.CheckConstraint(
-                condition=Q(independence_status="unknown")
+                check=Q(independence_status="unknown")
                 | (Q(independence_checked_on__isnull=False) & ~Q(independence_source="")),
                 name="cafe_verified_ownership_evidence",
             ),
@@ -225,11 +225,11 @@ class CafeOffering(models.Model):
         ordering = ("drink_type", "brewing_method", "pk")
         constraints = [
             models.CheckConstraint(
-                condition=Q(price__isnull=True) | Q(price__gte=0),
+                check=Q(price__isnull=True) | Q(price__gte=0),
                 name="offering_nonnegative_price",
             ),
             models.CheckConstraint(
-                condition=Q(
+                check=Q(
                     drink_type__in=["espresso", "filter", "milk", "cold_brew", "tea", "matcha"]
                 ),
                 name="offering_valid_drink_type",
