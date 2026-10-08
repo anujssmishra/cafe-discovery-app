@@ -10,9 +10,9 @@ It answers: **“Which café suits my taste and what I want to do today?”** So
 
 **Stage: first catalogue increment published for review in [draft PR #1](https://github.com/anujssmishra/cafe-discovery-app/pull/1). Last updated: 2026-10-07 UTC.**
 
-The source now includes a Django catalogue with `Area`, `Cafe` and `CafeOffering`, staff administration, a guarded synthetic-data command, guest name/area search, pagination, full café detail pages and an about page. This is the first local development slice. The recommendation engine, member journeys, maps, editorial workflow and hosted pilot are still future work.
+The source now includes a PHP catalogue with `Area`, `Cafe` and `CafeOffering`, staff administration, a guarded synthetic-data command, guest name/area search, pagination, full café detail pages and an about page. This is the first local development slice. The recommendation engine, member journeys, maps, editorial workflow and hosted pilot are still future work.
 
-The included demo contains eight fictional cafés, sixteen synthetic offerings and two fictional areas. It is not a verified café directory. The final integrated local run passed 49 tests on Python 3.12.14 and Django 5.2.18, with clean Django checks and migration drift checks. Seed reruns retained the expected counts. Hosted CI passed on Python 3.12 and 3.13 for implementation snapshot `c1fc831`. Check [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) and [QUALITY_REVIEW.md](QUALITY_REVIEW.md) for exact evidence and the PR for checks on its latest revision. Browser/mobile/keyboard review remains open. No hosted pilot, customers, revenue or partnerships are claimed.
+The included demo contains eight fictional cafés, sixteen synthetic offerings and two fictional areas. It is not a verified café directory. The final integrated local run passed 49 tests on PHP 3.12.14 and PHP 5.2.18, with clean PHP checks and migration drift checks. Seed reruns retained the expected counts. Hosted CI passed on PHP 3.12 and 3.13 for implementation snapshot `c1fc831`. Check [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) and [QUALITY_REVIEW.md](QUALITY_REVIEW.md) for exact evidence and the PR for checks on its latest revision. Browser/mobile/keyboard review remains open. No hosted pilot, customers, revenue or partnerships are claimed.
 
 The architecture, budgets, thresholds, and timeline below are proposed starting decisions. The pilot city, team availability, spending limit, brand, and launch date still need the project owner's decisions. See [DECISIONS.md](DECISIONS.md).
 
@@ -40,7 +40,7 @@ The architecture, budgets, thresholds, and timeline below are proposed starting 
 
 ## Run the Current Increment
 
-Follow [GETTING_STARTED.md](GETTING_STARTED.md) to clone the development branch, create a Python 3.12 or 3.13 environment, install `requirements-dev.txt`, set the required environment variables, migrate, optionally seed the fictional catalogue, run checks and start Django locally. Settings do not automatically read `.env`.
+Follow [GETTING_STARTED.md](GETTING_STARTED.md) to clone the development branch, create a PHP 3.12 or 3.13 environment, install `requirements-dev.txt`, set the required environment variables, migrate, optionally seed the fictional catalogue, run checks and start PHP locally. Settings do not automatically read `.env`.
 
 The current public routes are `/`, `/cafes/<uuid>/` and `/about/`; authorized staff use `/admin/`. The catalogue is alphabetically ordered, with combined partial-name and area filters. It does not yet rank personal matches. The full planned product is described below.
 
@@ -66,9 +66,9 @@ The feature expansion requested from [Caffeine Chronicles](https://caffeinechron
 
 ## What You Need to Begin
 
-At minimum: a product owner, Python/web development capability, a laptop, access to this repository, a small café catalogue, pilot participants, and time for customer interviews and usability testing. One person can cover multiple roles. A GPU, a large language model service, and banking integrations are not prerequisites for the proposed matching baseline.
+At minimum: a product owner, PHP/web development capability, a laptop, access to this repository, a small café catalogue, pilot participants, and time for customer interviews and usability testing. One person can cover multiple roles. A GPU, a large language model service, and banking integrations are not prerequisites for the proposed matching baseline.
 
-The local build uses Django 5.2 LTS, responsive HTML/CSS and SQLite, with Python 3.12/3.13 as the development targets. Exact dependency pins live in `requirements.txt` and `requirements-dev.txt`. PostgreSQL and a production host remain later implementation and provider decisions. [GETTING_STARTED.md](GETTING_STARTED.md) runs the existing application; it does not create a replacement Django project.
+The local build uses PHP 5.2 LTS, responsive HTML/CSS and SQLite, with PHP 3.12/3.13 as the development targets. Exact dependency pins live in `requirements.txt` and `requirements-dev.txt`. PostgreSQL and a production host remain later implementation and provider decisions. [GETTING_STARTED.md](GETTING_STARTED.md) runs the existing application; it does not create a replacement PHP project.
 
 ## Next Three Actions
 
@@ -79,3 +79,4 @@ The local build uses Django 5.2 LTS, responsive HTML/CSS and SQLite, with Python
 ## Keeping This Repository Useful
 
 Update the project status and decision log when assumptions become decisions or features become implemented. Keep setup commands aligned with actual code. Never present proposed capabilities as completed work. The maintenance rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
+

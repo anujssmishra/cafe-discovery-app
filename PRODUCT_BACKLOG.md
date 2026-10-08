@@ -18,8 +18,21 @@ Anuj owns product ordering. Developers refine and select feasible work against t
 | E5: Editorial context | Original opinions and selection rules are transparent | P7, P11, P12, P13; F05, F06, F08, F09 | CAFE-024–027 |
 | E6: Safe pilot and learning | A supported cohort tests usefulness on reliable infrastructure | P6, P8 and release criteria | CAFE-028–031 |
 | E7: Evidence-led extensions | Add signals or coverage only when justified | P3 and later candidates | CAFE-032–034 |
+| E8: PHP Rebuild | Entire application rebuilt in PHP to support Hostinger Shared Hosting | D12 | CAFE-101-105 |
 
-## 2. Current Sprint Selection
+## 2. Current Sprint Selection (PHP Pivot)
+
+**Sprint 2 Goal:** Rebuild the Sprint 1 catalogue features in PHP/MySQL so parallel agents can deploy to Hostinger.
+
+| ID | User outcome | Lead / package | Status |
+|---|---|---|---|
+| CAFE-101 | Initialize PHP project structure, DB connection, and routing | Root | Backlog |
+| CAFE-102 | Create MySQL schemas for Area, Cafe, and Offerings | Database | Backlog |
+| CAFE-103 | Build PHP backend API/controllers for search and details | Backend | Backlog |
+| CAFE-104 | Migrate frontend HTML/CSS to PHP templates | Frontend | Backlog |
+| CAFE-105 | Write seed scripts in PHP to populate pilot data | Backend | Backlog |
+
+## 2.1 Previous Sprint (Deprecated Django Build)
 
 **Sprint 1 Goal:** a guest can search and inspect an explicitly synthetic café catalogue, and another developer can reproduce and verify the local application.
 
@@ -116,3 +129,4 @@ Next action and responsible person:
 ```
 
 At handover, record exact changed files, interface changes, tests actually run and known gaps. Keep credentials, private participant records and production exports out of work items. Use synthetic examples. If an agent is interrupted, leave the work in its truthful current state so another contributor can resume without assuming completion.
+

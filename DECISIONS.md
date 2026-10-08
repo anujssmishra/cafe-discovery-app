@@ -24,6 +24,7 @@ Last updated: 2026-10-08. Use this file as the decision record and [DEVELOPMENT_
 | D09 | Use generated environment secrets, explicit local debug/hosts, and demo mode restricted to debug | Current settings and command guards; `.env` is a reference file, not an automatic loader | Implemented locally |
 | D10 | Use `feat/sprint-1-catalogue` as the first integration branch | Keeps the first source increment reviewable; root owns remote publication and integration | Confirmed workflow; remote status recorded separately |
 | D11 | Keep continuation context tool-neutral so Anuj can code with Codex, Claude, Gemini or another developer | Owner requested transfer for coding, then explicitly requested generic use across assistants on 2026-10-08 | Confirmed direction; shared DEVELOPMENT_HANDOFF/STARTER_PROMPT and assistant pointer files |
+| D12 | Pivot entire application architecture from Python/Django to PHP/MySQL | Owner decision to utilize existing Hostinger Single Web Hosting plan; avoiding new infrastructure | Confirmed |
 
 ## 3. Proposed Starting Choices
 
@@ -113,3 +114,4 @@ When superseding a material choice, preserve its reason and link to the replacem
 - 2026-10-06: added FEATURES_REFERENCE.md and integrated the requested Caffeine Chronicles feature concepts across the now eleven-file guide. Revised requirements, data flows, estimates and release gates; the application remains unimplemented.
 - 2026-10-06: reviewed the supplied feature list against F01–F09; clarified map-first UX, original pins, area chips, Log visit, explicit nullable member ratings and separate ownership/count evidence. Documented purpose-specific badges and Apple Maps as later candidates, and distinguished unverified rubric/API assumptions from the proposed Django design. This is a documentation refinement, with no new implemented app features.
 - 2026-10-07: continued the owner-authorized multi-agent build. Added phase-wise agile delivery, story backlog, working agreement and the first catalogue source. Replaced bootstrap-only instructions with reproducible setup for the existing application. The first integrated local suite passed 48 tests on Python 3.12.14 / Django 5.2.18; system checks, migration drift/application, seed repeatability and the twelve-permission catalogue role were checked. See the quality review/backlog for remaining lint/browser/remote evidence and final story status. No hosted pilot is implied.
+
