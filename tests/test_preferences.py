@@ -64,3 +64,13 @@ class PreferencesTests(TestCase):
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["form"].errors["atmosphere"])
+
+    def test_empty_catalogue_shows_unmet_constraints(self):
+        # Set impossible budget
+        session = self.client.session
+        session["preferences"] = {"drink": "espresso", "budget": "0.10"}
+        session.save()
+        
+        response = self.client.get(reverse("discovery:catalogue"))
+        self.assertContains(response, "The following essential constraints excluded the matches:")
+        self.assertContains(response, "Missing price or drink not available")

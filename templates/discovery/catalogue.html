@@ -78,8 +78,21 @@
     {% else %}
     <div class="empty-state">
       <span class="empty-icon">{% include 'includes/cup.html' %}</span>
-      <h3>{% if has_filters %}No cafés match this search.{% else %}The catalogue is taking shape.{% endif %}</h3>
-      <p>{% if has_filters %}Try another name, choose an available area, or clear your filters to browse again.{% else %}There are no public café entries to show yet. The first collection will appear here as information is added.{% endif %}</p>
+      <h3>{% if has_filters or has_preferences %}No cafés match this search.{% else %}The catalogue is taking shape.{% endif %}</h3>
+      <p>{% if has_filters or has_preferences %}Try another name, choose an available area, or clear your filters to browse again.{% else %}There are no public café entries to show yet. The first collection will appear here as information is added.{% endif %}</p>
+      
+      {% if unmet_constraints %}
+      <div class="unmet-constraints" style="text-align: left; background: #fff5f5; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+        <p><strong>The following essential constraints excluded the matches:</strong></p>
+        <ul style="margin-bottom: 1rem;">
+          {% for reason, count in unmet_constraints.items %}
+          <li>{{ reason }} ({{ count }} café{{ count|pluralize }} excluded)</li>
+          {% endfor %}
+        </ul>
+        <a class="button button-secondary" href="{% url 'discovery:preferences' %}">Change preferences</a>
+      </div>
+      {% endif %}
+
       <a class="button button-secondary" href="{% if has_filters %}{% url 'discovery:catalogue' %}{% else %}{% url 'discovery:about' %}{% endif %}">{% if has_filters %}Clear filters{% else %}Read about the project{% endif %} <span aria-hidden="true">→</span></a>
     </div>
     {% endif %}
