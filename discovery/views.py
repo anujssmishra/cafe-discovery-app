@@ -81,10 +81,12 @@ def catalogue(request):
     
     has_active_prefs = any(preferences.get(k) for k in ["drink", "budget", "essential_amenities", "preferred_amenities"])
     
+    unmet_constraints = None
     if has_active_prefs:
-        cafes_list, is_empty_due_to_constraints = rank_cafes(cafes_list, preferences)
-        if is_empty_due_to_constraints:
-            errors.append("No cafés match your essential requirements or hard budget. Try clearing or changing your preferences.")
+        cafes_list, unmet_summary = rank_cafes(cafes_list, preferences)
+        if unmet_summary is not None:
+            unmet_constraints = unmet_summary
+            errors.append("No cafés match your essential requirements or hard budget. See below for details.")
             
     page = Paginator(cafes_list, 12).get_page(request.GET.get("page"))
     active_params = {key: value for key, value in (("q", q), ("area", raw_area)) if value}
@@ -105,6 +107,7 @@ def catalogue(request):
         "query_string": query_string + "&" if query_string else "",
         "has_filters": bool(raw_q or raw_area),
         "has_preferences": has_active_prefs,
+        "unmet_constraints": unmet_constraints,
         "demo_mode": getattr(settings, "DEMO_MODE", False),
     }
     return render(request, "discovery/catalogue.html", context)
@@ -161,6 +164,20 @@ def preferences(request):
             data = form.cleaned_data
             data["favourites"] = [str(f.id) for f in favs]
             request.session["preferences"] = data
+            
+            if request.user.is_authenticated:
+                from members.models import TasteProfile
+                from decimal import Decimal
+                profile, _ = TasteProfile.objects.get_or_create(user=request.user)
+                if "drink" in data: profile.drink = data["drink"]
+                if "budget" in data:
+                    try: profile.budget = Decimal(str(data["budget"])) if data["budget"] else None
+                    except: pass
+                if "essential_amenities" in data: profile.essential_amenities = data["essential_amenities"]
+                if "preferred_amenities" in data: profile.preferred_amenities = data["preferred_amenities"]
+                profile.save()
+                profile.favourites.set(favs)
+                
             if request.POST.get("action") == "skip":
                 return redirect("discovery:catalogue")
             return redirect("discovery:preferences")

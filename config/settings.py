@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "cafes.apps.CafesConfig",
     "discovery.apps.DiscoveryConfig",
+    "members.apps.MembersConfig",
 ]
 
 MIDDLEWARE = [
@@ -106,3 +107,10 @@ X_FRAME_OPTIONS = "DENY"
 
 # HSTS and proxy trust must be configured for the actual HTTPS hosting topology.
 # PostgreSQL, production email, backups and deployment are not part of Sprint 1.
+
+LOGIN_REDIRECT_URL = "discovery:catalogue"
+LOGOUT_REDIRECT_URL = "discovery:catalogue"
+LOGIN_URL = "members:login"
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend"
+

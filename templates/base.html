@@ -19,6 +19,14 @@
       <nav class="main-nav" aria-label="Main navigation">
         <a href="{% url 'discovery:catalogue' %}" {% if request.resolver_match.url_name == 'catalogue' or request.resolver_match.url_name == 'cafe_detail' %}aria-current="page"{% endif %}>Explore cafés</a>
         <a href="{% url 'discovery:about' %}" {% if request.resolver_match.url_name == 'about' %}aria-current="page"{% endif %}>About the guide</a>
+        {% if user.is_authenticated %}
+        <form action="{% url 'members:logout' %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="button" style="background:none; border:none; padding:0; color:var(--interactive); font:inherit; cursor:pointer;">Log out ({{ user.username }})</button>
+        </form>
+        {% else %}
+        <a href="{% url 'members:login' %}">Log in</a>
+        {% endif %}
       </nav>
     </div>
   </header>

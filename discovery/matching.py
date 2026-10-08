@@ -15,7 +15,11 @@ def rank_cafes(cafes, preferences):
     global_use_P = bool(preferred_amenities)
     global_use_B = bool(budget and drink)
     
+    from cafes.models import CafeObservation
+    amenity_choices = dict(CafeObservation.Attribute.choices)
+    
     eligible = []
+    unmet_summary = {}
     
     for cafe in cafes:
         # 1. Eligibility Check
@@ -26,16 +30,23 @@ def rank_cafes(cafes, preferences):
                 failed_essentials.append(req)
         
         if failed_essentials:
+            for req in failed_essentials:
+                reason = f"Missing essential amenity: {amenity_choices.get(req, req)}"
+                unmet_summary[reason] = unmet_summary.get(reason, 0) + 1
             continue
             
         cafe_drink_prices = []
         if global_use_B:
             offerings = [o for o in cafe.offerings.all() if o.drink_type == drink and o.is_current and o.price is not None]
             if not offerings:
+                reason = "Missing price or drink not available"
+                unmet_summary[reason] = unmet_summary.get(reason, 0) + 1
                 continue # Unknown pricing or drink not available (fails hard budget)
             
             min_price = min(o.price for o in offerings)
             if min_price > budget * Decimal("1.2"):
+                reason = "Exceeds hard budget ceiling"
+                unmet_summary[reason] = unmet_summary.get(reason, 0) + 1
                 continue # Hard ceiling fails
             cafe_drink_prices.append(min_price)
         elif global_use_T:
@@ -138,6 +149,7 @@ def rank_cafes(cafes, preferences):
     eligible.sort(key=lambda c: (-c.match_score, -c.match_coverage, c.id))
     
     has_active_prefs = global_use_T or global_use_B or global_use_P or bool(essential_amenities)
-    is_empty_due_to_constraints = len(eligible) == 0 and has_active_prefs
     
-    return eligible, is_empty_due_to_constraints
+    if len(eligible) == 0 and has_active_prefs:
+        return eligible, unmet_summary
+    return eligible, None

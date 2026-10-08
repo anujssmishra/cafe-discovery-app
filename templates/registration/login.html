@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Log in · Café Discovery{% endblock %}
+
+{% block content %}
+<div class="shell">
+  <div class="form-panel" style="max-width: 400px; margin: 2rem auto;">
+    <h2>Log in</h2>
+    {% if form.errors %}
+      <div class="form-errors" role="alert">
+        <strong>Your username and password didn't match. Please try again.</strong>
+      </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'members:login' %}">
+      {% csrf_token %}
+      <div class="field">
+        <label for="id_username">Username</label>
+        {{ form.username }}
+      </div>
+      <div class="field">
+        <label for="id_password">Password</label>
+        {{ form.password }}
+      </div>
+      <button class="button button-primary" type="submit">Log in</button>
+      <input type="hidden" name="next" value="{{ next }}">
+    </form>
+    
+    <p style="margin-top: 1rem;">
+      <a href="{% url 'members:password_reset' %}" class="text-link">Forgot password?</a>
+    </p>
+    <p style="margin-top: 0.5rem;">
+      <a href="{% url 'members:register' %}" class="text-link">Need an account? Register here.</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
