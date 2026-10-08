@@ -46,6 +46,46 @@
           {% empty %}<p class="inline-empty">Drink offerings and prices have not been recorded for this café.</p>{% endfor %}
         </div>
       </section>
+      
+      {% if editorial_reviews %}
+      <section class="detail-section" aria-labelledby="editorial-heading">
+        <p class="eyebrow">Curator notes</p>
+        <h2 id="editorial-heading">Editorial reviews</h2>
+        {% for review in editorial_reviews %}
+        <article class="editorial-review" style="margin-bottom: 2rem; padding: 1.5rem; background: var(--surface-alt); border-radius: 8px;">
+          <header style="margin-bottom: 1rem;">
+            <h3 style="margin-bottom: 0.25rem;">Review by {{ review.display_name }}</h3>
+            <p style="font-size: 0.875rem; color: #555;">Visited: {{ review.visit_date|date:"j M Y" }} &middot; Published: {{ review.publication_date|date:"j M Y" }}</p>
+          </header>
+          
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+            {% if review.coffee_rating %}
+            <div class="rating-badge" style="background: white; padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid #ddd;">
+              <strong>Coffee:</strong> {{ review.coffee_rating }}/5
+            </div>
+            {% endif %}
+            {% if review.experience_rating %}
+            <div class="rating-badge" style="background: white; padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid #ddd;">
+              <strong>Experience:</strong> {{ review.experience_rating }}/5
+            </div>
+            {% endif %}
+            {% if review.trip_rating %}
+            <div class="rating-badge" style="background: white; padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid #ddd;">
+              <strong>Trip value:</strong> {{ review.trip_rating }}/5
+            </div>
+            {% endif %}
+          </div>
+          
+          {% if review.notes %}
+          <div class="review-notes" style="line-height: 1.6;">
+            {{ review.notes|linebreaks }}
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </section>
+      {% endif %}
+      
       <section class="detail-section" aria-labelledby="evidence-heading">
         <p class="eyebrow">Know what you’re seeing</p>
         <h2 id="evidence-heading">Catalogue information</h2>

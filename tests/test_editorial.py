@@ -84,3 +84,33 @@ class EditorialReviewTests(TestCase):
         review.coffee_rating = 0
         with self.assertRaises(ValidationError):
             review.full_clean()
+
+    def test_view_displays_published_reviews(self):
+        review = EditorialReview.objects.create(
+            cafe=self.cafe,
+            curator=self.curator,
+            display_name="Expert",
+            visit_date=self.yesterday,
+            publication_date=self.today,
+            notes="Good coffee",
+            coffee_rating=4,
+            is_published=True,
+            has_permission=True,
+        )
+        response = self.client.get(f"/cafes/{self.cafe.id}/")
+        self.assertContains(response, "Review by Expert")
+        self.assertContains(response, "Good coffee")
+        self.assertContains(response, "Coffee:</strong> 4/5")
+
+    def test_view_hides_draft_reviews(self):
+        review = EditorialReview.objects.create(
+            cafe=self.cafe,
+            curator=self.curator,
+            display_name="Secret Expert",
+            visit_date=self.yesterday,
+            notes="Bad coffee",
+            is_published=False,
+        )
+        response = self.client.get(f"/cafes/{self.cafe.id}/")
+        self.assertNotContains(response, "Review by Secret Expert")
+        self.assertNotContains(response, "Bad coffee")

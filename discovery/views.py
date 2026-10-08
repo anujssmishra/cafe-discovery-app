@@ -148,6 +148,7 @@ def cafe_detail(request, pk):
             "verified_independent": "Recorded as independently owned",
             "verified_not_independent": "Recorded as not independently owned",
         }.get(cafe.independence_status, ownership_label)
+    reviews = cafe.editorial_reviews.filter(is_published=True).order_by("-publication_date")
     return render(
         request,
         "discovery/cafe_detail.html",
@@ -156,11 +157,12 @@ def cafe_detail(request, pk):
             "website_url": _safe_website(cafe.website),
             "ownership_label": ownership_label,
             "ownership_evidence_status": ownership_evidence_status,
-        "has_ownership_evidence": has_ownership_evidence
-        and cafe.independence_status != "unknown",
-        "demo_mode": getattr(settings, "DEMO_MODE", False),
-    },
-)
+            "has_ownership_evidence": has_ownership_evidence
+            and cafe.independence_status != "unknown",
+            "demo_mode": getattr(settings, "DEMO_MODE", False),
+            "editorial_reviews": reviews,
+        },
+    )
 
 @require_safe
 def map_data(request):
