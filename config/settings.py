@@ -1,3 +1,5 @@
+import dj_database_url
+
 """Environment-configured Django foundation. Hosted pilot deployment is later work."""
 
 import os

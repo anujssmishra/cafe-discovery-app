@@ -1,7 +1,8 @@
 from django import forms
-from .models import Visit
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
+
+from .models import Visit
 
 User = get_user_model()
 
