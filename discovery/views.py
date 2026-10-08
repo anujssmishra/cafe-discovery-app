@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import URLValidator
 from django.db.models.functions import Lower
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_safe
 
@@ -130,4 +130,34 @@ def about(request):
         request,
         "discovery/about.html",
         {"demo_mode": getattr(settings, "DEMO_MODE", False)},
+    )
+
+
+def preferences(request):
+    """CAFE-012: session-based preferences."""
+    from .forms import PreferencesForm
+
+    if request.method == "POST":
+        form = PreferencesForm(request.POST)
+        if form.is_valid():
+            favs = form.cleaned_data.pop("favourites", [])
+            form.cleaned_data["budget"] = (
+                str(form.cleaned_data["budget"]) if form.cleaned_data["budget"] is not None else ""
+            )
+            data = form.cleaned_data
+            data["favourites"] = [str(f.id) for f in favs]
+            request.session["preferences"] = data
+            if request.POST.get("action") == "skip":
+                return redirect("discovery:catalogue")
+            return redirect("discovery:preferences")
+    else:
+        initial = request.session.get("preferences", {})
+        if "favourites" in initial:
+            initial["favourites"] = Cafe.objects.filter(id__in=initial["favourites"], is_active=True)
+        form = PreferencesForm(initial=initial)
+
+    return render(
+        request,
+        "discovery/preferences.html",
+        {"form": form, "demo_mode": getattr(settings, "DEMO_MODE", False)},
     )

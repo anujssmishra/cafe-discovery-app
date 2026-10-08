@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Your Preferences - Café Discovery{% endblock %}
+
+{% block content %}
+<main id="main-content" class="container">
+  <h1>Your Preferences</h1>
+  <p>Tell us what you're looking for today to get better matches.</p>
+
+  <form method="post" action="{% url 'discovery:preferences' %}">
+    {% csrf_token %}
+    
+    {% if form.non_field_errors %}
+      <div class="alert alert-error" role="alert">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <fieldset>
+      <legend>Essentials vs Preferences</legend>
+      <div class="form-group">
+        {{ form.drink.label_tag }}
+        {{ form.drink }}
+        {{ form.drink.errors }}
+      </div>
+
+      <div class="form-group">
+        {{ form.budget.label_tag }}
+        {{ form.budget }}
+        {% if form.budget.help_text %}
+          <p class="help-text">{{ form.budget.help_text }}</p>
+        {% endif %}
+        {{ form.budget.errors }}
+      </div>
+
+      <div class="form-group">
+        {{ form.purpose.label_tag }}
+        {{ form.purpose }}
+        {{ form.purpose.errors }}
+      </div>
+
+      <div class="form-group">
+        {{ form.atmosphere.label_tag }}
+        {{ form.atmosphere }}
+        {% if form.atmosphere.help_text %}
+          <p class="help-text">{{ form.atmosphere.help_text }}</p>
+        {% endif %}
+        {{ form.atmosphere.errors }}
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Essential Amenities</legend>
+      <div class="form-group checkbox-group">
+        {{ form.essential_amenities }}
+        {{ form.essential_amenities.errors }}
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Favourites</legend>
+      <p class="help-text">Select up to 3 of your favourite cafés.</p>
+      <div class="form-group">
+        {{ form.favourites }}
+        {{ form.favourites.errors }}
+      </div>
+    </fieldset>
+
+    <div class="form-actions">
+      <button type="submit" name="action" value="save" class="btn btn-primary">Save Preferences</button>
+      <button type="submit" name="action" value="skip" class="btn btn-secondary" formnovalidate>Skip for Now</button>
+    </div>
+  </form>
+</main>
+{% endblock %}
