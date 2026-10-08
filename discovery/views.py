@@ -42,8 +42,7 @@ def _safe_website(value):
     return value
 
 
-@require_safe
-def catalogue(request):
+def _get_filtered_ranked_cafes(request):
     queryset = visible_cafes()
     area_records = list(
         Area.objects.filter(is_active=True, pk__in=queryset.values("area_id")).order_by(
@@ -75,7 +74,6 @@ def catalogue(request):
     preferences = request.session.get("preferences", {})
     from .matching import rank_cafes
     
-    # We must prefetch observations for ranking
     queryset = queryset.prefetch_related("observations")
     cafes_list = list(queryset.order_by(Lower("name"), "id"))
     
@@ -89,6 +87,29 @@ def catalogue(request):
             errors.append("No cafés match your essential requirements or hard budget. See below for details.")
             
     page = Paginator(cafes_list, 12).get_page(request.GET.get("page"))
+    
+    return {
+        "page": page,
+        "area_records": area_records,
+        "q": q,
+        "raw_q": raw_q,
+        "raw_area": raw_area,
+        "selected_area": selected_area,
+        "errors": errors,
+        "has_active_prefs": has_active_prefs,
+        "unmet_constraints": unmet_constraints
+    }
+
+@require_safe
+def catalogue(request):
+    data = _get_filtered_ranked_cafes(request)
+    page = data["page"]
+    q = data["q"]
+    raw_q = data["raw_q"]
+    raw_area = data["raw_area"]
+    selected_area = data["selected_area"]
+    area_records = data["area_records"]
+    
     active_params = {key: value for key, value in (("q", q), ("area", raw_area)) if value}
     query_string = urlencode(active_params)
     context = {
@@ -102,15 +123,16 @@ def catalogue(request):
         "q": q,
         "selected_area": selected_area,
         "invalid_area": bool(raw_area and selected_area is None),
-        "errors": errors,
+        "errors": data["errors"],
         "result_count": page.paginator.count,
         "query_string": query_string + "&" if query_string else "",
         "has_filters": bool(raw_q or raw_area),
-        "has_preferences": has_active_prefs,
-        "unmet_constraints": unmet_constraints,
+        "has_preferences": data["has_active_prefs"],
+        "unmet_constraints": data["unmet_constraints"],
         "demo_mode": getattr(settings, "DEMO_MODE", False),
     }
     return render(request, "discovery/catalogue.html", context)
+
 
 
 @require_safe
@@ -134,12 +156,46 @@ def cafe_detail(request, pk):
             "website_url": _safe_website(cafe.website),
             "ownership_label": ownership_label,
             "ownership_evidence_status": ownership_evidence_status,
-            "has_ownership_evidence": has_ownership_evidence
-            and cafe.independence_status != "unknown",
-            "demo_mode": getattr(settings, "DEMO_MODE", False),
-        },
-    )
+        "has_ownership_evidence": has_ownership_evidence
+        and cafe.independence_status != "unknown",
+        "demo_mode": getattr(settings, "DEMO_MODE", False),
+    },
+)
 
+@require_safe
+def map_data(request):
+    from django.http import JsonResponse
+    data = _get_filtered_ranked_cafes(request)
+    page = data["page"]
+    
+    # "map and list use the same eligible result set, including correct handling of list pagination"
+    # "Public serialization omits members/visits/drafts;"
+    
+    features = []
+    for cafe in page.object_list:
+        if cafe.latitude and cafe.longitude:
+            features.append({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [float(cafe.longitude), float(cafe.latitude)]
+                },
+                "properties": {
+                    "id": str(cafe.id),
+                    "name": cafe.name,
+                    "url": reverse("discovery:cafe_detail", args=[cafe.id]),
+                    "address": cafe.address
+                }
+            })
+            
+    geojson = {
+        "type": "FeatureCollection",
+        "features": features,
+        "count": page.paginator.count,
+        "page": page.number,
+        "num_pages": page.paginator.num_pages
+    }
+    return JsonResponse(geojson)
 
 @require_safe
 def about(request):

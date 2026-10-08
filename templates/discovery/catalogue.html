@@ -64,6 +64,10 @@
     </div>
     {% endif %}
     {% if cafes %}
+    <div class="results-controls" style="margin-bottom: 1rem;">
+      <button id="map-toggle" class="button" aria-expanded="false" aria-controls="map-container">Show Map</button>
+    </div>
+    <div id="map-container" style="display: none; height: 500px; width: 100%; margin-bottom: 2rem; background: #eaeaea; border-radius: 8px;"></div>
     <p class="results-explainer">Listed alphabetically. These are catalogue entries, not personalized recommendations.</p>
     <div class="cafe-grid">
       {% for cafe in cafes %}{% include 'discovery/cafe_card.html' %}{% endfor %}
@@ -98,4 +102,91 @@
     {% endif %}
   </section>
 </div>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+  .custom-map-marker {
+    background: #6F8172;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    color: white;
+    text-align: center;
+    line-height: 24px;
+    font-size: 14px;
+    box-shadow: 0 0 4px rgba(0,0,0,0.4);
+  }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var toggleBtn = document.getElementById('map-toggle');
+    var mapContainer = document.getElementById('map-container');
+    var map = null;
+    
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function() {
+        var isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+        if (isExpanded) {
+          toggleBtn.setAttribute('aria-expanded', 'false');
+          toggleBtn.textContent = 'Show Map';
+          mapContainer.style.display = 'none';
+        } else {
+          toggleBtn.setAttribute('aria-expanded', 'true');
+          toggleBtn.textContent = 'Hide Map';
+          mapContainer.style.display = 'block';
+          
+          if (!map) {
+            initMap();
+          }
+        }
+      });
+    }
+    
+    function initMap() {
+      map = L.map('map-container').setView([0, 0], 2);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+      
+      // Fetch map data
+      var mapDataUrl = "{% url 'discovery:map_data' %}?{{ query_string|safe }}page={{ page_obj.number|default:'1' }}";
+      
+      fetch(mapDataUrl)
+        .then(response => response.json())
+        .then(data => {
+          if (data.features && data.features.length > 0) {
+            var group = L.featureGroup();
+            
+            // Coffee cup icon
+            var cupIcon = L.divIcon({
+              html: '☕',
+              className: 'custom-map-marker',
+              iconSize: [28, 28],
+              iconAnchor: [14, 14],
+              popupAnchor: [0, -14]
+            });
+            
+            data.features.forEach(function(f) {
+              var marker = L.marker([f.geometry.coordinates[1], f.geometry.coordinates[0]], {icon: cupIcon})
+                .bindPopup('<a href="' + f.properties.url + '"><strong>' + f.properties.name + '</strong></a><br>' + f.properties.address);
+              marker.addTo(group);
+            });
+            
+            group.addTo(map);
+            map.fitBounds(group.getBounds(), {padding: [50, 50]});
+          } else {
+            map.setView([0, 0], 2);
+          }
+        })
+        .catch(err => console.error("Could not load map data:", err));
+    }
+  });
+</script>
 {% endblock %}
