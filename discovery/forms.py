@@ -76,3 +76,18 @@ class PreferencesForm(forms.Form):
             if not t.isalnum():
                 raise ValidationError(f"Tag '{t}' is invalid. Use letters and numbers only.")
         return ",".join(tags)
+
+class CorrectionReportForm(forms.ModelForm):
+    class Meta:
+        from cafes.models import CorrectionReport
+        model = CorrectionReport
+        fields = ["disputed_field", "proposed_correction", "contact"]
+        widgets = {
+            "proposed_correction": forms.Textarea(attrs={"rows": 4}),
+            "contact": forms.TextInput(attrs={"placeholder": "Optional email or username"}),
+        }
+        labels = {
+            "disputed_field": "What is incorrect or missing?",
+            "proposed_correction": "What should it be?",
+            "contact": "Contact info (optional)",
+        }

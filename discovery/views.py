@@ -164,6 +164,22 @@ def cafe_detail(request, pk):
         },
     )
 
+def cafe_correction(request, pk):
+    cafe = get_object_or_404(visible_cafes(), pk=pk)
+    from .forms import CorrectionReportForm
+    if request.method == "POST":
+        form = CorrectionReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.cafe = cafe
+            report.save()
+            from django.contrib import messages
+            messages.success(request, "Correction submitted successfully.")
+            return redirect("discovery:cafe_detail", pk=cafe.pk)
+    else:
+        form = CorrectionReportForm()
+    return render(request, "discovery/correction_form.html", {"form": form, "cafe": cafe})
+
 @require_safe
 def map_data(request):
     from django.http import JsonResponse

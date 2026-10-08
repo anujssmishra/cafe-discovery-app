@@ -98,7 +98,7 @@
           <div><dt>Source</dt><dd>{% if cafe.source %}{{ cafe.source }}{% else %}Source not recorded{% endif %}</dd></div>
           <div><dt>Ownership</dt><dd>{{ ownership_label }}{% if ownership_evidence_status == 'stale' %}<small>Recheck needed — ownership evidence is older than 30 days.</small>{% endif %}{% if has_ownership_evidence %}<small>Evidence date: {{ cafe.independence_checked_on|date:'j M Y' }}<br>Source: {{ cafe.independence_source }}</small>{% endif %}</dd></div>
         </dl>
-        <p class="source-note">A listing is not an endorsement or proof of a partnership. Checks are current for 30 days; older evidence needs rechecking. Incomplete evidence includes missing sources or invalid dates. Information can still change between checks. Missing facts remain unknown.</p>
+        <p class="source-note">A listing is not an endorsement or proof of a partnership. Checks are current for 30 days; older evidence needs rechecking. Incomplete evidence includes missing sources or invalid dates. Information can still change between checks. Missing facts remain unknown. <br><br><a href="{% url 'discovery:cafe_correction' cafe.id %}">Suggest a correction</a> for this café.</p>
       </section>
     </div>
     <aside class="location-panel" aria-labelledby="location-heading">
