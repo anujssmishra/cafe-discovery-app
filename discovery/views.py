@@ -181,6 +181,16 @@ def cafe_correction(request, pk):
     return render(request, "discovery/correction_form.html", {"form": form, "cafe": cafe})
 
 @require_safe
+def health_check(request):
+    from django.http import JsonResponse
+    from django.db import connection
+    try:
+        connection.ensure_connection()
+        return JsonResponse({"status": "ok"})
+    except Exception:
+        return JsonResponse({"status": "error"}, status=503)
+
+@require_safe
 def map_data(request):
     from django.http import JsonResponse
     data = _get_filtered_ranked_cafes(request)

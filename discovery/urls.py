@@ -11,4 +11,5 @@ urlpatterns = [
     path("cafes/<uuid:pk>/correction/", views.cafe_correction, name="cafe_correction"),
     path("about/", views.about, name="about"),
     path("preferences/", views.preferences, name="preferences"),
+    path("health/", views.health_check, name="health_check"),
 ]
