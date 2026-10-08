@@ -6,4 +6,4 @@ class MembersConfig(AppConfig):
     name = "members"
 
     def ready(self):
-        pass
+        import members.signals  # noqa: F401

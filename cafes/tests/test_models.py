@@ -71,7 +71,7 @@ class CatalogueModelTests(TestCase):
                 self.cafe.independence_checked_on = checked
                 self.assertEqual(self.cafe.is_small_group, expected)
                 self.assertEqual(self.cafe.is_verified_independent, expected)
-        self.cafe.brand_location_count = 6
+        self.cafe.brand_location_count = 7
         self.cafe.brand_count_checked_on = timezone.localdate()
         self.assertFalse(self.cafe.is_small_group)
 
