@@ -283,7 +283,7 @@ def preferences(request):
                 if "budget" in data:
                     try:
                         profile.budget = Decimal(str(data["budget"])) if data["budget"] else None
-                    except:
+                    except Exception:
                         pass
                 if "essential_amenities" in data:
                     profile.essential_amenities = data["essential_amenities"]

@@ -25,7 +25,7 @@ def transfer_session_preferences(request, user):
     if "budget" in prefs:
         try:
             profile.budget = Decimal(str(prefs["budget"])) if prefs["budget"] else None
-        except:
+        except Exception:
             pass
     if "essential_amenities" in prefs:
         profile.essential_amenities = prefs["essential_amenities"]

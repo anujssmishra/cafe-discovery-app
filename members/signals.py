@@ -18,7 +18,7 @@ def sync_preferences_on_login(sender, user, request, **kwargs):
         if "budget" in prefs:
             try:
                 profile.budget = Decimal(str(prefs["budget"])) if prefs["budget"] else None
-            except:
+            except Exception:
                 pass
         if "essential_amenities" in prefs:
             profile.essential_amenities = prefs["essential_amenities"]
