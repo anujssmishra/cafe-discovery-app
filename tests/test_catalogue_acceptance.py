@@ -321,24 +321,35 @@ class CatalogueAcceptanceTests(TestCase):
 
     def test_map_data_endpoint(self):
         a = Area.objects.create(name="Map Area", slug="map-area", is_active=True)
-        c1 = Cafe.objects.create(name="Map Cafe 1", area=a, is_active=True, latitude=51.5074, longitude=-0.1278)
-        
+        c1 = Cafe.objects.create(
+            name="Map Cafe 1", area=a, is_active=True, latitude=51.5074, longitude=-0.1278
+        )
+
         response = self.client.get(reverse("discovery:map_data") + "?area=map-area")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/json")
-        
+
         import json
+
         data = json.loads(response.content)
         self.assertEqual(data["type"], "FeatureCollection")
         self.assertEqual(data["count"], 1)
         self.assertEqual(len(data["features"]), 1)
-        
+
         # Verify pagination coordinates
         self.assertEqual(data["features"][0]["geometry"]["coordinates"], [-0.1278, 51.5074])
         self.assertEqual(data["features"][0]["properties"]["name"], "Map Cafe 1")
-        self.assertEqual(data["features"][0]["properties"]["directions_url"], "https://www.google.com/maps/dir/?api=1&destination=51.507400,-0.127800")
+        self.assertEqual(
+            data["features"][0]["properties"]["directions_url"],
+            "https://www.google.com/maps/dir/?api=1&destination=51.507400,-0.127800",
+        )
 
     def test_directions_url_address_fallback(self):
         a = Area.objects.create(name="Map Area", slug="map-area", is_active=True)
-        c2 = Cafe.objects.create(name="Map Cafe 2", area=a, is_active=True, address="10 Downing St, London")
-        self.assertEqual(c2.directions_url, "https://www.google.com/maps/dir/?api=1&destination=10%20Downing%20St%2C%20London")
+        c2 = Cafe.objects.create(
+            name="Map Cafe 2", area=a, is_active=True, address="10 Downing St, London"
+        )
+        self.assertEqual(
+            c2.directions_url,
+            "https://www.google.com/maps/dir/?api=1&destination=10%20Downing%20St%2C%20London",
+        )

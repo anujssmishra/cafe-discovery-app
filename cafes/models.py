@@ -169,6 +169,7 @@ class Cafe(models.Model):
     @property
     def directions_url(self):
         import urllib.parse
+
         base_url = "https://www.google.com/maps/dir/?api=1&destination="
         if self.has_coordinates:
             return f"{base_url}{self.latitude},{self.longitude}"
@@ -286,9 +287,7 @@ class CafeObservation(models.Model):
     class Meta:
         ordering = ("cafe", "attribute")
         constraints = [
-            models.UniqueConstraint(
-                fields=["cafe", "attribute"], name="unique_cafe_observation"
-            ),
+            models.UniqueConstraint(fields=["cafe", "attribute"], name="unique_cafe_observation"),
             models.CheckConstraint(
                 check=Q(value__in=["yes", "no", "unknown"]),
                 name="observation_valid_value",
@@ -368,8 +367,7 @@ class EditorialReview(models.Model):
         ordering = ("-publication_date", "-visit_date", "pk")
         constraints = [
             models.CheckConstraint(
-                check=Q(coffee_rating__isnull=True)
-                | Q(coffee_rating__gte=1, coffee_rating__lte=5),
+                check=Q(coffee_rating__isnull=True) | Q(coffee_rating__gte=1, coffee_rating__lte=5),
                 name="editorial_coffee_rating_range",
             ),
             models.CheckConstraint(
@@ -378,8 +376,7 @@ class EditorialReview(models.Model):
                 name="editorial_experience_rating_range",
             ),
             models.CheckConstraint(
-                check=Q(trip_rating__isnull=True)
-                | Q(trip_rating__gte=1, trip_rating__lte=5),
+                check=Q(trip_rating__isnull=True) | Q(trip_rating__gte=1, trip_rating__lte=5),
                 name="editorial_trip_rating_range",
             ),
             models.CheckConstraint(
@@ -398,11 +395,11 @@ class EditorialReview(models.Model):
         self.notes = self.notes.strip()
         self.display_name = self.display_name.strip()
         errors = {}
-        
+
         today = timezone.localdate()
         if self.visit_date and self.visit_date > today:
             errors["visit_date"] = "Visit date cannot be in the future."
-            
+
         if self.is_published:
             if not self.has_permission:
                 errors["has_permission"] = "Cannot publish without permission."
@@ -410,6 +407,6 @@ class EditorialReview(models.Model):
                 errors["publication_date"] = "Published reviews require a publication date."
             elif self.publication_date > today:
                 errors["publication_date"] = "Publication date cannot be in the future."
-                
+
         if errors:
             raise ValidationError(errors)

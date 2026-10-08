@@ -1,4 +1,3 @@
-from decimal import Decimal
 
 from django.test import TestCase
 from django.urls import reverse
@@ -54,7 +53,9 @@ class PreferencesTests(TestCase):
         }
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "favourites", "You can select up to 3 favourite cafés.")
+        self.assertFormError(
+            response, "form", "favourites", "You can select up to 3 favourite cafés."
+        )
 
     def test_invalid_atmosphere_tags_rejected(self):
         data = {
@@ -70,7 +71,7 @@ class PreferencesTests(TestCase):
         session = self.client.session
         session["preferences"] = {"drink": "espresso", "budget": "0.10"}
         session.save()
-        
+
         response = self.client.get(reverse("discovery:catalogue"))
         self.assertContains(response, "The following essential constraints excluded the matches:")
         self.assertContains(response, "Missing price or drink not available")

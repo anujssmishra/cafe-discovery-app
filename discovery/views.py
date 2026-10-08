@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import URLValidator
 from django.db.models.functions import Lower
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_safe
 
@@ -73,21 +73,26 @@ def _get_filtered_ranked_cafes(request):
 
     preferences = request.session.get("preferences", {})
     from .matching import rank_cafes
-    
+
     queryset = queryset.prefetch_related("observations")
     cafes_list = list(queryset.order_by(Lower("name"), "id"))
-    
-    has_active_prefs = any(preferences.get(k) for k in ["drink", "budget", "essential_amenities", "preferred_amenities"])
-    
+
+    has_active_prefs = any(
+        preferences.get(k)
+        for k in ["drink", "budget", "essential_amenities", "preferred_amenities"]
+    )
+
     unmet_constraints = None
     if has_active_prefs:
         cafes_list, unmet_summary = rank_cafes(cafes_list, preferences)
         if unmet_summary is not None:
             unmet_constraints = unmet_summary
-            errors.append("No cafés match your essential requirements or hard budget. See below for details.")
-            
+            errors.append(
+                "No cafés match your essential requirements or hard budget. See below for details."
+            )
+
     page = Paginator(cafes_list, 12).get_page(request.GET.get("page"))
-    
+
     return {
         "page": page,
         "area_records": area_records,
@@ -97,8 +102,9 @@ def _get_filtered_ranked_cafes(request):
         "selected_area": selected_area,
         "errors": errors,
         "has_active_prefs": has_active_prefs,
-        "unmet_constraints": unmet_constraints
+        "unmet_constraints": unmet_constraints,
     }
+
 
 @require_safe
 def catalogue(request):
@@ -109,7 +115,7 @@ def catalogue(request):
     raw_area = data["raw_area"]
     selected_area = data["selected_area"]
     area_records = data["area_records"]
-    
+
     active_params = {key: value for key, value in (("q", q), ("area", raw_area)) if value}
     query_string = urlencode(active_params)
     context = {
@@ -132,7 +138,6 @@ def catalogue(request):
         "demo_mode": getattr(settings, "DEMO_MODE", False),
     }
     return render(request, "discovery/catalogue.html", context)
-
 
 
 @require_safe
@@ -164,9 +169,11 @@ def cafe_detail(request, pk):
         },
     )
 
+
 def cafe_correction(request, pk):
     cafe = get_object_or_404(visible_cafes(), pk=pk)
     from .forms import CorrectionReportForm
+
     if request.method == "POST":
         form = CorrectionReportForm(request.POST)
         if form.is_valid():
@@ -174,59 +181,67 @@ def cafe_correction(request, pk):
             report.cafe = cafe
             report.save()
             from django.contrib import messages
+
             messages.success(request, "Correction submitted successfully.")
             return redirect("discovery:cafe_detail", pk=cafe.pk)
     else:
         form = CorrectionReportForm()
     return render(request, "discovery/correction_form.html", {"form": form, "cafe": cafe})
 
+
 @require_safe
 def health_check(request):
-    from django.http import JsonResponse
     from django.db import connection
+    from django.http import JsonResponse
+
     try:
         connection.ensure_connection()
         return JsonResponse({"status": "ok"})
     except Exception:
         return JsonResponse({"status": "error"}, status=503)
 
+
 @require_safe
 def map_data(request):
     from django.http import JsonResponse
+
     data = _get_filtered_ranked_cafes(request)
     page = data["page"]
-    
+
     # "map and list use the same eligible result set, including correct handling of list pagination"
     # "Public serialization omits members/visits/drafts;"
-    
+
     features = []
     for cafe in page.object_list:
         if cafe.latitude and cafe.longitude:
-            features.append({
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [float(cafe.longitude), float(cafe.latitude)]
-                },
-                "properties": {
-                    "id": str(cafe.id),
-                    "name": cafe.name,
-                    "url": reverse("discovery:cafe_detail", args=[cafe.id]),
-                    "address": cafe.address,
-                    "directions_url": cafe.directions_url,
-                    "is_independent": cafe.is_verified_independent,
-                    "is_small_group": cafe.is_small_group
+            features.append(
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [float(cafe.longitude), float(cafe.latitude)],
+                    },
+                    "properties": {
+                        "id": str(cafe.id),
+                        "name": cafe.name,
+                        "url": reverse("discovery:cafe_detail", args=[cafe.id]),
+                        "address": cafe.address,
+                        "directions_url": cafe.directions_url,
+                        "is_independent": cafe.is_verified_independent,
+                        "is_small_group": cafe.is_small_group,
+                    },
                 }
-            })
-            
+            )
+
     geojson = {
         "type": "FeatureCollection",
         "features": features,
         "count": page.paginator.count,
         "page": page.number,
-        "num_pages": page.paginator.num_pages
+        "num_pages": page.paginator.num_pages,
     }
     return JsonResponse(geojson)
+
 
 @require_safe
 def about(request):
@@ -235,6 +250,7 @@ def about(request):
         "discovery/about.html",
         {"demo_mode": getattr(settings, "DEMO_MODE", False)},
     )
+
 
 @require_safe
 def privacy(request):
@@ -255,27 +271,36 @@ def preferences(request):
             data = form.cleaned_data
             data["favourites"] = [str(f.id) for f in favs]
             request.session["preferences"] = data
-            
+
             if request.user.is_authenticated:
-                from members.models import TasteProfile
                 from decimal import Decimal
+
+                from members.models import TasteProfile
+
                 profile, _ = TasteProfile.objects.get_or_create(user=request.user)
-                if "drink" in data: profile.drink = data["drink"]
+                if "drink" in data:
+                    profile.drink = data["drink"]
                 if "budget" in data:
-                    try: profile.budget = Decimal(str(data["budget"])) if data["budget"] else None
-                    except: pass
-                if "essential_amenities" in data: profile.essential_amenities = data["essential_amenities"]
-                if "preferred_amenities" in data: profile.preferred_amenities = data["preferred_amenities"]
+                    try:
+                        profile.budget = Decimal(str(data["budget"])) if data["budget"] else None
+                    except:
+                        pass
+                if "essential_amenities" in data:
+                    profile.essential_amenities = data["essential_amenities"]
+                if "preferred_amenities" in data:
+                    profile.preferred_amenities = data["preferred_amenities"]
                 profile.save()
                 profile.favourites.set(favs)
-                
+
             if request.POST.get("action") == "skip":
                 return redirect("discovery:catalogue")
             return redirect("discovery:preferences")
     else:
         initial = request.session.get("preferences", {})
         if "favourites" in initial:
-            initial["favourites"] = Cafe.objects.filter(id__in=initial["favourites"], is_active=True)
+            initial["favourites"] = Cafe.objects.filter(
+                id__in=initial["favourites"], is_active=True
+            )
         form = PreferencesForm(initial=initial)
 
     return render(

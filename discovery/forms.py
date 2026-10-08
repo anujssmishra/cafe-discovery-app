@@ -60,7 +60,9 @@ class PreferencesForm(forms.Form):
         essentials = set(cleaned_data.get("essential_amenities") or [])
         preferred = set(cleaned_data.get("preferred_amenities") or [])
         if essentials & preferred:
-            self.add_error("preferred_amenities", "An amenity cannot be both essential and preferred.")
+            self.add_error(
+                "preferred_amenities", "An amenity cannot be both essential and preferred."
+            )
         return cleaned_data
 
     def clean_favourites(self):
@@ -77,9 +79,11 @@ class PreferencesForm(forms.Form):
                 raise ValidationError(f"Tag '{t}' is invalid. Use letters and numbers only.")
         return ",".join(tags)
 
+
 class CorrectionReportForm(forms.ModelForm):
     class Meta:
         from cafes.models import CorrectionReport
+
         model = CorrectionReport
         fields = ["disputed_field", "proposed_correction", "contact"]
         widgets = {

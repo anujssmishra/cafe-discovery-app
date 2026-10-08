@@ -1,11 +1,12 @@
 from datetime import timedelta
-from django.test import TestCase
-from django.core.exceptions import ValidationError
-from django.db.utils import IntegrityError
-from django.utils import timezone
+
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.test import TestCase
+from django.utils import timezone
 
 from cafes.models import Area, Cafe, EditorialReview
+
 
 class EditorialReviewTests(TestCase):
     @classmethod
@@ -80,7 +81,7 @@ class EditorialReviewTests(TestCase):
         )
         with self.assertRaises(ValidationError):
             review.full_clean()
-            
+
         review.coffee_rating = 0
         with self.assertRaises(ValidationError):
             review.full_clean()

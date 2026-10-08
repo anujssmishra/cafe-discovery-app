@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Area, Cafe, CafeOffering, CafeObservation, CorrectionReport, EditorialReview
+from .models import Area, Cafe, CafeObservation, CafeOffering, CorrectionReport, EditorialReview
 
 
 class CafeOfferingInline(admin.TabularInline):
@@ -71,6 +71,7 @@ class CorrectionReportAdmin(admin.ModelAdmin):
     list_select_related = ("cafe",)
     autocomplete_fields = ("cafe",)
     readonly_fields = ("submitted_on",)
+
 
 @admin.register(EditorialReview)
 class EditorialReviewAdmin(admin.ModelAdmin):

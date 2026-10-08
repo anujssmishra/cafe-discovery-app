@@ -121,6 +121,7 @@ class CatalogueModelTests(TestCase):
 
     def test_observation_unique_per_attribute_and_enforces_choices(self):
         from cafes.models import CafeObservation
+
         obs = CafeObservation.objects.create(cafe=self.cafe, attribute="wifi", value="yes")
         with self.assertRaises(IntegrityError), transaction.atomic():
             CafeObservation.objects.create(cafe=self.cafe, attribute="wifi", value="no")
@@ -131,6 +132,7 @@ class CatalogueModelTests(TestCase):
 
     def test_observation_freshness_rules(self):
         from cafes.models import CafeObservation
+
         obs = CafeObservation(cafe=self.cafe, attribute="wifi", value="yes")
         self.assertFalse(obs.is_current)
         self.assertEqual(obs.evidence_status, "incomplete")
@@ -144,6 +146,7 @@ class CatalogueModelTests(TestCase):
 
     def test_correction_report_enforces_status_choices(self):
         from cafes.models import CorrectionReport
+
         report = CorrectionReport.objects.create(
             cafe=self.cafe, disputed_field="address", proposed_correction="123 New St"
         )
