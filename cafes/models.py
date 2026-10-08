@@ -251,3 +251,83 @@ class CafeOffering(models.Model):
     @property
     def evidence_status(self):
         return evidence_status(self.checked_on, self.source)
+
+
+class CafeObservation(models.Model):
+    class Attribute(models.TextChoices):
+        WIFI = "wifi", "Wi-Fi available"
+        POWER = "power", "Power outlets"
+        ACCESSIBLE = "accessible", "Accessible entrance"
+        ROASTERY = "roastery", "Roastery on site"
+        FOOD = "food", "Substantial food"
+
+    class Value(models.TextChoices):
+        YES = "yes", "Yes"
+        NO = "no", "No"
+        UNKNOWN = "unknown", "Unknown"
+
+    cafe = models.ForeignKey(Cafe, on_delete=models.CASCADE, related_name="observations")
+    attribute = models.CharField(max_length=40, choices=Attribute.choices)
+    value = models.CharField(max_length=20, choices=Value.choices, default=Value.UNKNOWN)
+    source = models.TextField(blank=True)
+    checked_on = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ("cafe", "attribute")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["cafe", "attribute"], name="unique_cafe_observation"
+            ),
+            models.CheckConstraint(
+                check=Q(value__in=["yes", "no", "unknown"]),
+                name="observation_valid_value",
+            ),
+            models.CheckConstraint(
+                check=Q(attribute__in=["wifi", "power", "accessible", "roastery", "food"]),
+                name="observation_valid_attribute",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.cafe}: {self.get_attribute_display()} - {self.get_value_display()}"
+
+    def clean(self):
+        super().clean()
+        self.source = self.source.strip()
+        validate_checking_dates(self, ("checked_on",))
+
+    @property
+    def is_current(self):
+        return bool(self.source.strip()) and evidence_is_current(self.checked_on)
+
+    @property
+    def evidence_status(self):
+        return evidence_status(self.checked_on, self.source)
+
+
+class CorrectionReport(models.Model):
+    class Status(models.TextChoices):
+        NEW = "new", "New"
+        IN_PROGRESS = "in_progress", "In progress"
+        RESOLVED = "resolved", "Resolved"
+        REJECTED = "rejected", "Rejected"
+
+    cafe = models.ForeignKey(Cafe, on_delete=models.CASCADE, related_name="correction_reports")
+    disputed_field = models.CharField(max_length=100)
+    proposed_correction = models.TextField()
+    contact = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
+    submitted_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-submitted_on", "pk")
+        constraints = [
+            models.CheckConstraint(
+                check=Q(status__in=["new", "in_progress", "resolved", "rejected"]),
+                name="correction_valid_status",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Correction for {self.cafe} ({self.get_status_display()})"

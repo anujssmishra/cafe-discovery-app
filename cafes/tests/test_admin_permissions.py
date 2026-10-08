@@ -19,7 +19,7 @@ class CatalogueEditorPermissionsTests(TestCase):
         self.editor.groups.add(self.group)
 
     def test_role_contains_only_catalogue_permissions(self):
-        self.assertEqual(self.group.permissions.count(), 12)
+        self.assertEqual(self.group.permissions.count(), 20)
         self.assertEqual(
             set(self.group.permissions.values_list("content_type__app_label", flat=True)), {"cafes"}
         )
@@ -31,12 +31,12 @@ class CatalogueEditorPermissionsTests(TestCase):
         )
         call_command("setup_catalogue_editors", stdout=StringIO())
         self.assertEqual(Group.objects.filter(name=GROUP_NAME).count(), 1)
-        self.assertEqual(self.group.permissions.count(), 12)
+        self.assertEqual(self.group.permissions.count(), 20)
         self.assertFalse(self.group.permissions.filter(content_type__app_label="auth").exists())
 
     def test_editor_can_open_catalogue_but_not_auth_administration(self):
         self.client.force_login(self.editor)
-        for model in ("area", "cafe", "cafeoffering"):
+        for model in ("area", "cafe", "cafeoffering", "correctionreport"):
             with self.subTest(model=model):
                 self.assertEqual(
                     self.client.get(reverse(f"admin:cafes_{model}_changelist")).status_code, 200

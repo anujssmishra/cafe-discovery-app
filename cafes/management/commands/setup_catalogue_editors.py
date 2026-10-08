@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 GROUP_NAME = "Catalogue editors"
-CATALOGUE_MODELS = ("area", "cafe", "cafeoffering")
+CATALOGUE_MODELS = ("area", "cafe", "cafeoffering", "cafeobservation", "correctionreport")
 
 
 class Command(BaseCommand):
@@ -28,6 +28,6 @@ class Command(BaseCommand):
         group.permissions.set(permissions)
         self.stdout.write(
             self.style.SUCCESS(
-                "Catalogue editors has 12 catalogue permissions. No accounts or staff access were created."
+                f"Catalogue editors has {len(expected)} catalogue permissions. No accounts or staff access were created."
             )
         )

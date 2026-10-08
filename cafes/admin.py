@@ -1,12 +1,18 @@
 from django.contrib import admin
 
-from .models import Area, Cafe, CafeOffering
+from .models import Area, Cafe, CafeOffering, CafeObservation, CorrectionReport
 
 
 class CafeOfferingInline(admin.TabularInline):
     model = CafeOffering
     extra = 0
     fields = ("drink_type", "brewing_method", "price", "currency", "checked_on", "source")
+
+
+class CafeObservationInline(admin.TabularInline):
+    model = CafeObservation
+    extra = 0
+    fields = ("attribute", "value", "checked_on", "source", "notes")
 
 
 @admin.register(Area)
@@ -25,7 +31,7 @@ class CafeAdmin(admin.ModelAdmin):
     list_select_related = ("area",)
     autocomplete_fields = ("area",)
     readonly_fields = ("id",)
-    inlines = (CafeOfferingInline,)
+    inlines = (CafeOfferingInline, CafeObservationInline)
     fieldsets = (
         ("Public identity", {"fields": ("id", "name", "area", "address", "summary", "website")}),
         ("Publication and source", {"fields": ("is_active", "is_demo", "source", "checked_on")}),
@@ -55,3 +61,13 @@ class CafeOfferingAdmin(admin.ModelAdmin):
     search_fields = ("cafe__name", "brewing_method")
     list_select_related = ("cafe",)
     autocomplete_fields = ("cafe",)
+
+
+@admin.register(CorrectionReport)
+class CorrectionReportAdmin(admin.ModelAdmin):
+    list_display = ("cafe", "disputed_field", "status", "submitted_on")
+    list_filter = ("status", "submitted_on")
+    search_fields = ("cafe__name", "disputed_field", "proposed_correction", "contact")
+    list_select_related = ("cafe",)
+    autocomplete_fields = ("cafe",)
+    readonly_fields = ("submitted_on",)
