@@ -64,14 +64,44 @@
     </div>
     {% endif %}
     {% if cafes %}
-    <div class="results-controls" style="margin-bottom: 1rem;">
-      <button id="map-toggle" class="button" aria-expanded="false" aria-controls="map-container">Show Map</button>
+    <div class="results-controls" style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+      <div role="group" aria-label="View mode" style="display: flex; gap: 0.5rem;">
+        <button id="view-list" class="button button-primary" aria-pressed="true">List view</button>
+        <button id="view-map" class="button button-secondary" aria-pressed="false">Map view</button>
+      </div>
     </div>
-    <div id="map-container" style="display: none; height: 500px; width: 100%; margin-bottom: 2rem; background: #eaeaea; border-radius: 8px;"></div>
-    <p class="results-explainer">Listed alphabetically. These are catalogue entries, not personalized recommendations.</p>
-    <div class="cafe-grid">
-      {% for cafe in cafes %}{% include 'discovery/cafe_card.html' %}{% endfor %}
+    
+    <div id="map-container" style="display: none; height: 600px; width: 100%; margin-bottom: 2rem; background: #eaeaea; border-radius: 8px;"></div>
+    
+    <div id="list-container">
+      <p class="results-explainer">Listed alphabetically. These are catalogue entries, not personalized recommendations.</p>
+      <div class="cafe-grid">
+        {% for cafe in cafes %}{% include 'discovery/cafe_card.html' %}{% endfor %}
+      </div>
     </div>
+    
+    <dialog id="cafe-preview-dialog" aria-labelledby="dialog-cafe-name" style="max-width: 600px; padding: 2rem; border-radius: 8px; border: 1px solid #ccc; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <h2 id="dialog-cafe-name" style="margin: 0;"></h2>
+        <button id="dialog-close" class="button" aria-label="Close dialog" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 0;">&times;</button>
+      </div>
+      <p id="dialog-cafe-address" style="margin-bottom: 1.5rem; color: #555;"></p>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+        <a id="dialog-cafe-link" href="#" class="button button-primary">View full details</a>
+        
+        {% if request.user.is_authenticated %}
+        <a id="dialog-cafe-visit" href="#" class="button button-secondary">Log Visit</a>
+        
+        <form id="dialog-cafe-save-form" method="post" action="" style="margin:0;">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="button button-secondary" style="background:none; border:2px solid var(--interactive);">
+            ♡ Save to Shortlist
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </dialog>
     {% if page_obj.has_other_pages %}
     <nav class="pagination" aria-label="Catalogue pages">
       <div>{% if page_obj.has_previous %}<a class="button button-secondary" href="?{{ query_string }}page={{ page_obj.previous_page_number }}">← Previous</a>{% endif %}</div>
@@ -124,25 +154,68 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    var toggleBtn = document.getElementById('map-toggle');
+    var btnList = document.getElementById('view-list');
+    var btnMap = document.getElementById('view-map');
     var mapContainer = document.getElementById('map-container');
+    var listContainer = document.getElementById('list-container');
     var map = null;
     
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', function() {
-        var isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
-        if (isExpanded) {
-          toggleBtn.setAttribute('aria-expanded', 'false');
-          toggleBtn.textContent = 'Show Map';
-          mapContainer.style.display = 'none';
+    // Dialog elements
+    var dialog = document.getElementById('cafe-preview-dialog');
+    var dName = document.getElementById('dialog-cafe-name');
+    var dAddress = document.getElementById('dialog-cafe-address');
+    var dLink = document.getElementById('dialog-cafe-link');
+    var dVisit = document.getElementById('dialog-cafe-visit');
+    var dClose = document.getElementById('dialog-close');
+    
+    var dSaveForm = document.getElementById('dialog-cafe-save-form');
+    
+    if (dClose && dialog) {
+      dClose.addEventListener('click', () => dialog.close());
+    }
+    
+    function showPreviewDialog(cafe) {
+      if (!dialog) return;
+      dName.textContent = cafe.name;
+      dAddress.textContent = cafe.address;
+      dLink.href = cafe.url;
+      if (dVisit) {
+        dVisit.href = "{% url 'members:visits' %}?cafe=" + cafe.id;
+      }
+      if (dSaveForm) {
+        // Build the toggle URL dynamically or from a data attribute if provided. 
+        // /members/favourites/<uuid>/toggle/
+        dSaveForm.action = "/members/favourites/" + cafe.id + "/toggle/";
+      }
+      dialog.showModal();
+    }
+    
+    if (btnList && btnMap) {
+      btnList.addEventListener('click', function() {
+        btnList.setAttribute('aria-pressed', 'true');
+        btnList.classList.replace('button-secondary', 'button-primary');
+        
+        btnMap.setAttribute('aria-pressed', 'false');
+        btnMap.classList.replace('button-primary', 'button-secondary');
+        
+        mapContainer.style.display = 'none';
+        listContainer.style.display = 'block';
+      });
+      
+      btnMap.addEventListener('click', function() {
+        btnMap.setAttribute('aria-pressed', 'true');
+        btnMap.classList.replace('button-secondary', 'button-primary');
+        
+        btnList.setAttribute('aria-pressed', 'false');
+        btnList.classList.replace('button-primary', 'button-secondary');
+        
+        listContainer.style.display = 'none';
+        mapContainer.style.display = 'block';
+        
+        if (!map) {
+          initMap();
         } else {
-          toggleBtn.setAttribute('aria-expanded', 'true');
-          toggleBtn.textContent = 'Hide Map';
-          mapContainer.style.display = 'block';
-          
-          if (!map) {
-            initMap();
-          }
+          map.invalidateSize();
         }
       });
     }
@@ -155,7 +228,6 @@
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }).addTo(map);
       
-      // Fetch map data
       var mapDataUrl = "{% url 'discovery:map_data' %}?{{ query_string|safe }}page={{ page_obj.number|default:'1' }}";
       
       fetch(mapDataUrl)
@@ -164,18 +236,23 @@
           if (data.features && data.features.length > 0) {
             var group = L.featureGroup();
             
-            // Coffee cup icon
             var cupIcon = L.divIcon({
               html: '☕',
               className: 'custom-map-marker',
               iconSize: [28, 28],
-              iconAnchor: [14, 14],
-              popupAnchor: [0, -14]
+              iconAnchor: [14, 14]
             });
             
             data.features.forEach(function(f) {
-              var marker = L.marker([f.geometry.coordinates[1], f.geometry.coordinates[0]], {icon: cupIcon})
-                .bindPopup('<a href="' + f.properties.url + '"><strong>' + f.properties.name + '</strong></a><br>' + f.properties.address);
+              var marker = L.marker([f.geometry.coordinates[1], f.geometry.coordinates[0]], {icon: cupIcon});
+              marker.on('click', function() {
+                showPreviewDialog({
+                  id: f.properties.id,
+                  name: f.properties.name,
+                  address: f.properties.address,
+                  url: f.properties.url
+                });
+              });
               marker.addTo(group);
             });
             
