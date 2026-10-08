@@ -1,5 +1,5 @@
-
 """Environment-configured Django foundation. Hosted pilot deployment is later work."""
+
 import os
 from pathlib import Path
 
