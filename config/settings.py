@@ -1,10 +1,9 @@
-import dj_database_url
 
 """Environment-configured Django foundation. Hosted pilot deployment is later work."""
-
 import os
 from pathlib import Path
 
+import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
