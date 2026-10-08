@@ -229,3 +229,4 @@ Release sequence: staging checks → catalogue review → backup/restore exercis
 ## 7. Future Expansion Triggers
 
 Use PostgreSQL indexing/query improvements when measured load needs them. Consider asynchronous jobs for genuine long-running tasks, spatial storage for a larger geographic catalogue, native clients after web retention is demonstrated, and more complex recommendation models only after sufficient legitimate data and a baseline comparison. Each addition needs an owner, benefit, cost and privacy review in [DECISIONS.md](DECISIONS.md).
+
