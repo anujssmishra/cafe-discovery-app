@@ -5,8 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseRedirect
 from cafes.models import Cafe
-from .forms import CustomUserCreationForm
-from .models import TasteProfile
+from .forms import CustomUserCreationForm, VisitForm
+from .models import TasteProfile, Visit
 
 def transfer_session_preferences(request, user):
     prefs = request.session.get("preferences")
@@ -78,3 +78,44 @@ def toggle_favourite(request, cafe_id):
     if next_url:
         return HttpResponseRedirect(next_url)
     return redirect("discovery:catalogue")
+
+@login_required
+def visit_list(request):
+    if request.method == "POST":
+        form = VisitForm(request.POST)
+        if form.is_valid():
+            visit = form.save(commit=False)
+            visit.user = request.user
+            visit.save()
+            return redirect("members:visits")
+    else:
+        # Pre-fill cafe if provided
+        initial = {}
+        if request.GET.get("cafe"):
+            initial["cafe"] = request.GET.get("cafe")
+        form = VisitForm(initial=initial)
+        # Limit cafe choices to active cafes
+        form.fields["cafe"].queryset = Cafe.objects.filter(is_active=True)
+        
+    visits = request.user.visits.all().order_by("-visit_date")
+    return render(request, "members/visit_list.html", {"visits": visits, "form": form})
+
+@login_required
+def visit_edit(request, visit_id):
+    visit = get_object_or_404(Visit, id=visit_id, user=request.user)
+    if request.method == "POST":
+        form = VisitForm(request.POST, instance=visit)
+        if form.is_valid():
+            form.save()
+            return redirect("members:visits")
+    else:
+        form = VisitForm(instance=visit)
+        form.fields["cafe"].queryset = Cafe.objects.filter(is_active=True)
+    return render(request, "members/visit_edit.html", {"form": form, "visit": visit})
+
+@require_POST
+@login_required
+def visit_delete(request, visit_id):
+    visit = get_object_or_404(Visit, id=visit_id, user=request.user)
+    visit.delete()
+    return redirect("members:visits")

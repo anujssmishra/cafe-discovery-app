@@ -106,3 +106,56 @@ class RegistrationAndLoginTests(TestCase):
         messages = list(response.wsgi_request._messages)
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "You can only save up to 3 cafés to your shortlist.")
+
+    def test_visit_creation_and_authorization(self):
+        user1 = User.objects.create_user(username="u1", password="pw")
+        user2 = User.objects.create_user(username="u2", password="pw")
+        from cafes.models import Area, Cafe
+        area = Area.objects.create(name="Area", slug="area")
+        cafe = Cafe.objects.create(name="Cafe", area=area)
+        
+        self.client.login(username="u1", password="pw")
+        response = self.client.post(reverse("members:visits"), {
+            "cafe": cafe.id,
+            "visit_date": "2023-01-01",
+            "coffee_rating": 4
+        })
+        self.assertEqual(response.status_code, 302)
+        
+        from members.models import Visit
+        visit = Visit.objects.get(user=user1)
+        self.assertEqual(visit.coffee_rating, 4)
+        
+        # Test editing own visit
+        response = self.client.post(reverse("members:visit_edit", args=[visit.id]), {
+            "cafe": cafe.id,
+            "visit_date": "2023-01-02",
+            "coffee_rating": 5
+        })
+        self.assertEqual(response.status_code, 302)
+        visit.refresh_from_db()
+        self.assertEqual(visit.coffee_rating, 5)
+        
+        # Test editing someone else's visit (should 404)
+        self.client.logout()
+        self.client.login(username="u2", password="pw")
+        response = self.client.post(reverse("members:visit_edit", args=[visit.id]), {
+            "cafe": cafe.id,
+            "visit_date": "2023-01-02",
+            "coffee_rating": 1
+        })
+        self.assertEqual(response.status_code, 404)
+        visit.refresh_from_db()
+        self.assertEqual(visit.coffee_rating, 5) # untouched
+        
+        # Test deleting someone else's visit
+        response = self.client.post(reverse("members:visit_delete", args=[visit.id]))
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(Visit.objects.count(), 1)
+        
+        # Test deleting own visit
+        self.client.logout()
+        self.client.login(username="u1", password="pw")
+        response = self.client.post(reverse("members:visit_delete", args=[visit.id]))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Visit.objects.count(), 0)

@@ -23,6 +23,7 @@
             {% endwith %}
           </button>
         </form>
+        <a href="{% url 'members:visits' %}?cafe={{ cafe.id }}" class="button button-primary" style="margin-left: 0.5rem;">Log Visit</a>
       {% endif %}
     </div>
 
