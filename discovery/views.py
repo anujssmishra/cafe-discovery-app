@@ -236,6 +236,10 @@ def about(request):
         {"demo_mode": getattr(settings, "DEMO_MODE", False)},
     )
 
+@require_safe
+def privacy(request):
+    return render(request, "discovery/privacy.html")
+
 
 def preferences(request):
     """CAFE-012: session-based preferences."""
