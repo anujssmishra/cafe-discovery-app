@@ -288,7 +288,7 @@ class Command(BaseCommand):
                     "latitude": cd["lat"],
                     "longitude": cd["lon"],
                     "is_active": cd["is_active"],
-                    "is_demo": True,
+                    "is_demo": False,
                     "independence_status": indep_status,
                     "brand_location_count": cd["worldwide_locations_count"],
                     "brand_count_scope": "worldwide",
