@@ -1,6 +1,6 @@
 # MariaDB and Hostinger release verification
 
-Updated: 2026-10-09. Current branch: codex/hostinger-mariadb, based on clean main 5c25b1d3a2bf7b3ca1addb35444a06d778ecca7d. Fetch found no newer origin/main at the start of this work. The user requested MariaDB and a Hostinger-ready deployment for myfanverse.in. This section supersedes the earlier runtime target; historical review evidence follows below.
+Updated: 2026-10-09. Review prepared on codex/hostinger-mariadb at implementation checkpoint 1db5344, based on clean main 5c25b1d3a2bf7b3ca1addb35444a06d778ecca7d. User-authorized integration was merged and pushed to main on 2026-10-09; use main for continuation. Fetch found no newer origin/main at the start of this work. The user requested MariaDB and a Hostinger-ready deployment for myfanverse.in. This section supersedes the earlier runtime target; historical review evidence follows below.
 
 ## Fixes and independent review
 
@@ -59,7 +59,7 @@ Release: localdata/releases/hostinger-myfanverse.in.zip (ignored, outside public
 
 Actual Hostinger account PHP/MariaDB versions, staging/live responses, DNS/SSL, host permissions/logging and backup restoration remain unrun because no live hosting access/values were supplied. GitHub-hosted CI is unobserved; its matrix is configuration, not an observed pass. Apache hosting.php is a local check and is not run by the current CI workflow. Windows-native optional test branches are unrun. Keyboard/narrow-screen visual acceptance remains open from the previous browser helper initialization failure; no new browser pass is claimed. Production starts empty; real catalogue sourcing and PHP admin/later features are separate work.
 
-No live deployment, DNS changes, production schema/seed or external communications occurred. The new work remains on the local feature branch; the earlier main merge/push applies to the previous review only.
+No live deployment, DNS changes, production schema/seed or external communications occurred. The verified MariaDB implementation was merged and pushed to main at checkpoint 1db5344 following user authorization on 2026-10-09. Both remote main and the feature branch were independently confirmed at that SHA. No hosted CI pass is inferred from publication.
 
 ---
 # PHP catalogue review and verification

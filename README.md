@@ -26,7 +26,7 @@ Native PHP/MariaDB commands, Windows environment setup, integration checks and H
 
 ## Verification and continuation
 
-The previous PHP review was merged and pushed as `5c25b1d`. The MariaDB/Hostinger work is on `codex/hostinger-mariadb`. Inspect actual Git status/head before continuing. [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records commands and remaining browser/hosting checks; [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) identifies the next work. Inspect Git/CI for actual publication and hosted-run state.
+The PHP/MariaDB Hostinger implementation was merged and pushed to `main` at implementation checkpoint `1db5344`. Use `main` for continuation; inspect actual Git status/head before editing. [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records commands and remaining browser/hosting checks; [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) identifies the next work. Inspect Git/CI for actual publication and hosted-run state.
 
 ## Project guide
 

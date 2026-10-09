@@ -6,7 +6,7 @@ Updated: 2026-10-09. Context transfers through source/evidence, not credentials 
 
 - Private repository: anujssmishra/cafe-discovery-app.
 - Previous review merged/pushed to main: 5c25b1d3a2bf7b3ca1addb35444a06d778ecca7d.
-- Latest branch: codex/hostinger-mariadb, created from clean main after fetch found no newer origin/main. Inspect actual status/head and preserve edits; never reset to a recorded hash.
+- Continuation branch: main. The verified MariaDB implementation was merged and pushed at checkpoint 1db5344 after user-authorized integration of codex/hostinger-mariadb, based on clean main 5c25b1d. Inspect actual current status/head and preserve edits; never reset to a recorded hash.
 - Active app: PHP8.2+/MariaDB10.11+ under php_app/. PDO keeps its mysql driver and native prepares. No Composer/Django/PHPUnit setup required.
 - Target: Hostinger Web/Cloud at myfanverse.in. Actual account runtime, deployment, DNS/SSL remain unverified. No live changes or production seed have run.
 - Verified: PHP 8.2.34/8.3.35 × MariaDB 10.11.19/11.4.13, 118 integration checks per pair; 27-file lint, 40 unit, 47 config and 105 package checks per PHP runtime; 27 local Apache ZIP-layout checks on PHP 8.2.34. Current test evidence and limits: QUALITY_REVIEW.md. Historical MySQL/Django passes are separate evidence.

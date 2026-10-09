@@ -1,6 +1,6 @@
 # Starter Prompt for Any Coding Assistant
 
-Inspect actual Git status/head and preserve work. MariaDB/Hostinger work is on codex/hostinger-mariadb, based on main 5c25b1d.
+Inspect actual Git status/head and preserve work. The reviewed PHP/MariaDB Hostinger implementation is published on main at implementation checkpoint 1db5344; use main for continuation.
 
 ```text
 Continue the private cafe-discovery-app repository. Read AGENTS.md and DEVELOPMENT_HANDOFF.md first, then GETTING_STARTED.md, DECISIONS.md (D13), TECHNICAL_DESIGN.md, PRODUCT_BACKLOG.md and QUALITY_REVIEW.md.

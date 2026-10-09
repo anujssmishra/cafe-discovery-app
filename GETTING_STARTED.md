@@ -11,7 +11,7 @@ git status --short --branch
 git fetch origin main
 ```
 
-The earlier PHP review is on main at `5c25b1d`; MariaDB/Hostinger work is on `codex/hostinger-mariadb`; inspect the actual available branch/head, preserve local work and never reset to a historical hash. Read [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) and [AGENTS.md](AGENTS.md).
+Use `main` for the reviewed PHP/MariaDB implementation, published at implementation checkpoint `1db5344`. The work originated on `codex/hostinger-mariadb` from `5c25b1d`. Inspect actual branch/head, preserve local work and never reset to a historical hash. Read [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) and [AGENTS.md](AGENTS.md).
 
 ## Recommended isolated local setup
 
