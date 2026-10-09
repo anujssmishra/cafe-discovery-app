@@ -1,16 +1,20 @@
 <?php
 declare(strict_types=1);
 
-/** DDL implicitly commits in MySQL; this is an additive, non-atomic setup. */
+/** DDL implicitly commits in MariaDB; this is an additive, non-atomic setup. */
 function schema_apply(PDO $pdo): void
 {
     if ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) !== 'mysql' || $pdo->inTransaction()) {
-        throw new RuntimeException('Schema setup requires a MySQL connection outside a transaction.');
+        throw new RuntimeException('Schema setup requires a PDO MySQL connection to MariaDB outside a transaction.');
     }
     $version = (string) $pdo->query('SELECT VERSION()')->fetchColumn();
-    $numericVersion = preg_replace('/[^0-9.].*$/', '', $version);
-    if (stripos($version, 'MariaDB') !== false || version_compare((string) $numericVersion, '8.0.16', '<')) {
-        throw new RuntimeException('This schema requires MySQL 8.0.16 or newer with enforced CHECK constraints.');
+    if (preg_match('/^(?:5\.5\.5-)?(\d+\.\d+\.\d+).*MariaDB/i', $version, $matches) !== 1
+        || version_compare($matches[1], '10.11.0', '<')) {
+        throw new RuntimeException('Schema setup requires MariaDB 10.11 or newer.');
+    }
+    $checksEnabled = $pdo->query('SELECT @@SESSION.check_constraint_checks AS check_constraint_checks, @@SESSION.foreign_key_checks AS foreign_key_checks')->fetch(PDO::FETCH_ASSOC);
+    if ((int) $checksEnabled['check_constraint_checks'] !== 1 || (int) $checksEnabled['foreign_key_checks'] !== 1) {
+        throw new RuntimeException('Schema setup requires session check_constraint_checks and foreign_key_checks to stay enabled.');
     }
     $sql = file_get_contents(__DIR__ . '/../schema/schema.sql');
     if ($sql === false) { throw new RuntimeException('Cannot read the schema file.'); }
@@ -52,15 +56,12 @@ function schema_apply(PDO $pdo): void
             'chk_offering_currency' => "currency REGEXP '^[A-Za-z]{3}$'",
         ],
     ];
-    $findCheck = $pdo->prepare("SELECT ENFORCED FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME=? AND CONSTRAINT_NAME=? AND CONSTRAINT_TYPE='CHECK'");
+    $findCheck = $pdo->prepare('SELECT COUNT(*) FROM information_schema.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME=? AND CONSTRAINT_NAME=?');
     foreach ($checks as $table => $constraints) {
         foreach ($constraints as $name => $expression) {
             $findCheck->execute([$table, $name]);
-            $enforced = $findCheck->fetchColumn();
-            if ($enforced === false) {
+            if ((int) $findCheck->fetchColumn() === 0) {
                 $pdo->exec("ALTER TABLE {$table} ADD CONSTRAINT {$name} CHECK ({$expression})");
-            } elseif ($enforced !== 'YES') {
-                $pdo->exec("ALTER TABLE {$table} ALTER CHECK {$name} ENFORCED");
             }
         }
     }

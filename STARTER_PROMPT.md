@@ -1,17 +1,15 @@
 # Starter Prompt for Any Coding Assistant
 
-Read the current branch/head before using this prompt. Use the PHP fixes integrated from `fix/php-catalogue-review` on main; inspect Git rather than assuming a live agent session or recorded hash.
+Inspect actual Git status/head and preserve work. MariaDB/Hostinger work is on codex/hostinger-mariadb, based on main 5c25b1d.
 
 ```text
-Continue the existing private cafe-discovery-app repository.
+Continue the private cafe-discovery-app repository. Read AGENTS.md and DEVELOPMENT_HANDOFF.md first, then GETTING_STARTED.md, DECISIONS.md (D13), TECHNICAL_DESIGN.md, PRODUCT_BACKLOG.md and QUALITY_REVIEW.md.
 
-Read AGENTS.md and DEVELOPMENT_HANDOFF.md, inspect Git status/head/remotes and preserve current work. The active application is php_app/ on PHP 8.2/MySQL; legacy_django/ is reference only. Do not scaffold a replacement or run Django setup commands.
+The active app is php_app/: PHP8.2+/MariaDB10.11+ through PDO pdo_mysql. Hostinger at myfanverse.in is the deployment target. legacy_django/ is historical reference, not the setup path. Preserve Anuj's edits; inspect Git/remotes before creating branches or assuming publication. Assign exact file ownership before parallel edits; root integrates and records evidence.
 
-Read GETTING_STARTED.md, DECISIONS.md, TECHNICAL_DESIGN.md, PRODUCT_BACKLOG.md and QUALITY_REVIEW.md for the selected work. Reproduce the PHP lint, unit and disposable local MySQL integration checks. Treat historical Django and earlier CI results separately from current PHP results.
+Reproduce lint, unit, private-configuration, release-package and guarded disposable local MariaDB/HTTP checks. The Hostinger ZIP ships public_html with private siblings and no seed/private credentials. Environment overrides private config/local.php. Production schema requires explicit exact DB confirmation; no production seed. Read HOSTINGER_DEPLOYMENT.md before hosting work. Confirm actual hPanel runtime, private config, DNS/HTTPS and backup/restore on staging. Local passes do not establish hosted CI or deployment.
 
-Complete the next bounded task in the handoff: check the remaining interactive keyboard/narrow-screen acceptance, then address a separately selected backlog task. Fix any reproducible defects and update actual evidence. Use distinct backend/data, frontend/routing and QA ownership if delegation is useful; root owns configuration, integration and final docs. Do not overlap edits. Hostinger remains an unverified target; do not deploy without authorization.
+Remaining browser/keyboard/narrow-screen acceptance is unverified. Real café data/evidence and PHP admin are separate backlog work; no matching/accounts/maps/ratings yet. Preserve URLs, unrelated rows, sources and historical dates. Unknown facts stay unknown; demo records remain labelled and hidden in production.
 
-Preserve café URLs, unrelated data, sources and historical dates. Unknown facts remain unknown, fictional fixtures must be labelled, and seeds require explicit local demo safeguards. There is no PHP admin, account, matching, map or ratings implementation yet.
-
-Keep the repository private. Do not deploy, merge, seed production, create accounts, spend money or contact other people. Report prioritized defects/fixes, exact test results, branch/revision, remaining work and reproducible startup commands. Do not mark unverified criteria Done or implement later features automatically.
+Complete the selected bounded task and report exact tests/runtime, branch/revision, remaining issues and startup/deployment commands. Keep the repository private. Do not merge, push, deploy, change DNS, seed production, create accounts, spend or message others without direct user authorization for the active action. Do not mark unrun criteria Done.
 ```

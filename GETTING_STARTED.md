@@ -1,6 +1,6 @@
 # Getting Started
 
-Updated: 2026-10-09. These instructions run the existing PHP catalogue. Use PHP 8.2 with PDO/pdo_mysql and MySQL 8.0.16 or newer (enforced CHECK constraints), InnoDB and utf8mb4. No Composer packages, Python environment, Django commands or PHPUnit installation are required for this increment.
+Updated: 2026-10-09. These instructions run the existing PHP catalogue. Use PHP 8.2+ with PDO/pdo_mysql and MariaDB 10.11+, InnoDB and utf8mb4. No Composer packages, Python environment, Django commands or PHPUnit installation are required for this increment.
 
 ## Select the checkout
 
@@ -11,7 +11,7 @@ git status --short --branch
 git fetch origin main
 ```
 
-Use `main` for the reviewed PHP implementation. The fixes were prepared on `fix/php-catalogue-review` from `ba97a0a`; inspect the actual available branch/head, preserve local work and never reset to a historical hash. Read [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) and [AGENTS.md](AGENTS.md).
+The earlier PHP review is on main at `5c25b1d`; MariaDB/Hostinger work is on `codex/hostinger-mariadb`; inspect the actual available branch/head, preserve local work and never reset to a historical hash. Read [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) and [AGENTS.md](AGENTS.md).
 
 ## Recommended isolated local setup
 
@@ -25,11 +25,11 @@ docker compose -f php_app/compose.yaml exec app php php_app/scripts/seed.php --d
 
 The same commands work in PowerShell. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/), search `Paper`, combine with `demo-paper-quarter`, clear the filters, try a missing name and open a detail and the about page.
 
-Compose creates `cafe_discovery` and a separate `cafe_discovery_test` database. The test runner resets only the latter. MySQL is not published on a host port, and the web port binds only to localhost. Committed Docker passwords are local-only examples, never production credentials. Docker copies source at build time so it also works on drive providers that cannot be bind-mounted. After PHP/template/CSS edits, rerun `docker compose -f php_app/compose.yaml build app test` and recreate app with `docker compose -f php_app/compose.yaml up -d app`. Storage persists in the `mysql-data` volume. Use `docker compose -f php_app/compose.yaml down` to stop without deleting it. The test database initialization script runs only when that MySQL volume is first initialized.
+Compose creates `cafe_discovery` and a separate `cafe_discovery_test` database. The test runner resets only the latter. MariaDB is not published on a host port, and the web port binds only to localhost. Committed Docker passwords are local-only examples, never production credentials. Docker copies source at build time so it also works on drive providers that cannot be bind-mounted. After PHP/template/CSS edits, rerun `docker compose -f php_app/compose.yaml build app test` and recreate app with `docker compose -f php_app/compose.yaml up -d app`. Storage persists in the new `cafe-catalogue-mariadb-local_mariadb-data` volume, separate from historical MySQL data. Stop old cafe-catalogue-local PHP/Apache containers if they occupy ports 8000/8080. Preserve the old MySQL volume; never mount its data directory into MariaDB. Transfer valuable data by a reviewed logical export/import into a separate database and verify rows before switching. Use `docker compose -f php_app/compose.yaml down` to stop without deleting it. The test database initialization script runs only when that MariaDB volume is first initialized.
 
-## Native PHP/MySQL setup
+## Native PHP/MariaDB setup
 
-Create an empty local database and a database-scoped local user using your normal MySQL administration tool. Do not reuse production access. PHP reads process environment; copying `.env.example` to `.env` does not load it.
+Create an empty local database and a database-scoped local user using your normal MariaDB administration tool. Do not reuse production access. PHP reads process environment or private config/local.php; copying .env.example to .env does not load it. PDO uses the mysql driver/DSN for MariaDB too.
 
 On macOS/Linux, configure your shell (replace the user/password with your own local values):
 
@@ -67,7 +67,7 @@ php php_app/scripts/seed.php --demo
 php -S 127.0.0.1:8000 -t php_app/public php_app/public/router.php
 ```
 
-These commands are local development only. Repeat environment settings in a new terminal. `APP_ENV` accepts `development`, `test`, or `production` and defaults to `production`; `DEMO_MODE` accepts only `true`/`false`, defaults to false, and is rejected in production when true. Set `APP_BASE_PATH=/guide` only when installing under that path. The schema command and seed are CLI-only and guarded; the seed additionally requires `--demo`.
+These commands are local only. Repeat environment settings in a new terminal. Alternatively copy php_app/config/local.example.php to ignored php_app/config/local.php, fill its values and select development/demo settings locally. The file returns allowed uppercase string keys. Environment overrides every value, including empty values. APP_CONFIG_FILE optionally selects an absolute private PHP file outside public/public_html; invalid explicit config fails closed. APP_ENV defaults production; DEMO_MODE defaults false and cannot be true in production. APP_BASE_PATH is empty for myfanverse.in or /guide for that subdirectory. Schema and seed are CLI-only; production schema requires separate explicit database confirmation. Seed requires development/test demo mode and --demo.
 
 The seed inserts missing fictional fixtures and refuses reserved identifier collisions. It does not refresh dates, restore edited fields, reactivate rows, delete unrelated data or recreate URLs. Synthetic dates are null and ownership/count evidence is unknown. Existing real records from the old seed stay untouched; their generic “Web research”/“Menu” provenance needs a human audit before use as checked information.
 
@@ -80,26 +80,30 @@ Docker:
 ```sh
 docker compose -f php_app/compose.yaml run --rm test php php_app/scripts/lint.php
 docker compose -f php_app/compose.yaml run --rm test php php_app/tests/unit.php
+docker compose -f php_app/compose.yaml run --rm test php php_app/tests/config.php
+docker compose -f php_app/compose.yaml run --rm test php php_app/tests/package.php
 docker compose -f php_app/compose.yaml run --rm test
 ```
 
-The last command is `php php_app/tests/integration.php --allow-reset` in an isolated test container. It requires `APP_ENV=test`, an approved local MySQL host, and a database name ending `_test`. It drops/recreates catalogue tables only in that test database. It starts temporary local PHP HTTP servers and cleans them up. Do not point it at a database containing work you want to keep.
+The last command is `php php_app/tests/integration.php --allow-reset` in an isolated test container. It requires `APP_ENV=test`, an approved local MariaDB host, and a database name ending `_test`. It drops/recreates catalogue tables only in that test database. It starts temporary local PHP HTTP servers and cleans them up. Do not point it at a database containing work you want to keep.
 
 Native testing requires a separate disposable local database/user, then set `APP_ENV=test`, `DEMO_MODE=true`, `DB_NAME=cafe_discovery_test` and the corresponding DB variables:
 
 ```sh
 php php_app/scripts/lint.php
 php php_app/tests/unit.php
+php php_app/tests/config.php
+php php_app/tests/package.php
 php php_app/tests/integration.php --allow-reset
 ```
 
-Lint returns nonzero for any invalid PHP file. CI uses PHP 8.2/pdo_mysql and a fresh MySQL 8 service for these checks. A workflow is configuration; [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records checks actually run.
+Lint returns nonzero for any invalid PHP file. CI configures PHP 8.2/8.3 and MariaDB 10.11/11.4 with pdo_mysql/zip for these checks. A workflow is configuration; [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records checks actually run.
 
 ## Routing and Hostinger preparation
 
 Only `php_app/public/` is the web document root. Keep `includes/`, `templates/`, `schema/` and `scripts/` outside the served directory. Do not upload the whole repository into a public document root. PHP's built-in server must receive `router.php` as shown above; it does not read `.htaccess`.
 
-The public `.htaccess` routes non-file requests to `index.php`; static CSS stays a real file. Relative rewrites plus `APP_BASE_PATH` support a root or subdirectory installation. Hostinger uses LiteSpeed with [.htaccess support](https://www.hostinger.com/tutorials/create-default-wordpress-htaccess-file/). Configure PHP 8.2/pdo_mysql and private DB environment values deliberately. The application does not auto-load dotenv files, and arbitrary shared-host environment configuration must be checked on that host. If copying public files to a different physical location, preserve their relative sibling layout or adapt the include paths as a reviewed packaging change.
+The public .htaccess routes non-file requests to index.php; static CSS remains a real file. Relative rewrites and APP_BASE_PATH support root/subdirectory installs. The packager creates public_html with private sibling folders, preserving include paths. Follow [HOSTINGER_DEPLOYMENT.md](HOSTINGER_DEPLOYMENT.md) for myfanverse.in: verify actual PHP/MariaDB versions, use private config/local.php, apply the reviewed schema, upload the correct layout, and configure actual hPanel DNS/SSL values. CLI environment need not reach website PHP. Packaging needs the PHP zip extension; serving does not.
 
 Production settings are `APP_ENV=production` and `DEMO_MODE=false`, with HTTPS, private credentials, protected logs, backups/restore and checked real data. This review does not deploy or validate Hostinger. Seeds are forbidden against production. PHP visitors receive generic errors; server logs identify exception class/code without showing credentials.
 
@@ -115,3 +119,14 @@ Production settings are `APP_ENV=production` and `DEMO_MODE=false`, with HTTPS, 
 | Seed refused | Use local development/test, DEMO_MODE=true and --demo; investigate collisions |
 | Docker engine unavailable | Start Docker's Linux engine, then rerun the commands |
 | Native integration refused | Use the isolated local _test database and explicit --allow-reset |
+
+## Local rehearsal of the Hostinger ZIP layout
+
+After the disposable integration suite has populated local QA fixtures:
+
+```sh
+docker compose -f php_app/compose.yaml --profile hosting up -d --build hosting
+docker compose -f php_app/compose.yaml run --rm test php php_app/tests/hosting.php http://hosting
+```
+
+Open http://127.0.0.1:8081/. This Apache fixture serves the extracted ZIP with private-file production/demo-off configuration and no APP/DB environment. It uses the disposable _test database; QA records are never deployed. This checks layout/routing, not Hostinger/DNS/SSL. Stop it with docker compose -f php_app/compose.yaml --profile hosting down (preserves the volume).

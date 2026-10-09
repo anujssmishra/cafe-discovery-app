@@ -1,19 +1,19 @@
 # Technical Design
 
-Last updated: 2026-10-09. The active catalogue is PHP 8.2/MySQL under `php_app/`; `legacy_django/` preserves historical source only. D12 in [DECISIONS.md](DECISIONS.md) supersedes Python/Django/PostgreSQL as the active stack. [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records execution evidence.
+Last updated: 2026-10-09. The active catalogue is PHP 8.2+/MariaDB 10.11+ under `php_app/`; `legacy_django/` preserves historical source only. D12/D13 in [DECISIONS.md](DECISIONS.md) supersede Python/Django/PostgreSQL as the active stack. [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records execution evidence.
 
 ## Current Implementation Boundary
 
 | Area | Present | Remaining |
 |---|---|---|
-| Foundation | PHP 8.2, PDO native prepares, MySQL 8/InnoDB, strict process environment, generic errors | Hostinger runtime/deployment validation |
+| Foundation | PHP 8.2+, PDO native prepares, MariaDB 10.11+/InnoDB, private config plus environment, generic errors | Hostinger runtime/deployment validation |
 | Catalogue | area, cafe UUID, cafe_offering; optional coordinates/prices and separate evidence fields | PHP staff admin and checked real data |
 | Demo | Transactional insert-only guarded seed; eight fictional cafés, sixteen offerings, two areas; fixed UUIDs | Real sourcing; synthetic fixtures are never checked facts |
 | Guest discovery | Name/area filters, stable ordering, bounded twelve-result pages, UUID details, about, 400/404/503 pages | Preferences, matching, maps and dialogs |
-| Quality | Portable lint, unit and MySQL/HTTP checks; CI configuration | Hosted CI and production evidence |
+| Quality | Portable lint, unit, configuration, package and MariaDB/HTTP checks; CI configuration | Hosted CI and production evidence |
 | Members/editorial | None | Accounts, private saves/visits, consent/deletion, curator publishing |
 
-PHP does not auto-load `.env`. `APP_ENV` defaults to production, `DEMO_MODE` defaults false and is blocked in production when true. DB_USER is explicit, DB_PORT defaults 3306, and APP_BASE_PATH is empty or a validated path prefix. Credentials remain outside Git.
+PHP does not auto-load `.env`. Optional private config/local.php returns allowed uppercase string values; environment overrides each value. APP_CONFIG_FILE may select an absolute private PHP file. Public paths/aliases/targets are refused. Git, Docker and ZIP packaging exclude actual credentials. `APP_ENV` defaults to production, `DEMO_MODE` defaults false and is blocked in production when true. DB_USER is explicit, DB_PORT defaults 3306, and APP_BASE_PATH is empty or a validated path prefix. Credentials remain outside Git.
 
 ## 1. Architecture and Boundaries
 
@@ -25,7 +25,7 @@ All catalogue routes are read-only GET/HEAD; other methods return 405. The appli
 
 Local PHP routing uses `public/router.php`; Apache/LiteSpeed uses `public/.htaccess`. Only public is served. CSS is a real `public/static/site.css` asset. Root/subdirectory links use APP_BASE_PATH; never expose includes/schema/scripts through the web root.
 
-MySQL 8.0.16+ is the required local verification target for CHECK enforcement. Tables use InnoDB, foreign keys, utf8mb4 and explicit nulls for unknown values. The seed owns fixed demo identifiers, inserts missing fixtures, checks collisions and commits one transaction. Reruns preserve existing values, dates, URLs and unrelated records. Schema DDL is not treated as transactional. Existing installations need the documented additive upgrade rather than destructive recreation.
+MariaDB 10.11+ is the database target. Both schema and seed refuse disabled session CHECK/foreign-key enforcement. CHECK metadata uses MariaDB CHECK_CONSTRAINTS; PDO keeps its native mysql driver. Tables use InnoDB, foreign keys, utf8mb4 and explicit nulls for unknown values. The seed owns fixed demo identifiers, inserts missing fixtures, checks collisions and commits one transaction. Reruns preserve existing values, dates, URLs and unrelated records. Schema DDL is not treated as transactional. Existing installations need the documented additive upgrade rather than destructive recreation.
 
 There is no staff/member authentication in PHP yet. Implement authorized admin, CSRF-protected mutations, ownership and least-privilege accounts as a separate increment. No general API, background service, AI model or mobile app is needed for catalogue browsing.
 
@@ -53,7 +53,7 @@ Use database constraints for unique relationships and valid values, and migratio
 
 ### Explicit fields and defaults
 
-The Cafe count/ownership fields below are present in the first source increment. EditorialReview and Visit fields remain proposed; neither model exists yet. Use nullable MySQL columns and explicit PHP validation; inspect the actual schema before extending it.
+The Cafe count/ownership fields below are present in the first source increment. EditorialReview and Visit fields remain proposed; neither model exists yet. Use nullable MariaDB columns and explicit PHP validation; inspect the actual schema before extending it.
 
 | Field | Proposed value/default | Validation and meaning |
 |---|---|---|
@@ -204,14 +204,14 @@ Necessary behavioural checks include:
 - Tile/key/network failures preserve list and full-detail access; area controls work with real pilot data.
 - Dialogs and named markers are keyboard accessible; malicious review text renders harmlessly; drafts/private fields never enter public map payloads.
 - Directions links identify the correct café and omit user coordinates; editorial scores stay out of personalized ranking.
-- Schema upgrades, transactions and main journeys pass against the target MySQL-compatible engine before deployment.
+- Schema upgrades, transactions and main journeys pass against the target MariaDB engine before deployment.
 - A backup can actually be restored, with deletion records reapplied before serving restored data.
 
-Run the implemented PHP lint, unit and disposable MySQL/HTTP checks from GETTING_STARTED.md. Local passes alone are not proof of a safe deployment.
+Run the implemented PHP lint, unit and disposable MariaDB/HTTP checks from GETTING_STARTED.md. Local passes alone are not proof of a safe deployment.
 
 ## 6. Deployment and Operations
 
-Hostinger Shared Web Hosting is the selected target under D12; it is not deployed or verified by this review. Keep only public files in the document root, preserve include layout, configure PHP 8.2/pdo_mysql and private environment values, disable demo mode, use HTTPS and protect logs. Confirm the host's actual database engine/version and constraint enforcement; local MySQL passes do not establish MariaDB/Hostinger compatibility.
+Hostinger Shared Web Hosting is the selected target under D12; it is not deployed or verified by this review. Keep only public files in the document root, preserve include layout, configure PHP 8.2+/pdo_mysql and private config/local.php, disable demo mode, use HTTPS and protect logs. Confirm the host's actual database engine/version and constraint enforcement; local MariaDB passes do not establish actual Hostinger deployment success. Follow HOSTINGER_DEPLOYMENT.md for the allowlisted ZIP, guarded production schema command, myfanverse.in DNS and HTTPS.
 
 Review schema upgrades, back up valuable data, exercise restore/rollback and audit real catalogue evidence before any pilot. Separate development/test/production credentials; never run demo seeds or destructive integration checks against production. Staff authentication, permissions, privacy notices, support ownership and account/data controls remain release prerequisites when those features arrive.
 
@@ -219,4 +219,4 @@ Map tiles, attribution, API-key restrictions and costs, transactional email, mon
 
 ## 7. Future Expansion Triggers
 
-Improve MySQL queries/indexes only for measured needs. Consider spatial storage, workers or additional clients when actual scale and user evidence justify them. Keep the deterministic matching and privacy rules below as proposed contracts, with actual implementations and version choices recorded separately.
+Improve MariaDB queries/indexes only for measured needs. Consider spatial storage, workers or additional clients when actual scale and user evidence justify them. Keep the deterministic matching and privacy rules below as proposed contracts, with actual implementations and version choices recorded separately.

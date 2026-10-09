@@ -39,7 +39,16 @@ function seed_demo_fixtures(): array
 function seed_require_transactional_tables(PDO $pdo): void
 {
     if ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) !== 'mysql') {
-        throw new RuntimeException('Demo seeding requires MySQL.');
+        throw new RuntimeException('Demo seeding requires a PDO MySQL connection to MariaDB.');
+    }
+    $version = (string) $pdo->query('SELECT VERSION()')->fetchColumn();
+    if (preg_match('/^(?:5\.5\.5-)?(\d+\.\d+\.\d+).*MariaDB/i', $version, $matches) !== 1
+        || version_compare($matches[1], '10.11.0', '<')) {
+        throw new RuntimeException('Demo seeding requires MariaDB 10.11 or newer.');
+    }
+    $checksEnabled = $pdo->query('SELECT @@SESSION.check_constraint_checks AS check_constraint_checks, @@SESSION.foreign_key_checks AS foreign_key_checks')->fetch(PDO::FETCH_ASSOC);
+    if ((int) $checksEnabled['check_constraint_checks'] !== 1 || (int) $checksEnabled['foreign_key_checks'] !== 1) {
+        throw new RuntimeException('Demo seeding requires session check_constraint_checks and foreign_key_checks to stay enabled.');
     }
     $engines = $pdo->query("SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ('area', 'cafe', 'cafe_offering')")->fetchAll(PDO::FETCH_KEY_PAIR);
     foreach (['area', 'cafe', 'cafe_offering'] as $table) {

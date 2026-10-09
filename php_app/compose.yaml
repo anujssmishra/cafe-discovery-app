@@ -1,19 +1,19 @@
 # Local synthetic development only. No production services or credentials.
-name: cafe-catalogue-local
+name: cafe-catalogue-mariadb-local
 services:
-  mysql:
+  mariadb:
     build:
       context: .
-      dockerfile: docker/mysql.Dockerfile
+      dockerfile: docker/mariadb.Dockerfile
     environment:
-      MYSQL_DATABASE: cafe_discovery
-      MYSQL_USER: cafe
-      MYSQL_PASSWORD: local-demo-only
-      MYSQL_ROOT_PASSWORD: local-root-only
+      MARIADB_DATABASE: cafe_discovery
+      MARIADB_USER: cafe
+      MARIADB_PASSWORD: local-demo-only
+      MARIADB_ROOT_PASSWORD: local-root-only
     volumes:
-      - mysql-data:/var/lib/mysql
+      - mariadb-data:/var/lib/mysql
     healthcheck:
-      test: [CMD, mysqladmin, ping, -h, localhost, -plocal-root-only]
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
       interval: 3s
       timeout: 3s
       retries: 40
@@ -23,7 +23,7 @@ services:
       APP_ENV: development
       DEMO_MODE: 'true'
       APP_BASE_PATH: ''
-      DB_HOST: mysql
+      DB_HOST: mariadb
       DB_PORT: '3306'
       DB_NAME: cafe_discovery
       DB_USER: cafe
@@ -31,7 +31,7 @@ services:
     ports:
       - '127.0.0.1:8000:8000'
     depends_on:
-      mysql:
+      mariadb:
         condition: service_healthy
     command: [php, -S, '0.0.0.0:8000', -t, php_app/public, php_app/public/router.php]
   test:
@@ -40,13 +40,13 @@ services:
     environment:
       APP_ENV: test
       DEMO_MODE: 'true'
-      DB_HOST: mysql
+      DB_HOST: mariadb
       DB_PORT: '3306'
       DB_NAME: cafe_discovery_test
       DB_USER: cafe
       DB_PASS: local-demo-only
     depends_on:
-      mysql:
+      mariadb:
         condition: service_healthy
     command: [php, php_app/tests/integration.php, --allow-reset]
   apache:
@@ -58,7 +58,7 @@ services:
       APP_ENV: development
       DEMO_MODE: 'true'
       APP_BASE_PATH: /guide
-      DB_HOST: mysql
+      DB_HOST: mariadb
       DB_PORT: '3306'
       DB_NAME: cafe_discovery
       DB_USER: cafe
@@ -66,7 +66,17 @@ services:
     ports:
       - '127.0.0.1:8080:80'
     depends_on:
-      mysql:
+      mariadb:
+        condition: service_healthy
+  hosting:
+    build:
+      context: .
+      dockerfile: docker/hostinger.Dockerfile
+    profiles: [hosting]
+    ports:
+      - '127.0.0.1:8081:80'
+    depends_on:
+      mariadb:
         condition: service_healthy
 volumes:
-  mysql-data:
+  mariadb-data:

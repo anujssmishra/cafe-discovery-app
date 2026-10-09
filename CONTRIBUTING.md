@@ -1,92 +1,84 @@
 # Contributing and Maintaining the Project
 
-Last updated: 2026-10-07. The repository now includes the first local catalogue source and its planning documents. Integration evidence and remaining checks are tracked in the backlog and quality review.
+Updated: 2026-10-09. The active application is the PHP/MariaDB café catalogue under `php_app/`. `legacy_django/` is historical reference. Read the actual branch and working tree before editing; [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) records the continuation checkpoint and [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records verification evidence.
 
-## 1. Understand the Project First
+## Understand the scope
 
-Read [README.md](README.md), [PROJECT_BRIEF.md](PROJECT_BRIEF.md) and [DECISIONS.md](DECISIONS.md). Developers should also read [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md), [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) and [DATA_AND_PRIVACY.md](DATA_AND_PRIVACY.md). The existing application's setup is in [GETTING_STARTED.md](GETTING_STARTED.md). Read [AGILE_DELIVERY.md](AGILE_DELIVERY.md), [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) and [AGENTS.md](AGENTS.md) for the current Sprint Goal, ownership and integration rules.
+Read [README.md](README.md), [DECISIONS.md](DECISIONS.md), [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md), [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) and [DATA_AND_PRIVACY.md](DATA_AND_PRIVACY.md). Follow [AGENTS.md](AGENTS.md), [AGILE_DELIVERY.md](AGILE_DELIVERY.md) and [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) for file ownership, current work and integration.
 
-Read [FEATURES_REFERENCE.md](FEATURES_REFERENCE.md) before map or editorial work. Implement the documented behaviours with original content; do not assume permission to reuse another site's café records, reviews, code or assets. Keep individual curator opinions distinct from private member feedback and personalized scores.
+Use [GETTING_STARTED.md](GETTING_STARTED.md) for setup and checks, [HOSTINGER_DEPLOYMENT.md](HOSTINGER_DEPLOYMENT.md) for myfanverse.in hosting, and [RUNBOOK.md](RUNBOOK.md) for recovery. The selected runtime is PHP 8.2+ with PDO/`pdo_mysql` and MariaDB 10.11+, InnoDB and utf8mb4. The Zip extension is needed for packaging.
 
-Keep the focus on cafés and the first pilot. Larger menus, restaurant ordering, table management and full hospitality operations are outside the current concept. A café's drink/snack preferences may inform discovery without turning this into restaurant management software.
+The current increment provides a public catalogue, partial-name/area filters, bounded pagination, full UUID details, about page, guarded synthetic seeding and meaningful tests. PHP catalogue admin, accounts, matching, maps, ratings, member export/deletion, editorial workflows and correction submission are future work. Do not describe legacy features or planned routes as active PHP capabilities.
 
-## 2. Repository Access and Working Method
+## Repository and ownership
 
-The repository is private under [anujssmishra/cafe-discovery-app](https://github.com/anujssmishra/cafe-discovery-app). Request access from the project owner when needed. Use your own GitHub identity and normal credential manager. A project licence and any future public-release policy have not been selected; do not assume this is already an open-source project.
+Keep the repository private. Use your own Git identity and the agreed credential manager; licence and public-release permission are not implied by access.
 
-For implementation, create a focused branch, make a reviewable change, and open a pull request using the agreed team process. Suggested branch names include `feat/catalogue`, `fix/visit-ownership` and `docs/setup-update`. Direct owner-authorized documentation updates may use the owner's requested workflow.
+Preserve local edits. Use a focused branch, normally `codex/<description>`, and the owner-authorized integration/publication workflow. Root coordinates backend, frontend and QA, assigns exact file ownership and integrates shared changes. Agents leave commits/publication to root unless explicitly assigned. Do not write another contributor's files, reset their work or generate competing schema changes.
 
-The first integration branch is `feat/sprint-1-catalogue`; its remote status is recorded in the backlog. Anuj is Product Owner; root coordinates backend, frontend, QA and delivery agents. Each agent owns an agreed file set, reports dependencies and hands off evidence. Root integrates the shared change. Do not edit another agent's files, generate competing migrations, publish independently or count an agent handoff as a completed Sprint story. Keep the working limits and review gates in the agile plan.
+Each work package should define the user problem, scope, acceptance criteria, data impact, file ownership, dependencies and validation. Keep unrelated changes separate. Record material runtime/provider decisions in DECISIONS rather than silently changing the stack. Agent completion means ready for integration review; root records acceptance before status moves to Done.
 
-Each work item should state the user problem, scope, acceptance criteria, data impact and validation needed. Keep unrelated changes separate. Record material scope/stack/provider decisions rather than introducing them silently.
+## Review expectations
 
-## 3. Suggested Issue Format
+Lead a contribution description with the concrete problem and resulting behaviour. Include changed contracts, actual validation commands/runtime, observed results and remaining limitations. Update relevant documentation in the same change.
 
-```markdown
-Problem / user need:
-Proposed change:
-In scope:
-Acceptance criteria:
-Data or permission impact:
-Validation:
-Dependencies:
-Owner:
+A change is ready for review when:
+
+- Assigned acceptance and failure cases are checked, with output escaping and request validation maintained.
+- Schema changes have one author, versioned schema/helper changes and an additive migration/recovery plan where needed.
+- Public queries consistently exclude inactive cafés/areas and hidden demo rows.
+- New configuration has a safe example and strict parsing without committed secrets.
+- Runtime behaviour, backlog status and setup/handoff instructions agree.
+- Unrun checks, blockers and future scope are reported explicitly.
+
+Keep issues and PRs redacted or synthetic. Do not attach credentials, authenticated URLs, production exports, interviews or participant histories.
+
+## Verify the PHP application
+
+Start the isolated runtime using GETTING_STARTED, then run from the repository root:
+
+```sh
+docker compose -f php_app/compose.yaml run --rm test php php_app/scripts/lint.php
+docker compose -f php_app/compose.yaml run --rm test php php_app/tests/unit.php
+docker compose -f php_app/compose.yaml run --rm test php php_app/tests/config.php
+docker compose -f php_app/compose.yaml run --rm test php php_app/tests/package.php
+docker compose -f php_app/compose.yaml run --rm test
 ```
 
-Use redacted or synthetic examples. Do not include passwords, access tokens, database URLs with credentials, interview transcripts, identifiable participant histories or production exports in issues or pull requests.
+For native PHP, configure the separate disposable local MariaDB `_test` database/user described in GETTING_STARTED and run:
 
-## 4. Pull Request Expectations
-
-Lead the description with the concrete behaviour and why it helps. Include relevant validation and remaining limitations. If setup changes, update the setup file in the same change. If a feature becomes implemented, update the status only after its acceptance checks pass.
-
-A contribution is ready for review when:
-
-- The stated acceptance criteria are met and important behaviour is checked.
-- Authorization, validation, consent and deletion are addressed where affected.
-- Schema changes include migrations and an operational plan if needed.
-- New settings have an example variable name, safe default or explanation, and no committed secret.
-- README links and related requirements/decisions remain accurate.
-- The PR distinguishes completed behaviour from proposed follow-up work.
-
-For current application code, configure the environment and install dependencies as described in the setup guide, then run:
-
-```bash
-python manage.py check
-python manage.py makemigrations --check --dry-run
-python manage.py test
-python -m ruff check .
-python -m ruff format --check .
+```sh
+php php_app/scripts/lint.php
+php php_app/tests/unit.php
+php php_app/tests/config.php
+php php_app/tests/package.php
+php php_app/tests/integration.php --allow-reset
 ```
 
-Also apply committed migrations to a clean local database when a schema changes. Current meaningful cases include combined filters, active visibility, pagination, detail 404s, data constraints, seed idempotence and catalogue-editor permissions. Add ownership, matching and withdrawal cases when those features arrive. Record exact versions and results in [QUALITY_REVIEW.md](QUALITY_REVIEW.md) and the backlog; an added workflow is not proof of a hosted CI pass, and local checks are not deployment validation.
+The integration suite drops/recreates catalogue tables in the explicitly guarded test database. Never run it against production or valuable local data. Rebuild the Docker test image after source edits, because the image copies source at build time.
 
-## 5. Data Contributions
+Choose meaningful cases for changed behaviour: schema setup/upgrade, enforced constraints, seed repeatability and transaction rollback, historical evidence/UUID preservation, combined filters, literal wildcard search, bounded pagination, malformed inputs, active visibility, output escaping, 404/503 responses and packaging/private configuration. Inspect keyboard use and narrow screens for affected UI. Use the optional Hostinger ZIP-layout rehearsal documented in GETTING_STARTED when routing or packaging changes.
 
-Follow the source, permission and verification rules in [DATA_AND_PRIVACY.md](DATA_AND_PRIVACY.md). Use stable IDs and checking dates. Do not publish private contact details or copied third-party review collections. Clearly label unknown, stale and subjective attributes.
+CI is configured for PHP 8.2/8.3 and MariaDB 10.11/11.4. An added workflow does not prove a remote CI pass; local/container tests do not prove a Hostinger deployment. Record exact commands, versions and results in QUALITY_REVIEW and the handoff. No Composer, Python, Django or PHPUnit installation is part of this setup.
 
-During development, use the guarded `seed_demo` command or clearly identified synthetic test fixtures. The current command creates no users or visit logs. Fictional cafés must be visibly marked and excluded from public non-demo queries; future synthetic member activity must also be excluded from pilot metrics and community explanations. Never let demo records appear to be real participants or real evidence of repeat visits.
+## Data and configuration changes
 
-## 6. Keeping Documentation Current
+Follow DATA_AND_PRIVACY. Use stable UUIDs, permitted/original data and documented sources. Missing evidence remains unknown; preserve historical verification dates. Do not mark old generic “Web research” or “Menu” labels as checked ownership or fresh verification.
 
-| Change | Files to review |
+For development fixtures, use `php php_app/scripts/seed.php --demo` only with development/test and `DEMO_MODE=true`, or use dedicated synthetic test fixtures. The seed is transactional and preserves existing demo/unrelated rows; it does not restore edited offerings or refresh facts. Production seeding is forbidden, and seeds are excluded from the release ZIP.
+
+The private `php_app/config/local.php` file is ignored by Git and omitted from the ZIP; hosted `config/local.php` stays outside `public_html/`. Process environment overrides string values, and dotenv files are not loaded. Keep the configured database name, including hPanel prefixes, accurate. Use the guarded production schema procedure only for a separately authorized host operation.
+
+## Maintain documentation and handoffs
+
+| Change | Documents to review |
 |---|---|
-| Stage or available features | README and product requirements |
-| Product scope/segment | Project brief, requirements, roadmap and decisions |
-| Stack, authentication or deployment | Technical design, getting started, sources and decisions |
-| Models or ranking logic | Technical design, data plan, requirements and metric definitions |
-| Providers, consent or retention | Data plan, technical design, sources and notice implementation |
-| New budget, staffing or results | Roadmap/budget and decision log |
+| Available behaviour | README, requirements, backlog and quality review |
+| Runtime/configuration/schema | GETTING_STARTED, technical design, decisions and schema README |
+| Hosting/package/recovery | HOSTINGER_DEPLOYMENT, RUNBOOK and RELEASE_CHECKLIST |
+| Evidence/content/privacy | DATA_AND_PRIVACY and affected requirements/notices |
+| Work checkpoint and ownership | DEVELOPMENT_HANDOFF, STARTER_PROMPT and AGENTS |
 
-Every substantial document update should include its date and status. Keep implemented source, locally verified behaviour, remote CI and deployed capabilities distinct. Maintain actual prerequisites, environment-only configuration, migrations, tests and run instructions. Preserve historical notes as history; remove obsolete bootstrap instructions from current setup.
+Date substantial updates and distinguish implemented source, local checks, remote CI and hosted acceptance. Remove obsolete operational/setup commands from the active path and keep historical references clearly marked. Hand over exact files, interfaces, commands/results, limitations and integration decisions so another contributor can continue without this chat.
 
-During active work, review progress and open decisions weekly. Review café freshness weekly during a pilot. Recheck versions, provider terms/prices and relevant regulation before selecting services or launching, and whenever those dependencies change. Link to original authoritative references.
-
-## 7. Security and Sensitive Reports
-
-Do not place an exploitable vulnerability or personal data in a public issue. Contact the project owner through an existing private channel, using a minimal redacted description. A dedicated support/security contact must be chosen before pilot launch and then documented here and in the app.
-
-If a secret is accidentally committed, removing it from the latest file is insufficient: revoke/rotate it, assess exposure, and coordinate necessary repository cleanup. Do not use this repository as a place to store operational credentials even while it remains private.
-
-## 8. Handover to a New Contributor
-
-Give the contributor repository access, reading order, current milestone, one specific task, synthetic/local data instructions and the actual tested setup procedure. Identify who can answer product, data and deployment questions. They should be able to tell what exists, what is proposed and what is undecided from the files without needing this chat.
+Report security or sensitive data through an existing private owner channel with minimal redacted details. If a credential is exposed, coordinate revocation/rotation and assess history/exposure; deleting its latest file is insufficient. Do not publish sensitive reports or perform new external actions merely because a work item mentions them.

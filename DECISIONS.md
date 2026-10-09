@@ -118,8 +118,18 @@ When superseding a material choice, preserve its reason and link to the replacem
 
 ## PHP review clarification — 2026-10-09
 
-D12 remains authoritative: PHP 8.2 with PDO/MySQL for Hostinger. Earlier Django/PostgreSQL configuration and test claims are historical. The active application has no PHP admin or member/matching/map/editorial implementation.
+The earlier D12 PHP review used PHP8.2/PDO/MySQL; D13 below refines the active database and private configuration for Hostinger. Earlier Django/PostgreSQL configuration and test claims are historical. The active application has no PHP admin or member/matching/map/editorial implementation.
 
 The destructive Lucknow seed was replaced with guarded fictional fixtures because generic “Web research”/“Menu” labels do not substantiate verified ownership, counts, prices or current dates. Existing records and their UUIDs/evidence are preserved for a human audit; seed reruns supply no new verification. This is a correction within the authorized catalogue review, not a real-data collection or deployment decision.
 
 Root/backend/frontend/QA review contracts and actual results are recorded in DEVELOPMENT_HANDOFF.md and QUALITY_REVIEW.md. No deployment, merge, production seed or public publication is implied.
+
+## D13 — MariaDB and Hostinger release configuration (2026-10-09)
+
+Confirmed by Anuj: switch to MariaDB and make the existing PHP catalogue hostable on Hostinger using myfanverse.in. This refines D12's MySQL wording: Hostinger Web/Cloud uses MariaDB, although hPanel labels database tools MySQL. The application targets MariaDB 10.11+ with InnoDB/utf8mb4 and PHP 8.2+ via native PDO pdo_mysql. Check the actual host's SELECT VERSION() and PHP selection before publishing. See [Hostinger database documentation](https://www.hostinger.com/support/1583226-which-database-management-system-is-used-at-hostinger/).
+
+D09's process-environment-only configuration is superseded for shared hosting: optional private config/local.php returns allowed string values; process environment overrides each key, including empty values. APP_CONFIG_FILE may select an absolute PHP file outside canonical public/public_html directories. No dotenv auto-loading. Private config is ignored by Git, Docker and release packaging.
+
+The ZIP explicitly allowlists runtime files and ships no seeds or private credentials. Only public_html is served; includes/templates/config/scripts/schema are siblings. Production schema changes require --apply --production --database=<exact configured DB>, production config and demo disabled; DDL remains additive and non-atomic, so backup and maintenance are required. Production seeds remain prohibited. Local Docker uses a new MariaDB volume and preserves historical MySQL storage.
+
+This is deployment preparation for the existing guest catalogue, not implementation of admin, accounts, matching, maps or ratings. DNS, SSL, actual Hostinger runtime, real catalogue sourcing and backup restoration require their own checks; no successful live deployment is implied. [HOSTINGER_DEPLOYMENT.md](HOSTINGER_DEPLOYMENT.md) gives the operational steps and rollback procedure.

@@ -18,22 +18,24 @@ Anuj owns product ordering. Developers refine and select feasible work against t
 | E5: Editorial context | Original opinions and selection rules are transparent | P7, P11, P12, P13; F05, F06, F08, F09 | CAFE-024–027 |
 | E6: Safe pilot and learning | A supported cohort tests usefulness on reliable infrastructure | P6, P8 and release criteria | CAFE-028–031 |
 | E7: Evidence-led extensions | Add signals or coverage only when justified | P3 and later candidates | CAFE-032–034 |
-| E8: PHP Rebuild | Entire application rebuilt in PHP to support Hostinger Shared Hosting | D12 | CAFE-101-105 |
+| E8: PHP Rebuild | Entire application rebuilt in PHP to support Hostinger Shared Hosting | D12 | CAFE-101–106 |
 
 ## 2. Current Sprint Selection (PHP Pivot)
 
-**Current Goal:** repair and verify the existing PHP 8.2/MySQL catalogue locally. Hostinger is the hosting target; deployment is outside this review.
+**Current Goal:** repair and verify the existing PHP 8.2+/MariaDB10.11+ catalogue and prepare a secure Hostinger release for myfanverse.in. Actual deployment, DNS/SSL, hosted CI and browser acceptance require separate evidence.
 
 | ID | User outcome | Lead / package | Status |
 |---|---|---|---|
 | CAFE-101 | Initialize PHP project structure, DB connection, and routing | Root | Done — supported local runtime verified |
-| CAFE-102 | Create MySQL schemas for Area, Cafe, and Offerings | Database | Done — local schema/upgrade/constraints verified |
+| CAFE-102 | Create MariaDB schemas for Area, Cafe, and Offerings | Database | Done — local schema/upgrade/constraints verified |
 | CAFE-103 | Build PHP backend API/controllers for search and details | Backend | Done — query/HTTP acceptance verified |
 | CAFE-104 | Migrate frontend HTML/CSS to PHP templates | Frontend | Verify |
-| CAFE-105 | Guarded, transactional, repeatable fictional development seed | Backend/data | Done — MySQL preservation/rollback verified |
+| CAFE-105 | Guarded, transactional, repeatable fictional development seed | Backend/data | Done — local MariaDB preservation/rollback verified |
+| CAFE-106 | MariaDB support, private shared-host config, allowlisted ZIP and myfanverse.in deployment runbook | Root/backend/QA/docs | Verify — local release checks complete; actual Hostinger staging remains open |
 
 Root integration evidence (2026-10-09): PHP 8.2.34/MySQL 8.0.46; 21 PHP files linted, 40 unit checks and 92 saved MySQL/HTTP integration checks passed, plus a negative lint probe and 19 live PHP/Apache routing checks. Backend/data and QA independently reviewed their contracts/acceptance cases; root integrated and reviewed the combined source. [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records exact commands, failure probes and limitations. CAFE-104 remains Verify because interactive keyboard and narrow-screen browser checks could not run (Windows browser helper initialization failed). Hosted CI is unverified until its actual run is observed; Hostinger/pilot deployment and real-data acceptance are outside these completed local packages. User-authorized Git merge/push does not imply deployment or frontend acceptance.
 
+MariaDB/Hostinger release evidence (2026-10-09, codex/hostinger-mariadb): PHP8.2.34/MariaDB10.11.19 passed 27-file lint, 40 unit, 47 config, 105 package and 118 database/HTTP checks. The extracted ZIP under local Apache with private-file production configuration passed 27 further HTTP checks. PHP8.3.35 also passed lint27/unit40/config47/package105; integration118 passed on all four PHP8.2/8.3 × MariaDB10.11.19/11.4.13 pairs. The previous MySQL evidence above is historical. CAFE-106 remains Verify pending actual hPanel runtime/staging smoke checks; DNS/SSL/backups are not configured by local tests. CAFE-104 still needs browser/keyboard/narrow-screen inspection. QUALITY_REVIEW.md records compatibility checks and exact commands. Production seeds remain forbidden; live data is a separate factual sourcing package.
 ## 2.1 Historical catalogue stories
 
 CAFE-001–007 described the previous Django catalogue. Its historical 49-test/CI evidence applies to legacy_django/, not PHP, and is retained in Git history. Old Done flags do not establish PHP feature acceptance. CAFE-101–105 are the active PHP catalogue packages above.
@@ -45,7 +47,7 @@ CAFE-001–007 described the previous Django catalogue. Its historical 49-test/C
 | CAFE-003 fictional seed | CAFE-105 guarded repeatable synthetic fixtures |
 | CAFE-004 guest search | CAFE-103/104 list/filter/pagination |
 | CAFE-005 details/about | CAFE-103/104 full UUID pages and navigation |
-| CAFE-006 verification | PHP lint/unit/MySQL/HTTP acceptance and CI configuration |
+| CAFE-006 verification | PHP lint/unit/config/package/MariaDB/HTTP acceptance and CI configuration |
 | CAFE-007 handoff | Current README/setup/design/status/evidence documents |
 
 ## 3. Ordered Remaining Backlog
@@ -74,7 +76,7 @@ All remaining stories begin in **Backlog**. Unsupported Done flags for CAFE-011�
 | CAFE-025 | S5 | As a visitor, I understand a curator's trip-value opinion. Display the optional 1–5 scale and labels separately from match ranking; no default rating, invented visit or overriding of hard constraints. | 024 | Frontend + QA | P12; F06 | Backlog |
 | CAFE-026 | S5 | As a visitor, I understand local/small-group eligibility. Confirm the count policy with Anuj; store worldwide brand count/source/date and independent ownership evidence separately; unknowns remain unbadged; five locations alone cannot establish independence. | 010, 024; policy decision | Backend + catalogue lead | P13; F08 | Backlog |
 | CAFE-027 | S5 | As a visitor, I can inspect selection methods, curator context, dated limitations and a working correction route. Clearly separate checked facts, opinions, private feedback and matching; ensure all published text is original or permitted. | 011, 024–026 | Frontend + curator/data lead | P7, P13; F09 | Backlog |
-| CAFE-028 | S6 | As the operations owner, I can run and restore a production-like pilot. Target MySQL-compatible database checks pass; production settings, static assets, persistent storage, logging, health checks and backup/restore are validated; secrets stay out of code; a rollback/runbook is available. Any service purchase/deployment follows existing user authorization. | 015–027; host/region/spending choices | Root + backend + QA | Cross-cutting release | Backlog |
+| CAFE-028 | S6 | As the operations owner, I can run and restore a production-like pilot. Target MariaDB database checks pass; production settings, static assets, persistent storage, logging, health checks and backup/restore are validated; secrets stay out of code; a rollback/runbook is available. Any service purchase/deployment follows existing user authorization. | 015–027; host/region/spending choices | Root + backend + QA | Cross-cutting release | Backlog |
 | CAFE-029 | S6 | As a participant, I understand eligibility, privacy and support. Confirm adult pilot eligibility, notice, purposes, retention and contacts; inspect third-party map requests and data rights flows; release checklist captures outstanding issues and their disposition. | 018–019, 023, 028; human operational decisions | Anuj/data owner + QA | P6 | Backlog |
 | CAFE-030 | S6 | As Product Owner, I receive useful minimal pilot measurement. Define denominators/windows first; exclude tests/synthetic records and sensitive payloads; distinguish directions interest from arrival and self-reports from verified transactions; check failure and missing-response handling. | 014, 017, 020, 028–029 | Backend + Anuj | P8 | Backlog |
 | CAFE-031 | After pilot readiness | As Product Owner, I can choose improve/expand/stop from evidence. Recruit within authorized scope, review usefulness/usability, catalogue errors, maintenance cost and mature 14-day return; report counts, limits and participant observations; create the next ordered hypothesis. | 008–010, 028–030; observation time | Anuj + planning/QA support | P8; Product Goal | Backlog |

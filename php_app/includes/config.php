@@ -1,12 +1,54 @@
 <?php
 declare(strict_types=1);
 
-/** Read process environment only; .env files are deliberately not loaded. */
+/** Read a private operator config, then overlay process environment. No dotenv loading. */
 function app_config(): array
 {
-    $env = static function (string $name, string $default = ''): string {
+    $keys = ['APP_ENV', 'DEMO_MODE', 'APP_BASE_PATH', 'DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASS'];
+    $explicit = getenv('APP_CONFIG_FILE');
+    $file = $explicit === false ? dirname(__DIR__) . '/config/local.php' : $explicit;
+    $absolute = DIRECTORY_SEPARATOR === '\\'
+        ? preg_match('~^(?:[A-Za-z]:[\\\\/]|[\\\\/]{2}[^\\\\/]+[\\\\/])~', $file) === 1
+        : str_starts_with($file, '/');
+    if ($explicit !== false && !$absolute) {
+        throw new RuntimeException('Private configuration must use an absolute path.');
+    }
+    $private = [];
+    if ($explicit !== false || file_exists($file) || is_link($file)) {
+        $resolved = realpath($file);
+        if ($resolved === false || !is_file($resolved) || !is_readable($resolved)) {
+            throw new RuntimeException('Private configuration is unavailable.');
+        }
+        foreach (['public', 'public_html'] as $directory) {
+            $public = realpath(dirname(__DIR__) . '/' . $directory);
+            if ($public === false) { continue; }
+            // A public alias to a private file is still web-accessible. Inspect
+            // the supplied path's ancestors as well as its resolved target.
+            for ($ancestor = dirname($file); ; $ancestor = dirname($ancestor)) {
+                $canonical = realpath($ancestor);
+                $same = $canonical !== false && (DIRECTORY_SEPARATOR === '\\'
+                    ? strcasecmp($canonical, $public) === 0 : $canonical === $public);
+                if ($same) { throw new RuntimeException('Private configuration must be outside the public directory.'); }
+                if (dirname($ancestor) === $ancestor) { break; }
+            }
+            $prefix = $public . DIRECTORY_SEPARATOR;
+            $inside = DIRECTORY_SEPARATOR === '\\'
+                ? strncasecmp($resolved, $prefix, strlen($prefix)) === 0
+                : strncmp($resolved, $prefix, strlen($prefix)) === 0;
+            if ($inside) { throw new RuntimeException('Private configuration must be outside the public directory.'); }
+        }
+        // The file is trusted operator code, never a path accepted from a web request.
+        $private = (static function (string $path): mixed { return require $path; })($resolved);
+        if (!is_array($private)) { throw new RuntimeException('Invalid private configuration.'); }
+        foreach ($private as $name => $value) {
+            if (!in_array($name, $keys, true) || !is_string($value)) {
+                throw new RuntimeException('Invalid private configuration.');
+            }
+        }
+    }
+    $env = static function (string $name, string $default = '') use ($private): string {
         $value = getenv($name);
-        return $value === false ? $default : $value;
+        return $value === false ? ($private[$name] ?? $default) : $value;
     };
     $environment = $env('APP_ENV', 'production');
     if (!in_array($environment, ['development', 'test', 'production'], true)) {

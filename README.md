@@ -4,7 +4,7 @@ Help a visitor find a café suited to their drink, budget and purpose. The curre
 
 ## Current application
 
-The active application is `php_app/`: PHP 8.2, PDO with native MySQL prepared statements, MySQL 8/InnoDB, and server-rendered HTML/CSS. It provides partial-name and area filters, twelve-result pagination, stable UUID detail URLs and an about page. Public queries exclude inactive cafés and inactive areas; fictional entries are visible only in development/test demo mode.
+The active application is `php_app/`: PHP 8.2+, MariaDB 10.11+/InnoDB through native PDO pdo_mysql prepares, and server-rendered HTML/CSS. It provides partial-name and area filters, twelve-result pagination, stable UUID detail URLs and an about page. Public queries exclude inactive cafés and inactive areas; fictional entries are visible only in development/test demo mode.
 
 The guarded local seed inserts eight fictional cafés, sixteen synthetic offerings and two fictional areas. It preserves existing rows, UUIDs, sources and verification dates. Missing evidence remains unknown. The earlier Lucknow seed's claims were not substantiated; it is no longer run by the active seed.
 
@@ -20,13 +20,13 @@ docker compose -f php_app/compose.yaml exec app php php_app/scripts/schema.php -
 docker compose -f php_app/compose.yaml exec app php php_app/scripts/seed.php --demo
 ```
 
-Open [the local catalogue](http://127.0.0.1:8000/). The Compose setup uses a private container MySQL service and local-only example credentials; it is for synthetic development. It keeps database storage in a named volume. Stop it with `docker compose -f php_app/compose.yaml down`.
+Open [the local catalogue](http://127.0.0.1:8000/). The Compose setup uses a private container MariaDB service and local-only example credentials; it is for synthetic development. It keeps database storage in a named volume. Stop it with `docker compose -f php_app/compose.yaml down`.
 
-Native PHP/MySQL commands, Windows environment setup, integration checks and Hostinger file/routing requirements are in [GETTING_STARTED.md](GETTING_STARTED.md).
+Native PHP/MariaDB commands, Windows environment setup, integration checks and Hostinger file/routing requirements are in [GETTING_STARTED.md](GETTING_STARTED.md).
 
 ## Verification and continuation
 
-The PHP fixes were prepared on `fix/php-catalogue-review` from clean main `ba97a0a` for integration into main. Local PHP 8.2.34/MySQL 8.0.46 verification passed: 21-file lint, 40 unit checks and 92 saved integration checks. [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records commands and remaining browser/hosting checks; [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) identifies the next work. Inspect Git/CI for actual publication and hosted-run state.
+The previous PHP review was merged and pushed as `5c25b1d`. The MariaDB/Hostinger work is on `codex/hostinger-mariadb`. Inspect actual Git status/head before continuing. [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records commands and remaining browser/hosting checks; [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) identifies the next work. Inspect Git/CI for actual publication and hosted-run state.
 
 ## Project guide
 
@@ -42,3 +42,7 @@ The PHP fixes were prepared on `fix/php-catalogue-review` from clean main `ba97a
 | Sources and verification | [SOURCES.md](SOURCES.md), [QUALITY_REVIEW.md](QUALITY_REVIEW.md) |
 
 A proposed pilot of 20–30 checked cafés and 30–50 consenting adults is a target, not existing data or users. Real sourcing, participant research, accounts, matching, maps, editorial content and production operations require their own acceptance evidence. Keep the repository private and credentials outside Git.
+
+## Hostinger at myfanverse.in
+
+[HOSTINGER_DEPLOYMENT.md](HOSTINGER_DEPLOYMENT.md) covers the upload ZIP, private PHP config, guarded production schema setup, actual DNS values, HTTPS and rollback. Only public_html is served; config/includes/templates/schema/scripts stay outside it. Production starts with an empty catalogue until checked real records are entered; no seed ships in the ZIP. A local Apache ZIP-layout fixture is available in GETTING_STARTED.

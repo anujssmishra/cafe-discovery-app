@@ -1,4 +1,4 @@
--- MySQL 8.0.16+; utf8mb4; all catalogue tables must use InnoDB.
+-- MariaDB 10.11+ with constraint checks enabled; utf8mb4 and InnoDB.
 CREATE TABLE IF NOT EXISTS area (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(120) NOT NULL,

@@ -6,9 +6,9 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 $host=getenv('DB_HOST')?:'127.0.0.1';
 $name=getenv('DB_NAME')?:'';
 if (getenv('APP_ENV')!=='test' || !preg_match('/^[A-Za-z0-9_]+_test$/D',$name)
-    || !in_array($host,['127.0.0.1','localhost','::1','mysql'],true)
+    || !in_array($host,['127.0.0.1','localhost','::1','mariadb'],true)
     || $argc!==2 || $argv[1]!=='--allow-reset') {
-    fwrite(STDERR,"Refusing reset. Require APP_ENV=test, local/mysql DB_HOST, DB_NAME ending _test and --allow-reset.\n");
+    fwrite(STDERR,"Refusing reset. Require APP_ENV=test, local/mariadb DB_HOST, DB_NAME ending _test and --allow-reset.\n");
     exit(2);
 }
 $root=dirname(__DIR__);
@@ -60,6 +60,9 @@ register_shutdown_function(static function():void{global $servers;foreach($serve
 
 try {
     $pdo=db_connect();
+    $version=(string)$pdo->query('SELECT VERSION()')->fetchColumn();
+    preg_match('/^(?:5\.5\.5-)?([0-9]+\.[0-9]+\.[0-9]+)/',$version,$versionMatch);
+    check(stripos($version,'MariaDB')!==false&&isset($versionMatch[1])&&version_compare($versionMatch[1],'10.11.0','>='),'Supported MariaDB target');
     foreach (['cafe_offering','cafe','area'] as $table) { $pdo->exec('DROP TABLE IF EXISTS ' . $table); }
     schema_apply($pdo); check(!$pdo->getAttribute(PDO::ATTR_EMULATE_PREPARES), 'Native prepare setting');
     $pdo->exec("INSERT INTO area (name,slug,city) VALUES ('Unrelated','unrelated','Test only')"); $area = (int) $pdo->lastInsertId();
@@ -77,20 +80,42 @@ try {
     $pdo->prepare("UPDATE cafe SET checked_on='2020-04-06',source='https://example.test/archive',brand_count_checked_on='2019-10-11',brand_count_source='https://example.test/brand',independence_checked_on='2019-09-12',independence_source='https://example.test/owner',is_active=0 WHERE id=?")->execute([$id]);
     $pdo->prepare("UPDATE cafe_offering SET checked_on='2017-02-03',source='https://example.test/archive-menu' WHERE cafe_id=?")->execute([$id]);
     $beforeRepeat=rows($pdo); for($i=0;$i<2;$i++){ $again=seed_demo($pdo); check($again['cafes_inserted']===0&&$again['cafes_existing']===8,'Repeat insertion counts'); check(rows($pdo)===$beforeRepeat,'Repeat preserves all rows IDs historical evidence flags'); }
-    $pdo->exec('ALTER TABLE cafe DROP CHECK chk_cafe_uuid'); $pdo->exec('ALTER TABLE cafe ALTER CHECK chk_cafe_active NOT ENFORCED');
+    $pdo->exec('ALTER TABLE cafe DROP CONSTRAINT chk_cafe_uuid');
+    $pdo->exec('ALTER TABLE cafe DROP CONSTRAINT chk_cafe_active');
     schema_apply($pdo); check(rows($pdo)===$beforeRepeat,'Additive schema repair preserves data');
-    try { $pdo->prepare('UPDATE cafe SET is_active=2 WHERE id=?')->execute([$unrelated]); throw new RuntimeException('Disabled check not restored'); }
-    catch(PDOException $error){check(($error->errorInfo[1]??null)===3819,'Schema repair re-enforces CHECK');}
+    try { $pdo->prepare('UPDATE cafe SET is_active=2 WHERE id=?')->execute([$unrelated]); throw new RuntimeException('Dropped check not restored'); }
+    catch(PDOException $error){check(($error->errorInfo[1]??null)===4025,'Schema repair restores CHECK');}
+    rejected($pdo,'UPDATE cafe SET id=? WHERE id=?',['malformed-id',$unrelated],4025,'Repaired UUID');
+    foreach(['check_constraint_checks','foreign_key_checks']as$setting){
+        $beforeDisabled=rows($pdo);
+        $pdo->exec('ALTER TABLE cafe DROP CONSTRAINT chk_cafe_active');
+        $pdo->exec('SET SESSION '.$setting.'=0');
+        try{
+            foreach(['schema_apply','seed_demo']as$operation){
+                $refused=false;
+                try{$operation($pdo);}catch(RuntimeException $error){$refused=true;}
+                $opened=$pdo->inTransaction();
+                if($opened){$pdo->rollBack();}
+                check($refused&&!$opened,$operation.' refuses disabled '.$setting.' before opening a transaction');
+                check(rows($pdo)===$beforeDisabled,$operation.' preserves rows with disabled '.$setting);
+                if($operation==='schema_apply'){
+                    check((int)$pdo->query("SELECT COUNT(*) FROM information_schema.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='cafe' AND CONSTRAINT_NAME='chk_cafe_active'")->fetchColumn()===0,'Disabled '.$setting.' prevents schema repair DDL');
+                }
+            }
+        }finally{$pdo->exec('SET SESSION '.$setting.'=1');}
+        schema_apply($pdo);seed_demo($pdo);
+        check(rows($pdo)===$beforeDisabled,'Recovery after restoring '.$setting);
+    }
     $rollbackId='c7876dda-d0a2-58fb-9675-3bd6a21184bb'; $pdo->prepare('DELETE FROM cafe WHERE id=?')->execute([$rollbackId]); $beforeFailure=rows($pdo);
     check((int)$pdo->query('SELECT COUNT(*) FROM cafe_offering WHERE price=170')->fetchColumn()===0,'Fault constraint can be added before seed');
     $pdo->exec("ALTER TABLE cafe_offering ADD CONSTRAINT qa_manual_fail CHECK (price IS NULL OR price <> 170)");
     $failed=false; $openAfterFailure=false;
     try { seed_demo($pdo); }
-    catch(PDOException $error) { $failed=($error->errorInfo[1]??null)===3819&&str_contains($error->getMessage(),'qa_manual_fail'); }
+    catch(PDOException $error) { $failed=($error->errorInfo[1]??null)===4025&&str_contains($error->getMessage(),'qa_manual_fail'); }
     finally {
         $openAfterFailure=$pdo->inTransaction();
         if($openAfterFailure){$pdo->rollBack();}
-        $pdo->exec('ALTER TABLE cafe_offering DROP CHECK qa_manual_fail');
+        $pdo->exec('ALTER TABLE cafe_offering DROP CONSTRAINT qa_manual_fail');
     }
     check($failed&&!$openAfterFailure,'Exact injected failure rolled back before DDL cleanup'); check(rows($pdo)===$beforeFailure,'Full rollback after preceding cafe insert');
     seed_demo($pdo); check((int)$pdo->query('SELECT COUNT(*) FROM cafe WHERE is_demo=1')->fetchColumn()===8,'Recovery');
@@ -125,19 +150,35 @@ try {
     }
     [$code,$output]=cli([$root.'/scripts/schema.php','--apply']);
     check($code===0&&rows($pdo)===$beforeCli,'CLI schema repeat preserves snapshot: '.$output);
+    // This exercises the production acknowledgement path against THIS disposable _test DB only.
+    $production=['APP_ENV'=>'production','DEMO_MODE'=>'false'];
+    [$code,$output]=cli([$root.'/scripts/schema.php','--apply','--production','--database='.$name],$production);
+    check($code===0&&rows($pdo)===$beforeCli,'Acknowledged production schema path against disposable test database: '.$output);
+    foreach([
+        [['--apply'],$production,1],
+        [['--apply','--production'],$production,2],
+        [['--apply','--production','--database=other_test'],$production,1],
+        [['--apply','--production','--database='.$name],[],1],
+        [['--apply','--production','--database='],$production,2],
+        [['--apply','--apply'],[],2],
+        [['--apply','--unknown'],[],2],
+    ]as[$arguments,$environment,$expectedCode]){
+        [$code]=cli(array_merge([$root.'/scripts/schema.php'],$arguments),$environment);
+        check($code===$expectedCode&&rows($pdo)===$beforeCli,'Schema CLI rejects missing/mismatched acknowledgement and malformed flags');
+    }
 
-    // Check exact MySQL errors, rather than accepting arbitrary syntax/connection failures.
-    rejected($pdo,'UPDATE cafe_offering SET price=-1 WHERE cafe_id=?',[$unrelated],3819,'Price');
-    rejected($pdo,"UPDATE cafe_offering SET drink_type='not-a-drink' WHERE cafe_id=?",[$unrelated],3819,'Drink');
-    rejected($pdo,"UPDATE cafe_offering SET currency='12!' WHERE cafe_id=?",[$unrelated],3819,'Currency');
-    rejected($pdo,'UPDATE cafe SET latitude=91,longitude=80 WHERE id=?',[$unrelated],3819,'Latitude');
-    rejected($pdo,'UPDATE cafe SET latitude=10,longitude=NULL WHERE id=?',[$unrelated],3819,'Coordinate pair');
-    rejected($pdo,'UPDATE cafe SET brand_location_count=0 WHERE id=?',[$unrelated],3819,'Brand count');
-    rejected($pdo,"UPDATE cafe SET independence_status='invented' WHERE id=?",[$unrelated],3819,'Ownership');
-    rejected($pdo,'UPDATE cafe SET is_active=2 WHERE id=?',[$unrelated],3819,'Active flag');
-    rejected($pdo,'UPDATE cafe SET is_demo=2 WHERE id=?',[$unrelated],3819,'Demo flag');
+    // Check exact MariaDB errors, rather than accepting arbitrary syntax/connection failures.
+    rejected($pdo,'UPDATE cafe_offering SET price=-1 WHERE cafe_id=?',[$unrelated],4025,'Price');
+    rejected($pdo,"UPDATE cafe_offering SET drink_type='not-a-drink' WHERE cafe_id=?",[$unrelated],4025,'Drink');
+    rejected($pdo,"UPDATE cafe_offering SET currency='12!' WHERE cafe_id=?",[$unrelated],4025,'Currency');
+    rejected($pdo,'UPDATE cafe SET latitude=91,longitude=80 WHERE id=?',[$unrelated],4025,'Latitude');
+    rejected($pdo,'UPDATE cafe SET latitude=10,longitude=NULL WHERE id=?',[$unrelated],4025,'Coordinate pair');
+    rejected($pdo,'UPDATE cafe SET brand_location_count=0 WHERE id=?',[$unrelated],4025,'Brand count');
+    rejected($pdo,"UPDATE cafe SET independence_status='invented' WHERE id=?",[$unrelated],4025,'Ownership');
+    rejected($pdo,'UPDATE cafe SET is_active=2 WHERE id=?',[$unrelated],4025,'Active flag');
+    rejected($pdo,'UPDATE cafe SET is_demo=2 WHERE id=?',[$unrelated],4025,'Demo flag');
     rejected($pdo,'UPDATE cafe SET area_id=2147483647 WHERE id=?',[$unrelated],1452,'Area FK');
-    rejected($pdo,'UPDATE cafe SET id=? WHERE id=?',['malformed-id',$unrelated],3819,'UUID');
+    rejected($pdo,'UPDATE cafe SET id=? WHERE id=?',['malformed-id',$unrelated],4025,'UUID');
 
     $pdo->exec("INSERT INTO area (name,slug,city) VALUES ('QA active','qa-active','Test only')");
     $area=(int)$pdo->lastInsertId();
@@ -187,6 +228,16 @@ try {
     [$status,$body]=response($plain.'/?q=QA%20Match');check($status===200&&str_contains($body,'QA Match 00'),'Non-demo catalogue works');
     $bad=server(['DB_USER'=>'intentionally_missing_user','DB_PASS'=>'invalid-test-only']);[$status,$body]=response($bad.'/');
     check($status===503&&!preg_match('/SQLSTATE|PDOException|Stack trace|intentionally_missing_user|invalid-test-only|Access denied|\.php on line/i',$body),'Generic DB error');
+    $missingConfig=sys_get_temp_dir().'/missing-private-config-'.bin2hex(random_bytes(8)).'.php';
+    $badConfig=server(['APP_CONFIG_FILE'=>$missingConfig]);[$status,$body]=response($badConfig.'/');
+    check($status===503&&!str_contains($body,$missingConfig)&&!preg_match('/Warning:|Fatal error:|Stack trace|RuntimeException/i',$body),'Missing private config produces generic HTTP503 without path leakage');
+    $invalidConfig=sys_get_temp_dir().'/cafe-invalid-config-'.bin2hex(random_bytes(8)).'.php';
+    try{
+        file_put_contents($invalidConfig,"<?php return ['DB_PASS'=>['CONFIG_TEST_DO_NOT_RENDER']];\n");
+        $invalidServer=server(['APP_CONFIG_FILE'=>$invalidConfig]);
+        [$status,$body]=response($invalidServer.'/');
+        check($status===503&&!str_contains($body,'CONFIG_TEST_DO_NOT_RENDER')&&!str_contains($body,$invalidConfig)&&!preg_match('/Warning:|Fatal error:|Stack trace|RuntimeException/i',$body),'Malformed config produces generic HTTP503 without fixture secret/path leakage');
+    }finally{unlink($invalidConfig);}
     foreach($servers as[$p,$log]){fflush($log);rewind($log);check(!preg_match('/PHP (?:Warning|Fatal error|Notice):/',stream_get_contents($log)),'No PHP warning/fatal in HTTP logs');}
 
     $prefix=server(['APP_BASE_PATH'=>'/catalogue']);
@@ -201,7 +252,7 @@ try {
     [$status,$body]=response($base.'/about/'); check($status===200&&str_contains($body,'café'),'About page');
     [$status,$body]=response($base.'/?q=QA%20Match&area=qa-active&page='.str_repeat('9',100));
     check($status===200&&str_contains($body,'QA Match 25'),'Huge HTTP page bounded');
-    fwrite(STDOUT,'MySQL integration checks passed: '.$checks.'. PHP '.PHP_VERSION.', MySQL '.$pdo->getAttribute(PDO::ATTR_SERVER_VERSION).".\n");
+    fwrite(STDOUT,'MariaDB integration checks passed: '.$checks.'. PHP '.PHP_VERSION.', MariaDB '.$pdo->getAttribute(PDO::ATTR_SERVER_VERSION).".\n");
 } catch(Throwable $error) {
     fwrite(STDERR,'FAIL after '.$checks.': '.$error->getMessage()."\n");
     exit(1);
