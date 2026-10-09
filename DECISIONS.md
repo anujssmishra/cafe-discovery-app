@@ -1,6 +1,6 @@
 # Decisions, Assumptions and Open Questions
 
-Last updated: 2026-10-08. Use this file as the decision record and [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) for a new coding session. A documented proposal is not automatically an approved decision or implemented feature.
+Last updated: 2026-10-09. Use this file as the decision record and [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) for a new coding session. A documented proposal is not automatically an approved decision or implemented feature.
 
 ## 1. Status Definitions
 
@@ -32,8 +32,8 @@ Last updated: 2026-10-08. Use this file as the decision record and [DEVELOPMENT_
 |---|---|---|---|
 | P01 | One area, 20–30 checked cafés, 30–50 adult pilot participants | Manageable data and support burden | After research/accessibility of recruitment is known |
 | P02 | Responsive web with map/list fallback before native apps | Single-product validation with geographic discovery | After web usage and retention evidence |
-| P03 | Python 3.13 preferred, with Python 3.12 supported; Django 5.2 LTS; default auth plus a future profile | Current local slice uses Python 3.12.14 / Django 5.2.18 and staff auth; product profile/member flows remain proposed | Version review and member increment; local foundation in D08 |
-| P04 | SQLite only for local skeleton, PostgreSQL for hosted pilot | Durable multi-user operations | Before database and host selection |
+| P03 (superseded by D12) | Python 3.13 preferred, with Python 3.12 supported; Django 5.2 LTS; default auth plus a future profile | Current local slice uses Python 3.12.14 / Django 5.2.18 and staff auth; product profile/member flows remain proposed | Version review and member increment; local foundation in D08 |
+| P04 (superseded by D12) | SQLite only for local skeleton, PostgreSQL for hosted pilot | Durable multi-user operations | Before database and host selection |
 | P05 | Content baseline first; optional 0.10 community repeat weight | Cold start without fabricated community evidence | After manual comparisons and real eligible data |
 | P06 | Five eligible peers, 90-day window, one vote per peer | Limit dominance and disclosure risk | Privacy review and observed signal reliability |
 | P07 | No GPS requirement, payment imports, banking access or LLM dependency | Core matching can be tested without these systems | Only for a separately justified feature |
@@ -115,3 +115,11 @@ When superseding a material choice, preserve its reason and link to the replacem
 - 2026-10-06: reviewed the supplied feature list against F01–F09; clarified map-first UX, original pins, area chips, Log visit, explicit nullable member ratings and separate ownership/count evidence. Documented purpose-specific badges and Apple Maps as later candidates, and distinguished unverified rubric/API assumptions from the proposed Django design. This is a documentation refinement, with no new implemented app features.
 - 2026-10-07: continued the owner-authorized multi-agent build. Added phase-wise agile delivery, story backlog, working agreement and the first catalogue source. Replaced bootstrap-only instructions with reproducible setup for the existing application. The first integrated local suite passed 48 tests on Python 3.12.14 / Django 5.2.18; system checks, migration drift/application, seed repeatability and the twelve-permission catalogue role were checked. See the quality review/backlog for remaining lint/browser/remote evidence and final story status. No hosted pilot is implied.
 
+
+## PHP review clarification — 2026-10-09
+
+D12 remains authoritative: PHP 8.2 with PDO/MySQL for Hostinger. Earlier Django/PostgreSQL configuration and test claims are historical. The active application has no PHP admin or member/matching/map/editorial implementation.
+
+The destructive Lucknow seed was replaced with guarded fictional fixtures because generic “Web research”/“Menu” labels do not substantiate verified ownership, counts, prices or current dates. Existing records and their UUIDs/evidence are preserved for a human audit; seed reruns supply no new verification. This is a correction within the authorized catalogue review, not a real-data collection or deployment decision.
+
+Root/backend/frontend/QA review contracts and actual results are recorded in DEVELOPMENT_HANDOFF.md and QUALITY_REVIEW.md. No deployment, merge, production seed or public publication is implied.

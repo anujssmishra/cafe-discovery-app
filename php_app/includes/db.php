@@ -1,22 +1,17 @@
 <?php
-// php_app/includes/db.php
+declare(strict_types=1);
 
-$host = getenv('DB_HOST') ?: 'localhost';
-$dbname = getenv('DB_NAME') ?: 'cafe_discovery';
-$username = getenv('DB_USER') ?: 'root';
-$password = getenv('DB_PASS') ?: '';
-$charset = 'utf8mb4';
+require_once __DIR__ . '/config.php';
 
-$dsn = "mysql:host=$host;dbname=$dbname;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
-
-try {
-    $pdo = new PDO($dsn, $username, $password, $options);
-} catch (\PDOException $e) {
-    // Note: Do not expose raw exception details to end-users in production
-    throw new \PDOException($e->getMessage(), (int)$e->getCode());
+function db_connect(?array $config = null): PDO
+{
+    $config ??= app_config();
+    $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4',
+        $config['db_host'], $config['db_port'], $config['db_name']);
+    return new PDO($dsn, $config['db_user'], $config['db_pass'], [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+        PDO::ATTR_TIMEOUT => 5,
+    ]);
 }

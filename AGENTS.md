@@ -8,7 +8,7 @@ For a new project session, read [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md)
 
 Build the café discovery product described in [README.md](README.md), [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md), [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) and [DATA_AND_PRIVACY.md](DATA_AND_PRIVACY.md). Read [DECISIONS.md](DECISIONS.md) before changing a material choice. The process and work status are in [AGILE_DELIVERY.md](AGILE_DELIVERY.md) and [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md).
 
-The first selected increment is a runnable PHP/MySQL catalogue with Area/Cafe/CafeOffering, catalogue admin, clearly synthetic demo data, guest partial-name/area filtering, pagination, full UUID details, about page, meaningful tests and CI configuration. The target runtime is PHP 8.x with MySQL to support Hostinger Shared Web Hosting. Use the runtime/dependency choices documented by the actual implementation. Accounts, matching, maps and ratings UI are future work unless an active task assigns them.
+The first selected increment is a runnable PHP/MySQL catalogue with Area/Cafe/CafeOffering, catalogue schema, clearly synthetic demo data, guest partial-name/area filtering, pagination, full UUID details, about page, meaningful tests and CI configuration. PHP catalogue admin is not implemented and remains future work. The target runtime is PHP 8.2 with MySQL to support Hostinger Shared Web Hosting. Use the runtime/dependency choices documented by the actual implementation. Accounts, matching, maps and ratings UI are future work unless an active task assigns them.
 
 ## Roles and Task Boundaries
 
@@ -49,7 +49,7 @@ Use focused feature branches and pull requests when repository tooling permits; 
 
 ## Verification and Definition of Done
 
-Read the actual setup instructions before running commands. For this PHP project, the normal integrated checks include dependency installation, migrations, `php -l`, `python manage.py makemigrations --check --dry-run` and `phpunit`; root records the precise environment and outcomes. Use project-specific commands if the implementation changes. Do not claim an unrun check passed.
+Read the actual setup instructions before running commands. For this PHP project, the normal integrated checks include `php php_app/scripts/lint.php`, `php php_app/tests/unit.php` and `php php_app/tests/integration.php --allow-reset` against a disposable local MySQL `_test` database; root records the precise environment and outcomes. Use project-specific commands if the implementation changes. Do not claim an unrun check passed.
 
 Choose meaningful tests for the changed behaviour: active/inactive visibility, combined filters, pagination preservation, detail 404s, seed idempotence and data validation for the initial catalogue; ownership, hard constraints, privacy/deletion and map/list consistency when those features arrive. A test that repeats the same implementation logic provides weak independent evidence.
 
@@ -74,4 +74,3 @@ Do not mark another agent's work Done. Root may update the backlog and shared st
 This agreement authorizes no new external communications, purchases, deployments, permission changes, public data collection or account creation. Follow the user's existing authorization for the requested work; do not repeat permission requests for actions already authorized. Route genuinely new consequential scope through root with a concrete proposed action and reason. Never send email, invitations, recruitment messages or other person-directed communications merely because a story lists a human dependency.
 
 Keep the repository private unless the owner explicitly changes that instruction. Never infer a licence, production release or spending approval from a planning table. Report access failures accurately and use only authorized alternatives.
-

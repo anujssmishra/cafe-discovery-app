@@ -1,6 +1,6 @@
 # Agile Delivery Plan
 
-Last updated: 2026-10-07. Status: delivery plan adopted for the first implementation increment; later sprint content is a forecast. This file describes how the team will build and inspect the product. [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) records the work and its status; [README.md](README.md) describes the capabilities actually available.
+Last updated: 2026-10-09. Status: delivery plan adopted for the first implementation increment; later sprint content is a forecast. This file describes how the team will build and inspect the product. [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) records the work and its status; [README.md](README.md) describes the capabilities actually available.
 
 ## 1. Product Goal
 
@@ -33,12 +33,12 @@ The forecast below orders useful increments. It is not a fixed six-sprint delive
 | Phase | Proposed Sprint | Sprint Goal and usable increment | Acceptance gate | Dependencies |
 |---|---|---|---|---|
 | 0. Readiness | Inside Sprint 1 | Agree the working method and establish a reproducible local foundation while pilot decisions and research begin | Setup, ownership, synthetic-data policy and backlog are clear; unresolved pilot decisions have owners | Repository access; local runtime; Anuj's review capacity |
-| 1. Catalogue discovery | 1 | A guest can find and inspect a synthetic café through a usable mobile web catalogue | Django runs; schema/admin/seed work; partial name and area filtering, pagination, UUID details and about page pass acceptance checks | Phase 0 technical readiness; no real-data collection required for this demo |
+| 1. Catalogue discovery | 1 | A guest can find and inspect a synthetic café through a usable mobile web catalogue | PHP 8.2/MySQL runs; schema/guarded seed work; PHP admin remains future work; partial name and area filtering, pagination, UUID details and about page pass acceptance checks | Phase 0 technical readiness; no real-data collection required for this demo |
 | 2. Useful content matches | 2 | A new visitor can express today's needs and receive explained matches without any visit history | Essential constraints, unknown/stale data, budget and empty-result behaviour pass; reasons correspond to stored facts | Catalogue attributes and sourced price/amenity data; matching examples agreed |
 | 3. Personal records and control | 3 | A member can save cafés and manage private visits and their own data | Authentication, ownership, optional ratings, export/deletion and contribution choices are checked end to end | Stable catalogue IDs; account/retention decisions; content baseline remains useful without logs |
 | 4A. Geographic discovery | 4 | A visitor can switch between the same filtered results on an accessible list and map | Deliberate map loading, named pins, area chips, detail dialog, directions, identical result sets and failure fallback pass | Public serialization contract; tile-provider terms/configuration; Phase 3 for member actions |
 | 4B. Editorial curation | 5 | A visitor can understand attributed curator opinions and the criteria for the local collection | Published/draft separation, nullable scores, trip labels, ownership/count provenance and correction handling pass | Original permitted content; confirmed collection policy; authorized curator |
-| 5. Hosted pilot readiness | 6 | Invited adults can use a stable hosted version with checked data and support | PostgreSQL checks, deployment configuration, mobile usability, notices, monitoring and restore exercise pass; pilot readiness checklist complete | Hosting/spending decisions, 20–30 checked cafés, recruitment and support owner |
+| 5. Hosted pilot readiness | 6 | Invited adults can use a stable hosted version with checked data and support | MySQL-compatible database checks, deployment configuration, mobile usability, notices, monitoring and restore exercise pass; pilot readiness checklist complete | Hosting/spending decisions, 20–30 checked cafés, recruitment and support owner |
 | 6. Learn and iterate | After readiness; refined Sprint by Sprint | Improve an observed user problem and decide whether to expand, simplify or stop | Report defined metrics and qualitative evidence; the next selected hypothesis has a measurable outcome | Sufficient observation time; do not report 14-day return before the cohort matures |
 
 Readiness work is inside Sprint 1; a separate "Sprint Zero" is not a requirement of this process. Research and catalogue checking continue alongside development. A synthetic local increment can be useful for review while real-data and pilot prerequisites remain open. Before public release, unresolved release prerequisites must be addressed.
@@ -49,17 +49,15 @@ The two large later areas—accounts/data controls and maps/editorial—must be 
 
 **Sprint Goal:** make café discovery concrete through a reproducible, tested catalogue that a guest can search and inspect, using explicitly fictional demonstration records.
 
-The first selected increment comprises CAFE-001 through CAFE-007 in [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md). Its implementation scope is Django 5.2, local SQLite, Area/Cafe/CafeOffering, catalogue admin, a synthetic seed command, case-insensitive partial-name and area filtering, pagination, UUID detail pages, an about page, meaningful tests and a CI configuration. Python 3.12 is the available local runtime; Python 3.13 remains the preferred target and should be covered by the chosen CI matrix when available.
-
-Member accounts, personalized matching, map interactions, public ratings and visit logs are later increments. An admin login is a staff tool, not proof that member registration exists. Writing a CI workflow is not evidence that a hosted CI run has passed.
+The active review covers CAFE-101–105: PHP 8.2/MySQL schema and guarded fictional seeding, guest search/area filters, pagination, details, about, routing/assets, generic errors, meaningful tests and reproducible docs. Root integrates backend/data, frontend/routing and QA packages with separate file ownership. PHP admin, accounts, matching, maps and ratings remain future work. A workflow is not a hosted CI result.
 
 | Work package | Lead | First handoff | Integration dependency |
 |---|---|---|---|
-| W1: Foundation and integration, CAFE-001 | Root | Project/app names, dependency configuration, root routes, settings and file boundaries | All specialists work against this contract |
-| W2: Catalogue, CAFE-002–003 | Backend | Model fields, active-record rule, related names, ordering and seed command | Frontend/QA can then target stable behaviour |
-| W3: Guest experience, CAFE-004–005 | Frontend | Query parameters, paginated context, public routes and accessible templates | Requires W1/W2 contracts, not the completion of every backend detail |
-| W4: Verification, CAFE-006 | QA | Acceptance scenarios, executable tests and CI requirements | Tests integrated behaviour after W2/W3 land |
-| W5: Delivery guide, CAFE-007 | Planning | Plan, traceable backlog and operational agent rules | Root records actual implemented state after validation |
+| W1: PHP foundation/integration, CAFE-101 | Root | Project/app names, dependency configuration, root routes, settings and file boundaries | All specialists work against this contract |
+| W2: Schema and seed, CAFE-102/105 | Backend | Model fields, active-record rule, related names, ordering and seed command | Frontend/QA can then target stable behaviour |
+| W3: Guest controllers/templates, CAFE-103/104 | Frontend | Query parameters, paginated context, public routes and accessible templates | Requires W1/W2 contracts, not the completion of every backend detail |
+| W4: PHP/MySQL verification | QA | Acceptance scenarios, executable tests and CI requirements | Tests integrated behaviour after W2/W3 land |
+| W5: PHP delivery guide | Root | Plan, traceable backlog and operational agent rules | Root records actual implemented state after validation |
 
 Root reviews each handoff, resolves conflicting interfaces and runs the integrated application checks. The handover must state exact commands and outcomes, remaining limitations, and whether a remote commit or CI result has actually been verified. This first increment is a development demonstration, not the complete pilot MVP.
 
@@ -94,7 +92,7 @@ Track cycle time, blocked time, defects and completed acceptance criteria. Story
 **Definition of Done for an implementation increment:**
 
 1. Its acceptance criteria are met by integrated behaviour, and a second reviewer has inspected the change.
-2. Relevant automated tests pass against the integrated code; failed or unrun checks are reported explicitly. Migrations and Django checks are clean for the supported local setup.
+2. Relevant automated tests pass against the integrated code; failed or unrun checks are reported explicitly. PHP lint and MySQL schema/upgrade checks are clean for the supported local setup.
 3. A contributor can reproduce the documented setup and principal changed journey. Applicable mobile, keyboard, empty-state and failure behaviour has been checked.
 4. Permission, input-validation and data-handling cases affected by the change are addressed. No committed credentials or misrepresented synthetic records exist.
 5. Model changes include migrations; shared contracts and operational notes are updated. The implementation does not silently break existing requirements.
@@ -102,7 +100,7 @@ Track cycle time, blocked time, defects and completed acceptance criteria. Story
 
 A developer agent's "finished" message moves work to review, not automatically to Done. Root records integrated evidence before updating status. If an acceptance criterion cannot be verified, keep the item in Review/Verify or split an explicit follow-up with the Product Owner's scope agreement; do not hide a missing requirement in a footnote.
 
-Hosted pilot release adds the requirements in the roadmap and data plan: real catalogue checks, configured persistent PostgreSQL, participant notice/eligibility, permissions and deletion checks, working support arrangements, a restore exercise, and provider/operations readiness. Local Done does not mean deployed or validated with users.
+Hosted pilot release adds the requirements in the roadmap and data plan: real catalogue checks, configured persistent MySQL-compatible database, participant notice/eligibility, permissions and deletion checks, working support arrangements, a restore exercise, and provider/operations readiness. Local Done does not mean deployed or validated with users.
 
 ## 8. Risks and Next Decisions
 

@@ -1,76 +1,41 @@
 <?php
-// php_app/templates/cafe_detail.php
-$pageTitle = $cafe['name'] . ' | Café Discovery';
+require_once __DIR__ . '/_evidence.php';
 require __DIR__ . '/header.php';
+$isDemo = (bool) ($cafe['is_demo'] ?? false);
+$verification = catalogue_evidence($cafe['source'] ?? null, $cafe['checked_on'] ?? null, $isDemo);
+$ownershipEvidence = catalogue_evidence($cafe['independence_source'] ?? null, $cafe['independence_checked_on'] ?? null, $isDemo);
+$brandEvidence = catalogue_evidence($cafe['brand_count_source'] ?? null, $cafe['brand_count_checked_on'] ?? null, $isDemo);
+$website = (string) ($cafe['website'] ?? '');
+$websiteAllowed = !$isDemo && filter_var($website, FILTER_VALIDATE_URL)
+    && in_array(strtolower((string) parse_url($website, PHP_URL_SCHEME)), ['http', 'https'], true)
+    && parse_url($website, PHP_URL_USER) === null && parse_url($website, PHP_URL_PASS) === null;
 ?>
-
-<div style="margin-bottom:1rem;">
-  <a href="/" style="text-decoration:none; color:#0056b3;">← Back to Catalogue</a>
-</div>
-
-<div style="background:#fff; border:1px solid #ddd; padding:2rem; border-radius:4px;">
-  <h1 style="margin-top:0;"><?= htmlspecialchars($cafe['name']) ?></h1>
-  
-  <p style="color:#555; font-size:1.1rem;">
-    <?= htmlspecialchars($cafe['address']) ?> <br>
-    <strong><?= htmlspecialchars($cafe['area_name']) ?></strong>, <?= htmlspecialchars($cafe['area_city']) ?>
-  </p>
-
-  <div style="margin: 1.5rem 0;">
-    <?php if ($cafe['independence_status'] === 'verified_independent'): ?>
-      <span class="badge badge-independent">Independent Ownership</span>
-    <?php elseif ($cafe['independence_status'] === 'verified_not_independent'): ?>
-      <span class="badge" style="background:#e3f2fd; color:#0d47a1;">Chain / Group</span>
-    <?php endif; ?>
-    
-    <?php if ($cafe['is_demo']): ?>
-      <span class="badge" style="background:#fff3cd; color:#856404;">Demo Data</span>
-    <?php endif; ?>
-  </div>
-
-  <?php if (!empty($cafe['summary'])): ?>
-    <div style="font-size:1.1rem; line-height:1.6; margin-bottom: 2rem;">
-      <p><?= nl2br(htmlspecialchars($cafe['summary'])) ?></p>
+<main id="main-content" class="page-shell" tabindex="-1">
+  <a class="back-link" href="<?= h(app_url('/')) ?>"><span aria-hidden="true">← </span>Back to the catalogue</a>
+  <article>
+    <header class="detail-heading"><p class="eyebrow"><?= h($cafe['area_name']) ?><?= empty($cafe['area_city']) ? '' : ' · ' . h($cafe['area_city']) ?></p><h1><?= h($cafe['name']) ?></h1><?php if ($isDemo): ?><span class="badge">Fictional demo</span><?php endif; ?><p class="intro-copy"><?= h(trim((string) ($cafe['summary'] ?? '')) !== '' ? $cafe['summary'] : 'More details are not recorded yet.') ?></p></header>
+    <?php if ($isDemo): ?><p class="notice">This is fictional development data. This café and its offerings do not represent a real business.</p><?php endif; ?>
+    <div class="detail-grid">
+      <section class="panel"><h2>Café details</h2><dl class="details-list">
+        <div><dt>Address</dt><dd><?= h(trim((string) ($cafe['address'] ?? '')) !== '' ? $cafe['address'] : 'Unknown') ?></dd></div>
+        <div><dt>Ownership</dt><dd><?= h(catalogue_ownership($cafe)) ?></dd></div>
+        <div><dt>Ownership source</dt><dd><?= h($ownershipEvidence['source'] !== '' ? $ownershipEvidence['source'] : 'Unknown') ?><?php if (!$ownershipEvidence['complete']): ?> <span class="muted">(no documented verification)</span><?php endif; ?></dd></div>
+        <div><dt>Brand location count</dt><dd><?php $brandCount = $cafe['brand_location_count'] ?? null; ?><?= $brandCount !== null && ctype_digit((string) $brandCount) && $brandEvidence['complete'] ? h($brandCount) . ' · recorded ' . h($brandEvidence['date']) : 'Unknown' ?></dd></div>
+        <div><dt>Catalogue source</dt><dd><?= h($verification['source'] !== '' ? $verification['source'] : 'Unknown') ?></dd></div>
+        <div><dt>Verification</dt><dd><?php if ($verification['complete']): ?><?= $verification['current'] ? 'Checked ' : 'Historical check: ' ?><?= h($verification['date']) ?><?php else: ?>Unknown — no documented verification<?php endif; ?></dd></div>
+        <?php if ($verification['date'] !== null && !$verification['complete']): ?><div><dt>Recorded check date</dt><dd><?= h($verification['date']) ?> <span class="muted">(evidence incomplete)</span></dd></div><?php endif; ?>
+      </dl><?php if ($websiteAllowed): ?><a class="button button-secondary" href="<?= h($website) ?>" rel="noopener noreferrer">Café website</a><?php endif; ?></section>
+      <section class="panel offerings-panel"><h2>Recorded offerings</h2><p class="muted">Prices and availability can change. Unknown prices are shown explicitly.</p>
+        <?php if (!$offerings): ?><p class="empty-copy">No offerings have been recorded yet.</p><?php else: ?>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Recorded offerings table"><table><caption class="sr-only">Drinks, brewing methods, prices and verification</caption><thead><tr><th scope="col">Drink</th><th scope="col">Method</th><th scope="col">Price</th><th scope="col">Evidence</th></tr></thead><tbody>
+          <?php foreach ($offerings as $offering): ?>
+            <?php $offeringEvidence = catalogue_evidence($offering['source'] ?? null, $offering['checked_on'] ?? null, $isDemo); ?>
+            <tr><th scope="row"><?= h(trim((string) ($offering['drink_type'] ?? '')) !== '' ? str_replace('_', ' ', $offering['drink_type']) : 'Unknown') ?></th><td><?= h(trim((string) ($offering['brewing_method'] ?? '')) !== '' ? $offering['brewing_method'] : 'Unknown') ?></td><td class="price"><?php if (($offering['price'] ?? null) === null): ?>Unknown<?php else: ?><?= h(trim((string) ($offering['currency'] ?? '')) !== '' ? $offering['currency'] : 'Currency unknown') ?> <?= h(number_format((float) $offering['price'], 2, '.', '')) ?><?php endif; ?></td><td><?php if ($offeringEvidence['complete']): ?><?= h($offeringEvidence['source']) ?><br><span class="muted"><?= $offeringEvidence['current'] ? 'Checked ' : 'Historical check: ' ?><?= h($offeringEvidence['date']) ?></span><?php else: ?>Unknown<?php if ($offeringEvidence['source'] !== ''): ?><br><span class="muted">Recorded source: <?= h($offeringEvidence['source']) ?>; evidence incomplete</span><?php endif; ?><?php endif; ?></td></tr>
+          <?php endforeach; ?>
+          </tbody></table></div>
+        <?php endif; ?>
+      </section>
     </div>
-  <?php endif; ?>
-
-  <hr style="border:0; border-top:1px solid #eee; margin: 2rem 0;">
-
-  <h2>Menu Offerings</h2>
-  <?php if (empty($offerings)): ?>
-    <p>No verified menu data yet.</p>
-  <?php else: ?>
-    <table style="width:100%; text-align:left; border-collapse: collapse;">
-      <thead>
-        <tr style="border-bottom: 2px solid #ddd;">
-          <th style="padding:0.5rem 0;">Drink Type</th>
-          <th style="padding:0.5rem 0;">Method</th>
-          <th style="padding:0.5rem 0;">Price</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach ($offerings as $offering): ?>
-          <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding:0.5rem 0; text-transform: capitalize;"><?= htmlspecialchars(str_replace('_', ' ', $offering['drink_type'])) ?></td>
-            <td style="padding:0.5rem 0;"><?= htmlspecialchars($offering['brewing_method'] ?: 'Standard') ?></td>
-            <td style="padding:0.5rem 0;">
-              <?php if ($offering['price']): ?>
-                <?= htmlspecialchars($offering['currency']) ?> <?= htmlspecialchars($offering['price']) ?>
-              <?php else: ?>
-                <span style="color:#999;">Unknown</span>
-              <?php endif; ?>
-            </td>
-          </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
-  <?php endif; ?>
-
-  <div style="margin-top: 3rem; padding:1rem; background:#f5f5f5; border-radius:4px; font-size:0.875rem; color:#666;">
-    <strong>Verification Data:</strong><br>
-    Checked on: <?= htmlspecialchars($cafe['checked_on'] ?? 'Unknown') ?><br>
-    Source: <?= htmlspecialchars($cafe['source'] ?? 'Unknown') ?>
-  </div>
-</div>
-
+  </article>
+</main>
 <?php require __DIR__ . '/footer.php'; ?>

@@ -1,6 +1,6 @@
 # Data, Privacy and Catalogue Operations
 
-Last updated: 2026-10-07. Status: proposed operating policy and later implementation requirements. The first catalogue increment contains explicitly fictional development examples; no real café dataset or participant histories have been collected for this repository. See [QUALITY_REVIEW.md](QUALITY_REVIEW.md) for controls actually checked.
+Last updated: 2026-10-09. Status: proposed operating policy and later implementation requirements. The active PHP seed contains explicitly fictional development examples. The earlier Lucknow seed contains real café names with unsubstantiated provenance; those records are not a verified pilot catalogue. No participant histories are part of this increment. See [QUALITY_REVIEW.md](QUALITY_REVIEW.md) for controls actually checked.
 
 ## 1. Data Principles
 

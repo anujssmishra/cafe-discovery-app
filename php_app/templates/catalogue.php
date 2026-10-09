@@ -1,58 +1,52 @@
 <?php
-// php_app/templates/catalogue.php
-$pageTitle = 'Explore Cafés | Café Discovery';
+require_once __DIR__ . '/_evidence.php';
 require __DIR__ . '/header.php';
+$knownArea = $areaFilter === '';
+foreach ($areas as $area) {
+    if ((string) $area['slug'] === $areaFilter) { $knownArea = true; }
+}
+$pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter], static fn($value) => $value !== '');
 ?>
-
-<div style="margin-bottom: 2rem;">
-  <h1>Find your next pause</h1>
-  <form method="GET" action="/" style="display:flex; gap:0.5rem; margin-bottom: 1rem;">
-    <input type="text" name="q" placeholder="Search cafes by name..." value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" style="padding: 0.5rem; flex: 1; border: 1px solid #ccc; border-radius: 4px;">
-    
-    <select name="area" style="padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;">
-      <option value="">All Areas</option>
-      <?php foreach ($areas as $area): ?>
-        <option value="<?= htmlspecialchars($area['slug']) ?>" <?= (($_GET['area'] ?? '') === $area['slug']) ? 'selected' : '' ?>>
-          <?= htmlspecialchars($area['name']) ?>
-        </option>
-      <?php endforeach; ?>
-    </select>
-    
-    <button type="submit" class="button button-primary">Search</button>
-    <a href="/" class="button">Clear</a>
+<main id="main-content" class="page-shell" tabindex="-1">
+  <section class="catalogue-intro">
+    <p class="eyebrow">Find your next coffee stop</p>
+    <h1>Explore cafés, one neighbourhood at a time.</h1>
+    <p class="intro-copy">Search by name or choose an area. Open a café to see its recorded details and offerings.</p>
+  </section>
+  <form class="filter-form panel" method="get" action="<?= h(app_url('/')) ?>">
+    <div class="form-field"><label for="search">Search by café name</label><input id="search" name="q" type="search" maxlength="180" value="<?= h($searchQuery) ?>" placeholder="Try a café name" aria-describedby="search-help"><small id="search-help">Part of a name works too.</small></div>
+    <div class="form-field"><label for="area">Area</label><select id="area" name="area"><option value="">All areas</option><?php foreach ($areas as $area): ?><option value="<?= h($area['slug']) ?>"<?= $areaFilter === (string) $area['slug'] ? ' selected' : '' ?>><?= h($area['name']) ?><?= empty($area['city']) ? '' : ' · ' . h($area['city']) ?></option><?php endforeach; ?><?php if (!$knownArea): ?><option value="<?= h($areaFilter) ?>" selected>Unknown area filter</option><?php endif; ?></select></div>
+    <button type="submit" class="button">Find cafés</button>
+    <a class="text-link" href="<?= h(app_url('/')) ?>">Clear filters</a>
   </form>
-</div>
-
-<?php if (empty($cafes)): ?>
-  <div style="text-align:center; padding: 3rem; background: #fff; border: 1px solid #ddd; border-radius: 4px;">
-    <h3>No cafés found</h3>
-    <p>Try another name or clear your filters.</p>
-  </div>
-<?php else: ?>
-  <div class="grid">
-    <?php foreach ($cafes as $cafe): ?>
-      <div class="card">
-        <h2 style="margin-top:0; font-size:1.25rem;">
-          <a href="/cafes/<?= urlencode($cafe['id']) ?>" style="text-decoration:none; color:#111;">
-            <?= htmlspecialchars($cafe['name']) ?>
-          </a>
-        </h2>
-        <p style="color:#666; font-size:0.875rem; margin-bottom:0.5rem;">
-          <?= htmlspecialchars($cafe['area_name']) ?>, <?= htmlspecialchars($cafe['area_city']) ?>
-        </p>
-        
-        <div style="margin-bottom:1rem;">
-          <?php if ($cafe['independence_status'] === 'verified_independent'): ?>
-            <span class="badge badge-independent">Independent</span>
-          <?php endif; ?>
-        </div>
-        
-        <p style="font-size:0.875rem;"><?= htmlspecialchars(substr($cafe['summary'] ?? '', 0, 100)) ?>...</p>
-        
-        <a href="/cafes/<?= urlencode($cafe['id']) ?>" class="button" style="width:100%; text-align:center; box-sizing:border-box;">View Details</a>
+  <?php if ($errors): ?>
+    <section class="notice validation-errors" aria-labelledby="validation-title"><h2 id="validation-title">Check your filters</h2><ul><?php foreach ($errors as $error): ?><li><?= h($error) ?></li><?php endforeach; ?></ul></section>
+  <?php endif; ?>
+  <?php if (!$errors): ?>
+    <div class="results-heading"><h2><?= h($pagination['total']) ?> <?= (int) $pagination['total'] === 1 ? 'café' : 'cafés' ?> found</h2><?php if ((int) $pagination['total'] > 0): ?><p>Page <?= h($pagination['page']) ?> of <?= h($pagination['pages']) ?></p><?php endif; ?></div>
+    <?php if (!$cafes): ?>
+      <section class="panel empty-state"><h3>No cafés found</h3><p>Try a different name or area, or clear the filters to browse the catalogue.</p><a class="button" href="<?= h(app_url('/')) ?>">Clear filters</a></section>
+    <?php else: ?>
+      <div class="cafe-grid">
+        <?php foreach ($cafes as $item): ?>
+          <article class="cafe-card panel">
+            <div class="card-topline"><p class="eyebrow"><?= h($item['area_name']) ?><?= empty($item['area_city']) ? '' : ' · ' . h($item['area_city']) ?></p><?php if ($item['is_demo'] ?? false): ?><span class="badge">Fictional demo</span><?php endif; ?></div>
+            <h3><a href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>"><?= h($item['name']) ?></a></h3>
+            <p class="card-summary"><?= h(trim((string) ($item['summary'] ?? '')) !== '' ? $item['summary'] : 'More details are not recorded yet.') ?></p>
+            <p class="address"><?= h(trim((string) ($item['address'] ?? '')) !== '' ? $item['address'] : 'Address not recorded') ?></p>
+            <p class="evidence-line"><span>Ownership:</span> <?= h(catalogue_ownership($item)) ?></p>
+            <a class="detail-link" href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>">View details<span class="sr-only"> for <?= h($item['name']) ?></span><span aria-hidden="true"> →</span></a>
+          </article>
+        <?php endforeach; ?>
       </div>
-    <?php endforeach; ?>
-  </div>
-<?php endif; ?>
-
+      <?php if ((int) $pagination['pages'] > 1): ?>
+        <nav class="pagination" aria-label="Catalogue pages">
+          <?php if ((int) $pagination['page'] > 1): ?><a class="button button-secondary" rel="prev" href="<?= h(app_url('/', array_merge($pageQuery, ['page' => (int) $pagination['page'] - 1]))) ?>">Previous page</a><?php endif; ?>
+          <span aria-current="page">Page <?= h($pagination['page']) ?> of <?= h($pagination['pages']) ?></span>
+          <?php if ((int) $pagination['page'] < (int) $pagination['pages']): ?><a class="button button-secondary" rel="next" href="<?= h(app_url('/', array_merge($pageQuery, ['page' => (int) $pagination['page'] + 1]))) ?>">Next page</a><?php endif; ?>
+        </nav>
+      <?php endif; ?>
+    <?php endif; ?>
+  <?php endif; ?>
+</main>
 <?php require __DIR__ . '/footer.php'; ?>

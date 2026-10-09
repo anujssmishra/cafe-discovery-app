@@ -1,161 +1,117 @@
 # Getting Started
 
-Last updated: 2026-10-07. This guide runs the existing local Django catalogue. The first increment is under integration review; use [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) and [QUALITY_REVIEW.md](QUALITY_REVIEW.md) for actual evidence. A local demo is not a hosted pilot.
+Updated: 2026-10-09. These instructions run the existing PHP catalogue. Use PHP 8.2 with PDO/pdo_mysql and MySQL 8.0.16 or newer (enforced CHECK constraints), InnoDB and utf8mb4. No Composer packages, Python environment, Django commands or PHPUnit installation are required for this increment.
 
-## 1. What Is Needed
+## Select the checkout
 
-| Need | Starting arrangement | Needed when |
-|---|---|---|
-| Product ownership | Anuj prioritizes the backlog, reviews increments and decides the pilot scope/spending | Throughout delivery |
-| Development | Python/Django, HTML/CSS, database and Git capability; agents coordinate through the root integrator | Current build |
-| Equipment and tools | Existing laptop, Git, Python 3.12 or 3.13, an editor, browser and private repository access | Local development |
-| Research and catalogue | Someone who can interview visitors and check café facts, provenance and dates | Before real recommendations |
-| Pilot data and participants | Proposed 20–30 checked cafés in one area and 30–50 adult participants | Later pilot |
-| Production services | Persistent PostgreSQL, a web host, email, monitoring and tested backups | Before hosting |
-| Maps and editorial | Licensed tiles, checked destinations, original curator content and publication permission | Later feature increments |
-| Operating arrangements | Data/support contact, correction process, notices and agreed time/cash budget | Before participant use |
-
-Python 3.13 remains the preferred target; Python 3.12 is also a development target. The first integrated local run used Python 3.12.14 and Django 5.2.18. Use the exact dependency versions recorded in the requirements files. The local stack needs no GPU, LLM API, banking integration or native app-store account. Do not substitute fictional seed records for checked pilot data.
-
-## 2. Understand the Current Sprint
-
-Read [AGILE_DELIVERY.md](AGILE_DELIVERY.md), [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) and [AGENTS.md](AGENTS.md). Sprint 1's goal is a reproducible synthetic catalogue that a guest can search and inspect. The selected stories cover foundation, models/admin, seed data, browsing/details, tests and delivery documentation.
-
-The current source has `config`, `cafes` and `discovery` packages. Member accounts, taste profiles, recommendations, private saves/visits, maps and editorial publication have not yet been built. Do not run `startproject` or recreate these packages over the existing source.
-
-## 3. Clone and Select the Development Branch
-
-Use normal GitHub authentication for the private repository; keep tokens out of clone URLs.
-
-```bash
+```sh
 git clone https://github.com/anujssmishra/cafe-discovery-app.git
 cd cafe-discovery-app
-git fetch origin
-git switch feat/sprint-1-catalogue
+git status --short --branch
+git fetch origin main
 ```
 
-`feat/sprint-1-catalogue` is published and is the current integration branch, under review in [draft PR #1](https://github.com/anujssmishra/cafe-discovery-app/pull/1). Clone that branch as shown above; the older `main` branch does not yet contain this increment. See the backlog and quality review for validation evidence. Contributors should branch from the current integrated revision for their assigned task. Do not overwrite an existing checkout or discard someone else's changes.
+Use `main` for the reviewed PHP implementation. The fixes were prepared on `fix/php-catalogue-review` from `ba97a0a`; inspect the actual available branch/head, preserve local work and never reset to a historical hash. Read [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) and [AGENTS.md](AGENTS.md).
 
-## 4. Create an Isolated Python Environment
+## Recommended isolated local setup
 
-On macOS/Linux with Python 3.13 installed:
+Install/use an existing Docker Engine or Docker Desktop and start its Linux engine. Run from the repository root:
 
-```bash
-python3.13 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
+```sh
+docker compose -f php_app/compose.yaml up -d --build
+docker compose -f php_app/compose.yaml exec app php php_app/scripts/schema.php --apply
+docker compose -f php_app/compose.yaml exec app php php_app/scripts/seed.php --demo
 ```
 
-If using the supported Python 3.12 target, substitute `python3.12` in the first command.
+The same commands work in PowerShell. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/), search `Paper`, combine with `demo-paper-quarter`, clear the filters, try a missing name and open a detail and the about page.
 
-On Windows Command Prompt with Python 3.13 and its launcher installed:
+Compose creates `cafe_discovery` and a separate `cafe_discovery_test` database. The test runner resets only the latter. MySQL is not published on a host port, and the web port binds only to localhost. Committed Docker passwords are local-only examples, never production credentials. Docker copies source at build time so it also works on drive providers that cannot be bind-mounted. After PHP/template/CSS edits, rerun `docker compose -f php_app/compose.yaml build app test` and recreate app with `docker compose -f php_app/compose.yaml up -d app`. Storage persists in the `mysql-data` volume. Use `docker compose -f php_app/compose.yaml down` to stop without deleting it. The test database initialization script runs only when that MySQL volume is first initialized.
 
-```bat
-py -3.13 -m venv .venv
-.venv\Scripts\activate.bat
-python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
+## Native PHP/MySQL setup
+
+Create an empty local database and a database-scoped local user using your normal MySQL administration tool. Do not reuse production access. PHP reads process environment; copying `.env.example` to `.env` does not load it.
+
+On macOS/Linux, configure your shell (replace the user/password with your own local values):
+
+```sh
+export APP_ENV=development
+export DEMO_MODE=true
+export APP_BASE_PATH=
+export DB_HOST=127.0.0.1
+export DB_PORT=3306
+export DB_NAME=cafe_discovery
+export DB_USER=your_local_user
+export DB_PASS=your_local_password
+php -v
+php -m
+php php_app/scripts/schema.php --apply
+php php_app/scripts/seed.php --demo
+php -S 127.0.0.1:8000 -t php_app/public php_app/public/router.php
 ```
 
-Use `py -3.12` instead for Python 3.12. In PowerShell, using `.venv\Scripts\python.exe` directly is an alternative to activation; change each subsequent `python` command accordingly. No machine-wide execution-policy change is required.
-
-Check the interpreter and framework selected by the environment:
-
-```bash
-python --version
-python -m django --version
-```
-
-`requirements-dev.txt` includes application requirements and the formatter/linter used by CI. Avoid replacing the pinned dependency files with an unbounded framework install. See [SOURCES.md](SOURCES.md) for compatibility and version review references.
-
-## 5. Set Local Configuration
-
-`config/settings.py` reads process environment variables. `.env.example` documents names only: copying it to `.env` does **not** load it. The following commands configure the current terminal session. Repeat them in a new terminal before running Django. Never commit a generated secret.
-
-On macOS/Linux:
-
-```bash
-export DJANGO_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
-export DJANGO_DEBUG=true
-export DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
-export DJANGO_DEMO_MODE=true
-```
-
-On Windows Command Prompt (interactive terminal, not a batch file):
-
-```bat
-for /f "delims=" %K in ('python -c "import secrets; print(secrets.token_urlsafe(48))"') do set "DJANGO_SECRET_KEY=%K"
-set "DJANGO_DEBUG=true"
-set "DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1"
-set "DJANGO_DEMO_MODE=true"
-```
-
-In a Windows batch file use `%%K` instead of `%K`. PowerShell alternative, using the environment's interpreter directly:
+PowerShell equivalent:
 
 ```powershell
-$env:DJANGO_SECRET_KEY = & .\.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(48))"
-$env:DJANGO_DEBUG = "true"
-$env:DJANGO_ALLOWED_HOSTS = "localhost,127.0.0.1"
-$env:DJANGO_DEMO_MODE = "true"
+$env:APP_ENV = "development"
+$env:DEMO_MODE = "true"
+$env:APP_BASE_PATH = ""
+$env:DB_HOST = "127.0.0.1"
+$env:DB_PORT = "3306"
+$env:DB_NAME = "cafe_discovery"
+$env:DB_USER = "your_local_user"
+$env:DB_PASS = "your_local_password"
+php -v
+php -m
+php php_app/scripts/schema.php --apply
+php php_app/scripts/seed.php --demo
+php -S 127.0.0.1:8000 -t php_app/public php_app/public/router.php
 ```
 
-The generated key exceeds the required 50 characters. Boolean settings accept `true` or `false`. `DJANGO_DEMO_MODE=true` enables fictional catalogue display and is allowed only with debug enabled. Set it to `false` to work with an empty or manually maintained non-demo catalogue. Wildcard allowed hosts are rejected. The local development server should stay bound to `127.0.0.1`.
+These commands are local development only. Repeat environment settings in a new terminal. `APP_ENV` accepts `development`, `test`, or `production` and defaults to `production`; `DEMO_MODE` accepts only `true`/`false`, defaults to false, and is rejected in production when true. Set `APP_BASE_PATH=/guide` only when installing under that path. The schema command and seed are CLI-only and guarded; the seed additionally requires `--demo`.
 
-## 6. Migrate, Seed and Verify
+The seed inserts missing fictional fixtures and refuses reserved identifier collisions. It does not refresh dates, restore edited fields, reactivate rows, delete unrelated data or recreate URLs. Synthetic dates are null and ownership/count evidence is unknown. Existing real records from the old seed stay untouched; their generic “Web research”/“Menu” provenance needs a human audit before use as checked information.
 
-From the repository root, in the configured environment:
+The schema file creates new tables; `CREATE TABLE IF NOT EXISTS` does not retrofit constraints onto old tables. Follow the additive upgrade instructions in `php_app/schema/` for an existing PHP database after reviewing old records/custom schema and taking an appropriate local backup. Never drop tables to resolve a migration error.
 
-```bash
-python manage.py migrate
-python manage.py seed_demo
-python manage.py check
-python manage.py makemigrations --check --dry-run
-python manage.py test
-python -m ruff check .
-python -m ruff format --check .
+## Run checks
+
+Docker:
+
+```sh
+docker compose -f php_app/compose.yaml run --rm test php php_app/scripts/lint.php
+docker compose -f php_app/compose.yaml run --rm test php php_app/tests/unit.php
+docker compose -f php_app/compose.yaml run --rm test
 ```
 
-Skip `seed_demo` when demo mode is disabled. It requires both debug and demo mode, creates eight clearly fictional cafés and sixteen offerings across two fictional areas, and may be rerun to restore its own fixture values. It does not create users, delete unrelated records or supply real café verification. Reserved identifier conflicts with other data are errors; investigate rather than removing records to force a seed.
+The last command is `php php_app/tests/integration.php --allow-reset` in an isolated test container. It requires `APP_ENV=test`, an approved local MySQL host, and a database name ending `_test`. It drops/recreates catalogue tables only in that test database. It starts temporary local PHP HTTP servers and cleans them up. Do not point it at a database containing work you want to keep.
 
-These are the required commands, not a statement that they passed on every platform. Record the actual environment, command result and reviewed revision in the quality/backlog evidence. A hosted CI run has separate evidence from these local checks.
+Native testing requires a separate disposable local database/user, then set `APP_ENV=test`, `DEMO_MODE=true`, `DB_NAME=cafe_discovery_test` and the corresponding DB variables:
 
-## 7. Start and Inspect the Catalogue
-
-```bash
-python manage.py runserver 127.0.0.1:8000
+```sh
+php php_app/scripts/lint.php
+php php_app/tests/unit.php
+php php_app/tests/integration.php --allow-reset
 ```
 
-Open `http://127.0.0.1:8000/`. Search a partial name such as `Paper`, select a fictional area, combine/clear filters, try a query with no matches, then open a café's full detail page and `/about/`. Results are alphabetical and paginated at twelve per page; the eight-record seed alone will not produce a second page. Pagination is covered by larger synthetic test fixtures.
+Lint returns nonzero for any invalid PHP file. CI uses PHP 8.2/pdo_mysql and a fresh MySQL 8 service for these checks. A workflow is configuration; [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records checks actually run.
 
-The interface should identify fictional data and display unknown prices/evidence explicitly. Inspect narrow-screen layout, labelled controls, keyboard navigation and focus. Record actual browser checks separately from server-side tests. Stop the local server with `Ctrl+C`.
+## Routing and Hostinger preparation
 
-## 8. Optional Local Catalogue Administration
+Only `php_app/public/` is the web document root. Keep `includes/`, `templates/`, `schema/` and `scripts/` outside the served directory. Do not upload the whole repository into a public document root. PHP's built-in server must receive `router.php` as shown above; it does not read `.htaccess`.
 
-In a second terminal configured as above, create your own local administrator interactively and prepare the editor role:
+The public `.htaccess` routes non-file requests to `index.php`; static CSS stays a real file. Relative rewrites plus `APP_BASE_PATH` support a root or subdirectory installation. Hostinger uses LiteSpeed with [.htaccess support](https://www.hostinger.com/tutorials/create-default-wordpress-htaccess-file/). Configure PHP 8.2/pdo_mysql and private DB environment values deliberately. The application does not auto-load dotenv files, and arbitrary shared-host environment configuration must be checked on that host. If copying public files to a different physical location, preserve their relative sibling layout or adapt the include paths as a reviewed packaging change.
 
-```bash
-python manage.py createsuperuser
-python manage.py setup_catalogue_editors
-```
+Production settings are `APP_ENV=production` and `DEMO_MODE=false`, with HTTPS, private credentials, protected logs, backups/restore and checked real data. This review does not deploy or validate Hostinger. Seeds are forbidden against production. PHP visitors receive generic errors; server logs identify exception class/code without showing credentials.
 
-Use `/admin/` to maintain areas, cafés and offerings. The setup command creates or resets the **Catalogue editors** group's twelve catalogue permissions only. It creates no account and grants no staff access. An administrator must deliberately give an editor `is_staff` and the group; routine catalogue editors should not be superusers. Re-running the command replaces that group's permissions with the defined catalogue set, so do not use it as a general-purpose role containing unrelated permissions.
+## Troubleshooting
 
-Record known sources and dates; ownership starts as unknown. A verified ownership status requires separate evidence and a checking date. A small branch count alone does not establish independence. Keep participant histories, credentials and real operational exports out of development fixtures and Git.
-
-## 9. Troubleshooting and Next Work
-
-| Symptom | Check |
+| Symptom | Action |
 |---|---|
-| Missing/short secret error | Generate and set `DJANGO_SECRET_KEY` in the terminal running Django |
-| Demo/debug configuration error | Use demo mode only with `DJANGO_DEBUG=true`; non-debug deployment is later work |
-| Missing database table | Run the committed migrations with `python manage.py migrate` |
-| Empty catalogue | Seed in debug/demo mode, or add active non-demo records in active areas |
-| Demo cafés disappear | `DJANGO_DEMO_MODE=false` deliberately excludes them |
-| Host error | Use `127.0.0.1:8000` or `localhost:8000` and explicit allowed hosts |
-| Changes to `.env` have no effect | Settings read process environment; export/set values as above |
-| Editor cannot open admin | Check active/staff status and the Catalogue editors group; do not solve by granting superuser |
-
-Select the pilot area and segment, arrange research and check real café data alongside the next development work. The next candidate increment adds factual amenities, guest preferences and content-based matching. Private member tools, maps, editorial content and production operations follow the dependencies in [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md).
-
-The current SQLite settings and development server do not implement production hosting. Before a pilot, build and test PostgreSQL configuration, production static delivery, HTTPS/proxy settings, email, monitoring, backups/restoration, account/data controls and the relevant notices. Choose providers and spending deliberately. These are later release gates in [AGILE_DELIVERY.md](AGILE_DELIVERY.md), not reasons to delay local review.
+| Missing PDO driver | Enable pdo_mysql in the selected PHP runtime |
+| Generic 503 | Check private server logs, DB connection, schema and environment; keep display_errors disabled |
+| Empty list | Check active café and area flags, filters, and demo mode |
+| Detail 404 | Use the full UUID route; inactive areas/cafés and hidden demo records are unavailable |
+| Missing CSS or broken links | Serve public only; check router/.htaccess and APP_BASE_PATH |
+| Seed refused | Use local development/test, DEMO_MODE=true and --demo; investigate collisions |
+| Docker engine unavailable | Start Docker's Linux engine, then rerun the commands |
+| Native integration refused | Use the isolated local _test database and explicit --allow-reset |

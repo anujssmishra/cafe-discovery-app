@@ -1,19 +1,17 @@
 # Starter Prompt for Any Coding Assistant
 
-Open this repository on `feat/sprint-1-catalogue`, then paste the text below into Codex, Claude, Gemini or another coding tool that can read the checkout. This is a suggested next task; it does not itself launch agents or transfer a chat.
+Read the current branch/head before using this prompt. Use the PHP fixes integrated from `fix/php-catalogue-review` on main; inspect Git rather than assuming a live agent session or recorded hash.
 
 ```text
-Continue my existing café discovery app in anujssmishra/cafe-discovery-app.
+Continue the existing private cafe-discovery-app repository.
 
-Read AGENTS.md and DEVELOPMENT_HANDOFF.md first. Inspect the actual Git state and preserve my changes. Use feat/sprint-1-catalogue as the integration baseline; main has not yet received the implementation at the handoff checkpoint. Do not create a replacement project.
+Read AGENTS.md and DEVELOPMENT_HANDOFF.md, inspect Git status/head/remotes and preserve current work. The active application is php_app/ on PHP 8.2/MySQL; legacy_django/ is reference only. Do not scaffold a replacement or run Django setup commands.
 
-Follow GETTING_STARTED.md to run the Django catalogue. Review PRODUCT_BACKLOG.md and QUALITY_REVIEW.md. Your first work package is to finish the remaining Sprint 1 browser, narrow-screen/mobile-layout and keyboard review, fix any observed defects, and record the exact checks you performed. Reproduce relevant automated checks, keeping previous 49-test/CI results separate from new results. Do not mark unverified acceptance criteria Done.
+Read GETTING_STARTED.md, DECISIONS.md, TECHNICAL_DESIGN.md, PRODUCT_BACKLOG.md and QUALITY_REVIEW.md for the selected work. Reproduce the PHP lint, unit and disposable local MySQL integration checks. Treat historical Django and earlier CI results separately from current PHP results.
 
-Use the existing source, design and data rules. Keep fictional records clearly labelled; unknown facts and unanswered ratings must stay unknown. Keep the repo private and leave deployment, spending and public release decisions for their authorized scope.
+Complete the next bounded task in the handoff: check the remaining interactive keyboard/narrow-screen acceptance, then address a separately selected backlog task. Fix any reproducible defects and update actual evidence. Use distinct backend/data, frontend/routing and QA ownership if delegation is useful; root owns configuration, integration and final docs. Do not overlap edits. Hostinger remains an unverified target; do not deploy without authorization.
 
-I am now coding in this project. Explain changes clearly, preserve my work and make reviewable commits on a focused branch. If delegation is available, use bounded backend/frontend/QA work packages with explicit file ownership and one integrator; otherwise follow the same sequence yourself. Do not assume previous live agent sessions are available.
+Preserve café URLs, unrelated data, sources and historical dates. Unknown facts remain unknown, fictional fixtures must be labelled, and seeds require explicit local demo safeguards. There is no PHP admin, account, matching, map or ratings implementation yet.
 
-After the review-and-fix work, update the backlog and handover evidence and give me the next bounded Sprint 2 task for CAFE-011–014, including its dependencies. Report what works, tests actually run, remaining limitations and changed files. Do not implement all later sprints automatically.
+Keep the repository private. Do not deploy, merge, seed production, create accounts, spend money or contact other people. Report prioritized defects/fixes, exact test results, branch/revision, remaining work and reproducible startup commands. Do not mark unverified criteria Done or implement later features automatically.
 ```
-
-For a different next task, replace the first work package while retaining the repository, handoff and evidence instructions. Detailed setup, architecture and scope live in the linked project documents, not in assistant-specific prompts.
