@@ -1,0 +1,16 @@
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+RewriteEngine On
+
+# This folder is also beneath the existing apex website. Restrict both dynamic
+# pages and static assets so apex /cafes/ cannot serve incorrectly linked pages.
+RewriteCond %{HTTP_HOST} !^cafes\.myfanverse\.in(?::[0-9]+)?$ [NC]
+RewriteRule ^ - [F,L]
+
+RewriteRule (^|/)\. - [F,L]
+<FilesMatch "(?i)^(?!index\.php$).*\.php$">
+    Require all denied
+</FilesMatch>
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]

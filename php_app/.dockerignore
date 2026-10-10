@@ -1,0 +1,6 @@
+.env
+.env.*
+*.log
+*.zip
+config/local.php
+releases/
