@@ -3,6 +3,16 @@ $pageTitle = $pageTitle ?? (isset($errorTitle) ? $errorTitle . ' · Café discov
     : (is_array($cafe ?? null) ? $cafe['name'] . ' · Café discovery'
     : (($path ?? '') === 'about' ? 'About · Café discovery' : 'Explore cafés · Café discovery')));
 $isCatalogue = ($path ?? '') === '' || ($path ?? '') === 'index.php';
+
+$pageDesc = isset($cafe) && is_array($cafe)
+    ? (!empty(trim((string) ($cafe['summary'] ?? ''))) ? trim((string) $cafe['summary']) : "Explore {$cafe['name']} in {$cafe['area_name']}, Lucknow. Verified drink offerings, ownership status, and turn-by-turn directions.")
+    : (($path ?? '') === 'about'
+        ? 'About the independent Café Discovery guide — verification methodology, provenance, and editorial standards.'
+        : 'Discover independent specialty cafés and third-wave coffee roasters in Lucknow, one neighbourhood at a time.');
+
+$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'myfanverse.in';
+$canonicalUrl = $protocol . '://' . $host . ($_SERVER['REQUEST_URI'] ?? '/');
 ?>
 <!doctype html>
 <html lang="en">
@@ -10,6 +20,22 @@ $isCatalogue = ($path ?? '') === '' || ($path ?? '') === 'index.php';
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= h($pageTitle) ?></title>
+  <meta name="description" content="<?= h($pageDesc) ?>">
+  <meta name="theme-color" content="#245339">
+  <link rel="canonical" href="<?= h($canonicalUrl) ?>">
+
+  <!-- Open Graph / WhatsApp / Facebook -->
+  <meta property="og:type" content="<?= isset($cafe) && is_array($cafe) ? 'restaurant' : 'website' ?>">
+  <meta property="og:site_name" content="Café Discovery">
+  <meta property="og:url" content="<?= h($canonicalUrl) ?>">
+  <meta property="og:title" content="<?= h($pageTitle) ?>">
+  <meta property="og:description" content="<?= h($pageDesc) ?>">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="<?= h($pageTitle) ?>">
+  <meta name="twitter:description" content="<?= h($pageDesc) ?>">
+
   <link rel="stylesheet" href="<?= h(app_url('/static/site.css')) ?>">
 </head>
 <body>
