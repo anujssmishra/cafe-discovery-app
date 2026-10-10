@@ -29,8 +29,8 @@ INSERT INTO `cafe` (`id`, `name`, `area_id`, `address`, `latitude`, `longitude`,
 ('c1010001-0000-0000-0000-000000000016', 'The Comma', 3, 'Le Press, 29 Nawal Kishore Road, Hazratganj', 26.8530, 80.9450, 1, 0, '2026-10-09', 'Web research', 1, 'worldwide', 'Web research', '2026-10-09', 'verified_independent', 'Web research', '2026-10-09'),
 ('c1010001-0000-0000-0000-000000000017', 'Criolo', 3, 'Le Press, 29 Nawal Kishore Road, Hazratganj', 26.8530, 80.9450, 1, 0, '2026-10-09', 'Web research', 5, 'worldwide', 'Web research', '2026-10-09', 'verified_not_independent', 'Web research', '2026-10-09'),
 ('c1010001-0000-0000-0000-000000000018', 'NBC (Nothing Before Coffee)', 1, 'Shop 4, Experio at Experion Capital, Vibhuti Khand, Gomti Nagar', 26.8650, 81.0020, 1, 0, '2026-10-09', 'Web research', 60, 'worldwide', 'Web research', '2026-10-09', 'verified_not_independent', 'Web research', '2026-10-09'),
-('c1010001-0000-0000-0000-000000000019', 'TWC (The White Cafe)', 1, 'Vivek Khand, Gomti Nagar', 26.8515, 80.9980, 1, 0, '2026-10-09', 'Web research', 1, 'worldwide', 'Web research', '2026-10-09', 'verified_independent', 'Web research', '2026-10-09')
-ON DUPLICATE KEY UPDATE `name`=VALUES(`name`);
+('c1010001-0000-0000-0000-000000000019', 'Third Wave Coffee', 1, 'Vivek Khand, Gomti Nagar', 26.8515, 80.9980, 1, 0, '2026-10-09', 'Web research', 100, 'worldwide', 'Web research', '2026-10-09', 'verified_not_independent', 'Web research', '2026-10-09')
+ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `independence_status`=VALUES(`independence_status`), `brand_location_count`=VALUES(`brand_location_count`);
 
 -- Offerings
 INSERT INTO `cafe_offering` (`id`, `cafe_id`, `drink_type`, `brewing_method`, `price`, `currency`, `checked_on`, `source`) VALUES
