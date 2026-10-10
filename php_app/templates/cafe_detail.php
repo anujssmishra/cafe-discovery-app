@@ -31,10 +31,11 @@ $directionsUrl = $hasCoordinates
         <div><dt>Verification</dt><dd><?php if ($verification['complete']): ?><?= $verification['current'] ? 'Checked ' : 'Historical check: ' ?><?= h($verification['date']) ?><?php else: ?>Unknown — no documented verification<?php endif; ?></dd></div>
         <?php if ($verification['date'] !== null && !$verification['complete']): ?><div><dt>Recorded check date</dt><dd><?= h($verification['date']) ?> <span class="muted">(evidence incomplete)</span></dd></div><?php endif; ?>
       </dl>
-      <div class="detail-actions">
-        <a class="button" href="<?= h($directionsUrl) ?>" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">📍 </span>Get directions</a>
-        <?php if ($websiteAllowed): ?><a class="button button-secondary" href="<?= h($website) ?>" target="_blank" rel="noopener noreferrer">Café website</a><?php endif; ?>
-      </div>
+      <?php if ($websiteAllowed): ?>
+        <div class="detail-actions">
+          <a class="button button-secondary" href="<?= h($website) ?>" target="_blank" rel="noopener noreferrer">Café website</a>
+        </div>
+      <?php endif; ?>
       </section>
       <section class="panel offerings-panel"><h2>Recorded offerings</h2><p class="muted">Prices and availability can change. Unknown prices are shown explicitly.</p>
         <?php if (!$offerings): ?><p class="empty-copy">No offerings have been recorded yet.</p><?php else: ?>
