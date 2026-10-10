@@ -49,4 +49,59 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter], static f
     <?php endif; ?>
   <?php endif; ?>
 </main>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.getElementById('search');
+  const areaSelect = document.getElementById('area');
+  const form = document.querySelector('.filter-form');
+  if (!searchInput || !form) return;
+
+  let debounceTimer = null;
+
+  function performLiveSearch() {
+    const url = new URL(form.action || window.location.href);
+    const formData = new FormData(form);
+    const params = new URLSearchParams();
+    for (const [key, val] of formData.entries()) {
+      if (val.trim() !== '') params.set(key, val);
+    }
+    url.search = params.toString();
+
+    fetch(url.toString())
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newMain = doc.querySelector('#main-content');
+        const currentMain = document.querySelector('#main-content');
+        if (newMain && currentMain) {
+          const selStart = searchInput.selectionStart;
+          const selEnd = searchInput.selectionEnd;
+
+          const oldNodes = currentMain.querySelectorAll('.results-heading, .cafe-grid, .pagination, .empty-state, .notice');
+          oldNodes.forEach(node => node.remove());
+
+          const newNodes = newMain.querySelectorAll('.results-heading, .cafe-grid, .pagination, .empty-state, .notice');
+          let anchor = form;
+          newNodes.forEach(node => {
+            anchor.after(node);
+            anchor = node;
+          });
+
+          window.history.replaceState({}, '', url.toString());
+          searchInput.focus();
+          searchInput.setSelectionRange(selStart, selEnd);
+        }
+      })
+      .catch(() => {});
+  }
+
+  searchInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(performLiveSearch, 250);
+  });
+
+  areaSelect?.addEventListener('change', performLiveSearch);
+});
+</script>
 <?php require __DIR__ . '/footer.php'; ?>
