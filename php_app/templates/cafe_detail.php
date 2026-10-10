@@ -22,7 +22,7 @@ $directionsUrl = $hasCoordinates
     <?php if ($isDemo): ?><p class="notice">This is fictional development data. This café and its offerings do not represent a real business.</p><?php endif; ?>
     <div class="detail-grid">
       <section class="panel"><h2>Café details</h2><dl class="details-list">
-        <div><dt>Address</dt><dd><?= h(trim((string) ($cafe['address'] ?? '')) !== '' ? $cafe['address'] : 'Unknown') ?></dd></div>
+        <div><dt>Address</dt><dd class="address-container"><?php if (trim((string) ($cafe['address'] ?? '')) !== ''): ?><a class="address-link" href="<?= h($directionsUrl) ?>" target="_blank" rel="noopener noreferrer"><?= h($cafe['address']) ?></a><a class="mini-btn" href="<?= h($directionsUrl) ?>" target="_blank" rel="noopener noreferrer" title="Open in Maps"><span aria-hidden="true">📍 </span>Open in Maps ↗</a><?php else: ?>Unknown<?php endif; ?></dd></div>
         <?php if ($hasCoordinates): ?><div><dt>Location coordinates</dt><dd class="muted"><?= h($cafe['latitude']) ?>, <?= h($cafe['longitude']) ?></dd></div><?php endif; ?>
         <div><dt>Ownership</dt><dd><?= h(catalogue_ownership($cafe)) ?></dd></div>
         <div><dt>Ownership source</dt><dd><?= h($ownershipEvidence['source'] !== '' ? $ownershipEvidence['source'] : 'Unknown') ?><?php if (!$ownershipEvidence['complete']): ?> <span class="muted">(no documented verification)</span><?php endif; ?></dd></div>

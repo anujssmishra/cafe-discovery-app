@@ -33,7 +33,13 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter], static f
             <div class="card-topline"><p class="eyebrow"><?= h($item['area_name']) ?><?= empty($item['area_city']) ? '' : ' · ' . h($item['area_city']) ?></p><?php if ($item['is_demo'] ?? false): ?><span class="badge">Fictional demo</span><?php endif; ?></div>
             <h3><a href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>"><?= h($item['name']) ?></a></h3>
             <p class="card-summary"><?= h(trim((string) ($item['summary'] ?? '')) !== '' ? $item['summary'] : 'More details are not recorded yet.') ?></p>
-            <p class="address"><?= h(trim((string) ($item['address'] ?? '')) !== '' ? $item['address'] : 'Address not recorded') ?></p>
+            <?php
+            $itemCoords = isset($item['latitude'], $item['longitude']) && is_numeric($item['latitude']) && is_numeric($item['longitude']);
+            $itemMapUrl = $itemCoords
+                ? 'https://www.google.com/maps/dir/?api=1&destination=' . rawurlencode($item['latitude'] . ',' . $item['longitude'])
+                : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($item['name'] . ', ' . ($item['address'] ?? '') . ', ' . ($item['area_name'] ?? ''));
+            ?>
+            <p class="address address-container"><?php if (trim((string) ($item['address'] ?? '')) !== ''): ?><a class="address-link" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer"><?= h($item['address']) ?></a><a class="mini-btn" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer" title="Open in Maps"><span aria-hidden="true">📍 </span>Maps ↗</a><?php else: ?>Address not recorded<?php endif; ?></p>
             <p class="evidence-line"><span>Ownership:</span> <?= h(catalogue_ownership($item)) ?></p>
             <a class="detail-link" href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>">View details<span class="sr-only"> for <?= h($item['name']) ?></span><span aria-hidden="true"> →</span></a>
           </article>
