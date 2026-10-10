@@ -14,5 +14,3 @@ staticfiles/
 htmlcov/
 .DS_Store
 *.zip
-php_app/config/local.php
-php_app/releases/

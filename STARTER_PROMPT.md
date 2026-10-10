@@ -1,15 +1,19 @@
 # Starter Prompt for Any Coding Assistant
 
-Inspect actual Git status/head and preserve work. The reviewed PHP/MariaDB Hostinger implementation is published on main at implementation checkpoint 1db5344; use main for continuation.
+Open this repository on `feat/sprint-1-catalogue`, then paste the text below into Codex, Claude, Gemini or another coding tool that can read the checkout. This is a suggested next task; it does not itself launch agents or transfer a chat.
 
 ```text
-Continue the private cafe-discovery-app repository. Read AGENTS.md and DEVELOPMENT_HANDOFF.md first, then GETTING_STARTED.md, DECISIONS.md (D13), TECHNICAL_DESIGN.md, PRODUCT_BACKLOG.md and QUALITY_REVIEW.md.
+Continue my existing café discovery app in anujssmishra/cafe-discovery-app.
 
-The active app is php_app/: PHP8.2+/MariaDB10.11+ through PDO pdo_mysql. Hostinger at myfanverse.in is the deployment target. legacy_django/ is historical reference, not the setup path. Preserve Anuj's edits; inspect Git/remotes before creating branches or assuming publication. Assign exact file ownership before parallel edits; root integrates and records evidence.
+Read AGENTS.md and DEVELOPMENT_HANDOFF.md first. Inspect the actual Git state and preserve my changes. Use feat/sprint-1-catalogue as the integration baseline; main has not yet received the implementation at the handoff checkpoint. Do not create a replacement project.
 
-Reproduce lint, unit, private-configuration, release-package and guarded disposable local MariaDB/HTTP checks. The Hostinger ZIP ships public_html with private siblings and no seed/private credentials. Environment overrides private config/local.php. Production schema requires explicit exact DB confirmation; no production seed. Read HOSTINGER_DEPLOYMENT.md before hosting work. Confirm actual hPanel runtime, private config, DNS/HTTPS and backup/restore on staging. Local passes do not establish hosted CI or deployment.
+Follow GETTING_STARTED.md to run the Django catalogue. Review PRODUCT_BACKLOG.md and QUALITY_REVIEW.md. Your first work package is to finish the remaining Sprint 1 browser, narrow-screen/mobile-layout and keyboard review, fix any observed defects, and record the exact checks you performed. Reproduce relevant automated checks, keeping previous 49-test/CI results separate from new results. Do not mark unverified acceptance criteria Done.
 
-Remaining browser/keyboard/narrow-screen acceptance is unverified. Real café data/evidence and PHP admin are separate backlog work; no matching/accounts/maps/ratings yet. Preserve URLs, unrelated rows, sources and historical dates. Unknown facts stay unknown; demo records remain labelled and hidden in production.
+Use the existing source, design and data rules. Keep fictional records clearly labelled; unknown facts and unanswered ratings must stay unknown. Keep the repo private and leave deployment, spending and public release decisions for their authorized scope.
 
-Complete the selected bounded task and report exact tests/runtime, branch/revision, remaining issues and startup/deployment commands. Keep the repository private. Do not merge, push, deploy, change DNS, seed production, create accounts, spend or message others without direct user authorization for the active action. Do not mark unrun criteria Done.
+I am now coding in this project. Explain changes clearly, preserve my work and make reviewable commits on a focused branch. If delegation is available, use bounded backend/frontend/QA work packages with explicit file ownership and one integrator; otherwise follow the same sequence yourself. Do not assume previous live agent sessions are available.
+
+After the review-and-fix work, update the backlog and handover evidence and give me the next bounded Sprint 2 task for CAFE-011–014, including its dependencies. Report what works, tests actually run, remaining limitations and changed files. Do not implement all later sprints automatically.
 ```
+
+For a different next task, replace the first work package while retaining the repository, handoff and evidence instructions. Detailed setup, architecture and scope live in the linked project documents, not in assistant-specific prompts.

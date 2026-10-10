@@ -10,33 +10,6 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php: ['8.2', '8.3']
-        mariadb: ['10.11', '11.4']
-    services:
-      mariadb:
-        image: mariadb:${{ matrix.mariadb }}
-        env:
-          MARIADB_DATABASE: cafe_discovery_test
-          MARIADB_USER: cafe
-          MARIADB_PASSWORD: ci-only-password
-          MARIADB_ROOT_PASSWORD: ci-root-only-password
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="healthcheck.sh --connect --innodb_initialized"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=20
-    env:
-      APP_ENV: test
-      DEMO_MODE: 'true'
-      DB_HOST: 127.0.0.1
-      DB_PORT: '3306'
-      DB_NAME: cafe_discovery_test
-      DB_USER: cafe
-      DB_PASS: ci-only-password
     steps:
       - uses: actions/checkout@v7
         with:
@@ -44,16 +17,11 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
-          extensions: pdo_mysql, zip
-          coverage: none
+          php-version: '8.2'
       - name: Lint PHP files
-        run: php php_app/scripts/lint.php
-      - name: Unit checks
-        run: php php_app/tests/unit.php
-      - name: Private configuration checks
-        run: php php_app/tests/config.php
-      - name: Release package checks
-        run: php php_app/tests/package.php
-      - name: MariaDB integration and HTTP checks
-        run: php php_app/tests/integration.php --allow-reset
+        run: |
+          if [ -d "php_app" ]; then
+            find php_app -type f -name "*.php" -exec php -l {} \;
+          else
+            echo "No PHP files to lint yet."
+          fi

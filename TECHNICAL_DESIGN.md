@@ -1,41 +1,47 @@
 # Technical Design
 
-Last updated: 2026-10-09. The active catalogue is PHP 8.2+/MariaDB 10.11+ under `php_app/`; `legacy_django/` preserves historical source only. D12/D13 in [DECISIONS.md](DECISIONS.md) supersede Python/Django/PostgreSQL as the active stack. [QUALITY_REVIEW.md](QUALITY_REVIEW.md) records execution evidence.
+Last updated: 2026-10-07. Status: first local catalogue source under integration review, with the remaining pilot architecture proposed. [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) and [QUALITY_REVIEW.md](QUALITY_REVIEW.md) record actual verification and publication evidence.
 
 ## Current Implementation Boundary
 
-| Area | Present | Remaining |
+| Area | Present in the current source | Remaining scope |
 |---|---|---|
-| Foundation | PHP 8.2+, PDO native prepares, MariaDB 10.11+/InnoDB, private config plus environment, generic errors | Hostinger runtime/deployment validation |
-| Catalogue | area, cafe UUID, cafe_offering; optional coordinates/prices and separate evidence fields | PHP staff admin and checked real data |
-| Demo | Transactional insert-only guarded seed; eight fictional cafés, sixteen offerings, two areas; fixed UUIDs | Real sourcing; synthetic fixtures are never checked facts |
-| Guest discovery | Name/area filters, stable ordering, bounded twelve-result pages, UUID details, about, 400/404/503 pages | Preferences, matching, maps and dialogs |
-| Quality | Portable lint, unit, configuration, package and MariaDB/HTTP checks; CI configuration | Hosted CI and production evidence |
-| Members/editorial | None | Accounts, private saves/visits, consent/deletion, curator publishing |
+| Foundation | Django 5.2.18; locally checked on Python 3.12.14, with 3.12/3.13 CI targets; server templates and CSS; SQLite; a single environment-configured `config/settings.py` | PostgreSQL, hosted deployment and provider-specific production operations |
+| Catalogue | `Area`, UUID `Cafe`, `CafeOffering`; admin; optional coordinates/prices; source/date and separate branch-count/ownership fields | Factual amenities, corrections, real checked pilot records and audited publication workflow |
+| Local demonstration | Guarded, repeatable `seed_demo`; eight fictional cafés, sixteen offerings and two fictional areas; no seeded accounts | Real café sourcing and consent-aware participant work |
+| Guest discovery | Active records only; trimmed case-insensitive name search, area selection/chips, alphabetical results, twelve-result pagination, UUID details and about page | Preferences, T/P/B matching, maps, dialogs and directions |
+| Staff access | Django admin and `setup_catalogue_editors`, which sets twelve model permissions without creating users or granting staff status | Deployment identity procedures and future editorial roles |
+| Member and editorial | None of the product-specific profile, bookmark, visit, consent or editorial models yet | Private accounts/data controls, nullable feedback, curator publication and community signal |
+| Quality | Model, command, admin and independent acceptance tests are included | Check actual execution evidence; remote CI and browser/pilot validation need their own records |
 
-PHP does not auto-load `.env`. Optional private config/local.php returns allowed uppercase string values; environment overrides each value. APP_CONFIG_FILE may select an absolute private PHP file. Public paths/aliases/targets are refused. Git, Docker and ZIP packaging exclude actual credentials. `APP_ENV` defaults to production, `DEMO_MODE` defaults false and is blocked in production when true. DB_USER is explicit, DB_PORT defaults 3306, and APP_BASE_PATH is empty or a validated path prefix. Credentials remain outside Git.
+The current settings require a generated `DJANGO_SECRET_KEY` of at least 50 characters. Local work explicitly sets `DJANGO_DEBUG=true`, `DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1` and optionally `DJANGO_DEMO_MODE=true`. Settings read process environment only; `.env` is not loaded automatically. Demo mode is blocked outside debug and public non-demo queries exclude synthetic cafés. A non-debug settings path is not a complete production deployment. See [GETTING_STARTED.md](GETTING_STARTED.md) for commands.
 
 ## 1. Architecture and Boundaries
 
-`public/index.php` is the front controller. `includes/request.php` validates scalar query values before SQL/rendering; `includes/catalogue.php` shares active café/area/demo rules; `includes/db.php` exposes `db_connect()` without connecting on import. Controllers pass sanitized view context; templates use `h()` for UTF-8/attribute escaping and `app_url()` for base-path-aware links.
+The current Django project serves responsive HTML/CSS and ordinary search forms using `cafes` and `discovery` apps. It uses Django's ORM, admin, session and CSRF middleware. Add the planned map, accessible detail dialogs and member feedback in later increments within these framework boundaries; there is no current need for separate mobile apps, an API gateway, background workers or a large-model service.
 
-The catalogue uses parameter binding with native PDO prepares; repeated named placeholders are prohibited by the [PDO prepare contract](https://www.php.net/PDO.prepare). Literal %, _ and ! search characters are escaped. LIMIT/OFFSET bind as integers. Results order by name then stable UUID; areas by display_order/name/slug. Queries preserve filters and clamp pages to 1..last. Invalid compound/UTF-8/control/overlong inputs return 400; unknown syntactically valid areas return an empty 200 list. Full UUID format is required, and missing/inactive/hidden records return 404.
+| Component | Proposed choice | Reason and limit |
+|---|---|---|
+| Runtime | Python 3.12/3.13 development targets; 3.13 preferred | Supported by Django 5.2; record actual tested micro versions in the quality review |
+| Framework | Django 5.2 LTS, exact maintained patch pinned in `requirements.txt` | Built-in forms, auth and admin; support ends April 2028, so schedule a version review |
+| Presentation | Server-rendered templates, responsive CSS, map/dialog JavaScript | Progressive enhancement; usable list and full detail pages remain available |
+| Database | SQLite only for initial local skeleton; PostgreSQL for pilot | Pilot needs durable multi-user storage and production-equivalent tests |
+| Authentication | Default Django user plus a one-to-one taste profile | Avoid custom authentication requirements during initial migrations |
+| Matching | Deterministic feature scores, followed later by an optional aggregate signal | Useful with no interaction history; easy to inspect and compare |
+| Location and map | Selected area, optional temporary coordinates for distance, proposed Leaflet client with licensed tiles | Small catalogue uses Haversine distance; map included in pilot, PostGIS optional later |
+| Hosting | Managed web process plus persistent database; provider undecided | Choose for backups, reliability, cost and data handling |
 
-All catalogue routes are read-only GET/HEAD; other methods return 405. The application starts with display_errors disabled, catches request failures, discards partial output and returns generic 503. Private logs record class/code without DSN, credentials or submitted input.
+PostgreSQL 17 is a proposed starting version if supported by the selected host; choose a maintained version compatible with the actual Django and database-driver releases. Record the final dependencies and versions in code. See [SOURCES.md](SOURCES.md) for framework and deployment references.
 
-Local PHP routing uses `public/router.php`; Apache/LiteSpeed uses `public/.htaccess`. Only public is served. CSS is a real `public/static/site.css` asset. Root/subdirectory links use APP_BASE_PATH; never expose includes/schema/scripts through the web root.
-
-MariaDB 10.11+ is the database target. Both schema and seed refuse disabled session CHECK/foreign-key enforcement. CHECK metadata uses MariaDB CHECK_CONSTRAINTS; PDO keeps its native mysql driver. Tables use InnoDB, foreign keys, utf8mb4 and explicit nulls for unknown values. The seed owns fixed demo identifiers, inserts missing fixtures, checks collisions and commits one transaction. Reruns preserve existing values, dates, URLs and unrelated records. Schema DDL is not treated as transactional. Existing installations need the documented additive upgrade rather than destructive recreation.
-
-There is no staff/member authentication in PHP yet. Implement authorized admin, CSRF-protected mutations, ownership and least-privilege accounts as a separate increment. No general API, background service, AI model or mobile app is needed for catalogue browsing.
+Current authentication is staff admin access only. Product member registration/login is future work, proposed initially with Django's default username/password user. Email-only login, verification and password recovery require deliberate implementation and email delivery. The `setup_catalogue_editors` command creates/resets only the Area/Cafe/CafeOffering permissions group; an administrator separately assigns group membership and staff status. Do not grant routine catalogue editors superuser access.
 
 ## 2. Proposed Data Model
 
-This table describes the full target model. Only `Area`, `Cafe` and `CafeOffering` are currently implemented as product models, in the PHP schema; member/authentication tables are not present. `Area` currently has name, slug, city, active status and display order; map center/bounds are future fields. The source files and committed migrations define the exact current schema.
+This table describes the full target model. Only `Area`, `Cafe` and `CafeOffering` are currently implemented as product models, alongside Django's built-in auth tables. `Area` currently has name, slug, city, active status and display order; map center/bounds are future fields. The source files and committed migrations define the exact current schema.
 
 | Entity | Core fields and responsibility | Important rules |
 |---|---|---|
-| User | Future authentication identity | No private histories in public profile responses |
+| User | Django authentication identity | No private histories in public profile responses |
 | TasteProfile | One user; drink preferences, preferred drink budget, soft ambience preferences, optional favourite café IDs | Favourites optional, up to three; preferences remain editable |
 | Area | City/area name, stable slug, display order, center/bounds and enabled status | Only enable areas with checked catalogue data; one-city pilot |
 | Cafe | Stable UUID, name, area, address, coordinates, active status, public contact/website, brand-location count and separate ownership-status provenance | Validate coordinates and their correspondence to address; unknown count/status gives no corresponding verified badge |
@@ -53,7 +59,7 @@ Use database constraints for unique relationships and valid values, and migratio
 
 ### Explicit fields and defaults
 
-The Cafe count/ownership fields below are present in the first source increment. EditorialReview and Visit fields remain proposed; neither model exists yet. Use nullable MariaDB columns and explicit PHP validation; inspect the actual schema before extending it.
+The Cafe count/ownership fields below are present in the first source increment. EditorialReview and Visit fields remain proposed; neither model exists yet. These are Django semantics, not a Prisma schema. See the [official field and constraint references](SOURCES.md#s18-django-fields-and-constraints) when extending models.
 
 | Field | Proposed value/default | Validation and meaning |
 |---|---|---|
@@ -66,11 +72,11 @@ The Cafe count/ownership fields below are present in the first source increment.
 | `Visit.coffee_rating` / `Visit.vibe_rating` | Optional integers 1–5; null when omitted | Member's private experience of this visit; no preselection and no default 5 |
 | `Visit.would_return` | Optional yes/no; null until explicitly answered | Missing feedback is neither a positive vote nor an explicit negative answer |
 
-For optional numeric/boolean values, allow SQL NULL and explicit form omission. Use controlled choices and form validation, plus database constraints permitting null or integers within 1–5 for ratings, and null or values at least 1 for counts. Validate evidence requirements when publishing verified labels. Adding a field to existing visits must leave old, unanswered values null; never backfill 5/5 scores.
+For optional numeric/boolean values, use `null=True` and `blank=True` so both storage and forms allow omission. Use controlled choices and form validation, plus database constraints permitting null or integers within 1–5 for ratings, and null or values at least 1 for counts. Validate evidence requirements when publishing verified labels. Adding a field to existing visits must leave old, unanswered values null; never backfill 5/5 scores.
 
 Derive count-based small-group eligibility from a checked count of at most five. A filter explicitly promising independent ownership also requires `independence_status == verified_independent` and current evidence. There is no `isIndependent=True` default. Do not persist a second badge boolean that can diverge from its evidence without an explicit invalidation rule.
 
-The proposed future evidence policy requires a nonempty source and a checking date from today through 30 days ago for current evidence, and use a worldwide count for `is_small_group`. Dates older than 30 days are stale; missing sources/dates, whitespace-only sources and future dates give incomplete evidence. Public café/offerings views display these states. Ownership labels require current separate evidence; stale ownership requests a recheck. PHP input validation and schema constraints must check date/coordinate ranges and separate ownership evidence; database constraints cover selected invariants. The actual independent/small-group collection/filter and owner policy confirmation remain future work. Programmatic imports must call validation explicitly; executing an INSERT alone does not replace application validation.
+Current model helpers require a nonempty source and a checking date from today through 30 days ago for current evidence, and use a worldwide count for `is_small_group`. Dates older than 30 days are stale; missing sources/dates, whitespace-only sources and future dates give incomplete evidence. Public café/offerings views display these states. Ownership labels require current separate evidence; stale ownership requests a recheck. Model validation checks date/coordinate ranges and separate ownership evidence; database constraints cover selected invariants. The actual independent/small-group collection/filter and owner policy confirmation remain future work. Programmatic imports must call validation explicitly; saving through the ORM alone does not replace `full_clean()`.
 
 Capture optional drink/brewing context and visit purpose alongside ratings. Keep member ratings separate from curator scores; neither is automatically added to the baseline or R. R still uses the defined consenting repeat/return signal. Missing `would_return` does not count as a positive vote. Compare feedback usefulness and ranking outcomes before proposing new weights or learned signals.
 
@@ -80,7 +86,7 @@ For this small catalogue, calculate distances in application code and filter aga
 
 ### Map, search and detail delivery
 
-Only ordinary server-rendered name/area search, list-area chips and full detail URLs exist now. The remaining map/dialog behaviour in this subsection is planned. The current query returns empty results for well-formed unknown areas and rejects searches longer than 180 Unicode characters, preserves valid filters across pagination, and excludes inactive cafés and inactive areas. Browser GPS and JavaScript are unnecessary for this slice.
+Only ordinary server-rendered name/area search, list-area chips and full detail URLs exist now. The remaining map/dialog behaviour in this subsection is planned. The current query rejects unavailable area values and searches longer than 100 characters, preserves valid filters across pagination, and excludes inactive cafés and inactive areas. Browser GPS and JavaScript are unnecessary for this slice.
 
 Use one filtered queryset/result snapshot for list items and map markers. Apply active/area/name/essential filters before serialization, so a marker cannot bypass a requirement or reveal an archived café. Keep café UUIDs consistent between markers, list entries, dialogs and `/cafes/<uuid>/` pages. If live map refresh is needed, add the narrow read endpoint below; a separate general API is not required.
 
@@ -158,13 +164,14 @@ Version the score configuration and record the version alongside test/pilot resu
 
 ## 4. Web Routes: Current and Planned
 
-The three current routes are listed below. They serve the catalogue/admin increment only; product member routes and JSON/map endpoints remain planned. Prefer server-rendered forms first; add a JSON API only when an actual client needs it.
+The four current routes are listed below. They serve the catalogue/admin increment only; product member routes and JSON/map endpoints remain planned. Prefer server-rendered forms first; add a JSON API only when an actual client needs it.
 
 | Current route | Methods | Current behaviour |
 |---|---|---|
 | `/` | GET, HEAD | Public alphabetical list with validated `q`, `area` and `page` inputs; twelve results per page |
 | `/cafes/<uuid>/` | GET, HEAD | Active café in an active area; hidden demo/inactive/missing records return 404 |
 | `/about/` | GET, HEAD | Project purpose, current limitations and fictional-data notice |
+| `/admin/` | Django admin methods | Authorized staff and model permissions; catalogue editing |
 
 The target interface below expands current routes and adds later ones; it is not an availability list:
 
@@ -204,19 +211,22 @@ Necessary behavioural checks include:
 - Tile/key/network failures preserve list and full-detail access; area controls work with real pilot data.
 - Dialogs and named markers are keyboard accessible; malicious review text renders harmlessly; drafts/private fields never enter public map payloads.
 - Directions links identify the correct café and omit user coordinates; editorial scores stay out of personalized ranking.
-- Schema upgrades, transactions and main journeys pass against the target MariaDB engine before deployment.
+- Migrations, transactions and main journeys pass against PostgreSQL before deployment.
 - A backup can actually be restored, with deletion records reapplied before serving restored data.
 
-Run the implemented PHP lint, unit and disposable MariaDB/HTTP checks from GETTING_STARTED.md. Local passes alone are not proof of a safe deployment.
+Run the implemented project's tests and Django system checks; use `python manage.py check --deploy` with production settings as one input to release review. Passing it alone is not proof of a safe deployment.
 
 ## 6. Deployment and Operations
 
-Hostinger Shared Web Hosting is the selected target under D12; it is not deployed or verified by this review. Keep only public files in the document root, preserve include layout, configure PHP 8.2+/pdo_mysql and private config/local.php, disable demo mode, use HTTPS and protect logs. Confirm the host's actual database engine/version and constraint enforcement; local MariaDB passes do not establish actual Hostinger deployment success. Follow HOSTINGER_DEPLOYMENT.md for the allowlisted ZIP, guarded production schema command, myfanverse.in DNS and HTTPS.
+Before hosting: choose the provider, configure persistent PostgreSQL and its driver, store secrets in provider configuration, disable debug, configure allowed hosts, HTTPS and secure session/CSRF cookies, collect static files, run migrations, and configure transactional email. Configure map tiles, attribution, browser-key restrictions and spend alerts, and check the list fallback with the tile service disabled. Use a production WSGI/ASGI server supported by the host rather than `runserver`.
 
-Review schema upgrades, back up valuable data, exercise restore/rollback and audit real catalogue evidence before any pilot. Separate development/test/production credentials; never run demo seeds or destructive integration checks against production. Staff authentication, permissions, privacy notices, support ownership and account/data controls remain release prerequisites when those features arrive.
+Add error reporting with sensitive fields excluded, uptime checks, a restricted admin, database backups and a restore procedure. Separate development, staging and production credentials. For any later media uploads, use durable object storage with controlled access and documented rights.
 
-Map tiles, attribution, API-key restrictions and costs, transactional email, monitoring and retention require their own approved configuration. No provider purchase, deployment, public launch or outreach is authorized by this document.
+Render is an example candidate, not a selected provider. Its documented free web service sleeps after inactivity and has an ephemeral filesystem; free PostgreSQL expires after 30 days. Such free arrangements are unsuitable as the pilot's durable data plan. Review current offerings and terms at selection time. [Provider references](SOURCES.md#s9-render-free-service-limits).
+
+Release sequence: staging checks → catalogue review → backup/restore exercise → notice and eligibility review → small invited cohort → monitoring and correction handling. Establish who can roll back an application release; handle database changes separately from code rollback. Keep a short incident log and inform affected people through the chosen support process when necessary.
 
 ## 7. Future Expansion Triggers
 
-Improve MariaDB queries/indexes only for measured needs. Consider spatial storage, workers or additional clients when actual scale and user evidence justify them. Keep the deterministic matching and privacy rules below as proposed contracts, with actual implementations and version choices recorded separately.
+Use PostgreSQL indexing/query improvements when measured load needs them. Consider asynchronous jobs for genuine long-running tasks, spatial storage for a larger geographic catalogue, native clients after web retention is demonstrated, and more complex recommendation models only after sufficient legitimate data and a baseline comparison. Each addition needs an owner, benefit, cost and privacy review in [DECISIONS.md](DECISIONS.md).
+
