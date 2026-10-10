@@ -67,6 +67,7 @@ small { font-size:.75rem; color:var(--muted); margin-top:.3rem; }
 .detail-heading .badge { margin-bottom:.8rem; }
 .detail-grid { display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.4fr); gap:1.5rem; }
 .details-list { margin:0 0 1.4rem; }
+.detail-actions { display:flex; flex-wrap:wrap; gap:.75rem; margin-top:1.25rem; }
 .details-list > div { padding:.8rem 0; border-bottom:1px solid var(--line); }
 .details-list dt { font-size:.8rem; font-weight:700; }
 .details-list dd { margin:.25rem 0 0; font-size:.9rem; overflow-wrap:anywhere; }

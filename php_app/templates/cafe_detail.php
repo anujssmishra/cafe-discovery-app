@@ -9,6 +9,11 @@ $website = (string) ($cafe['website'] ?? '');
 $websiteAllowed = !$isDemo && filter_var($website, FILTER_VALIDATE_URL)
     && in_array(strtolower((string) parse_url($website, PHP_URL_SCHEME)), ['http', 'https'], true)
     && parse_url($website, PHP_URL_USER) === null && parse_url($website, PHP_URL_PASS) === null;
+$hasCoordinates = isset($cafe['latitude'], $cafe['longitude'])
+    && is_numeric($cafe['latitude']) && is_numeric($cafe['longitude']);
+$directionsUrl = $hasCoordinates
+    ? 'https://www.google.com/maps/dir/?api=1&destination=' . rawurlencode($cafe['latitude'] . ',' . $cafe['longitude'])
+    : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($cafe['name'] . ', ' . ($cafe['address'] ?? '') . ', ' . ($cafe['area_name'] ?? ''));
 ?>
 <main id="main-content" class="page-shell" tabindex="-1">
   <a class="back-link" href="<?= h(app_url('/')) ?>"><span aria-hidden="true">← </span>Back to the catalogue</a>
@@ -18,13 +23,19 @@ $websiteAllowed = !$isDemo && filter_var($website, FILTER_VALIDATE_URL)
     <div class="detail-grid">
       <section class="panel"><h2>Café details</h2><dl class="details-list">
         <div><dt>Address</dt><dd><?= h(trim((string) ($cafe['address'] ?? '')) !== '' ? $cafe['address'] : 'Unknown') ?></dd></div>
+        <?php if ($hasCoordinates): ?><div><dt>Location coordinates</dt><dd class="muted"><?= h($cafe['latitude']) ?>, <?= h($cafe['longitude']) ?></dd></div><?php endif; ?>
         <div><dt>Ownership</dt><dd><?= h(catalogue_ownership($cafe)) ?></dd></div>
         <div><dt>Ownership source</dt><dd><?= h($ownershipEvidence['source'] !== '' ? $ownershipEvidence['source'] : 'Unknown') ?><?php if (!$ownershipEvidence['complete']): ?> <span class="muted">(no documented verification)</span><?php endif; ?></dd></div>
         <div><dt>Brand location count</dt><dd><?php $brandCount = $cafe['brand_location_count'] ?? null; ?><?= $brandCount !== null && ctype_digit((string) $brandCount) && $brandEvidence['complete'] ? h($brandCount) . ' · recorded ' . h($brandEvidence['date']) : 'Unknown' ?></dd></div>
         <div><dt>Catalogue source</dt><dd><?= h($verification['source'] !== '' ? $verification['source'] : 'Unknown') ?></dd></div>
         <div><dt>Verification</dt><dd><?php if ($verification['complete']): ?><?= $verification['current'] ? 'Checked ' : 'Historical check: ' ?><?= h($verification['date']) ?><?php else: ?>Unknown — no documented verification<?php endif; ?></dd></div>
         <?php if ($verification['date'] !== null && !$verification['complete']): ?><div><dt>Recorded check date</dt><dd><?= h($verification['date']) ?> <span class="muted">(evidence incomplete)</span></dd></div><?php endif; ?>
-      </dl><?php if ($websiteAllowed): ?><a class="button button-secondary" href="<?= h($website) ?>" rel="noopener noreferrer">Café website</a><?php endif; ?></section>
+      </dl>
+      <div class="detail-actions">
+        <a class="button" href="<?= h($directionsUrl) ?>" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">📍 </span>Get directions</a>
+        <?php if ($websiteAllowed): ?><a class="button button-secondary" href="<?= h($website) ?>" target="_blank" rel="noopener noreferrer">Café website</a><?php endif; ?>
+      </div>
+      </section>
       <section class="panel offerings-panel"><h2>Recorded offerings</h2><p class="muted">Prices and availability can change. Unknown prices are shown explicitly.</p>
         <?php if (!$offerings): ?><p class="empty-copy">No offerings have been recorded yet.</p><?php else: ?>
           <div class="table-scroll" tabindex="0" role="region" aria-label="Recorded offerings table"><table><caption class="sr-only">Drinks, brewing methods, prices and verification</caption><thead><tr><th scope="col">Drink</th><th scope="col">Method</th><th scope="col">Price</th><th scope="col">Evidence</th></tr></thead><tbody>
