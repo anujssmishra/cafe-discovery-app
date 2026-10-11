@@ -25,8 +25,45 @@ function circle_generate_slug(string $name): string
     return substr($slug, 0, 24) . '-' . substr(bin2hex(random_bytes(3)), 0, 5);
 }
 
+function circle_ensure_schema(PDO $pdo): void
+{
+    static $ensured = false;
+    if ($ensured) {
+        return;
+    }
+    $ensured = true;
+
+    try {
+        $tableCheck = $pdo->query("SHOW TABLES LIKE 'circle'");
+        if ($tableCheck && $tableCheck->rowCount() > 0) {
+            return;
+        }
+
+        $migrationFile = __DIR__ . '/../schema/migration_sprint4_circles_and_google_match.sql';
+        if (file_exists($migrationFile)) {
+            $sql = file_get_contents($migrationFile);
+            if ($sql) {
+                // Split statements safely
+                $statements = array_filter(array_map('trim', explode(';', $sql)));
+                foreach ($statements as $stmtSql) {
+                    if ($stmtSql !== '' && !str_starts_with($stmtSql, '--')) {
+                        try {
+                            $pdo->exec($stmtSql);
+                        } catch (Throwable) {
+                            // Continue with other statements
+                        }
+                    }
+                }
+            }
+        }
+    } catch (Throwable) {
+        // Continue gracefully
+    }
+}
+
 function circle_get_current_session(PDO $pdo): array
 {
+    circle_ensure_schema($pdo);
     $token = $_COOKIE[CIRCLE_COOKIE_NAME] ?? null;
     if ($token && is_string($token) && strlen($token) >= 16) {
         try {
@@ -61,79 +98,91 @@ function circle_get_current_session(PDO $pdo): array
     ];
 }
 
-function circle_create(PDO $pdo, string $circleName, string $creatorName, ?string $email = null): array
+function circle_create(PDO $pdo, string $circleName, string $creatorName, ?string $email = null): ?array
 {
-    $circleId = circle_generate_uuid();
-    $inviteCode = circle_generate_slug($circleName);
-    $authToken = bin2hex(random_bytes(32));
+    circle_ensure_schema($pdo);
+    try {
+        $circleId = circle_generate_uuid();
+        $inviteCode = circle_generate_slug($circleName);
+        $authToken = bin2hex(random_bytes(32));
 
-    $stmt = $pdo->prepare('INSERT INTO circle (id, name, invite_code, city, creator_name) VALUES (:id, :name, :code, :city, :creator)');
-    $stmt->execute([
-        ':id' => $circleId,
-        ':name' => trim($circleName),
-        ':code' => $inviteCode,
-        ':city' => 'Lucknow',
-        ':creator' => trim($creatorName),
-    ]);
+        $stmt = $pdo->prepare('INSERT INTO circle (id, name, invite_code, city, creator_name) VALUES (:id, :name, :code, :city, :creator)');
+        $stmt->execute([
+            ':id' => $circleId,
+            ':name' => trim($circleName),
+            ':code' => $inviteCode,
+            ':city' => 'Lucknow',
+            ':creator' => trim($creatorName),
+        ]);
 
-    $memberStmt = $pdo->prepare('INSERT INTO circle_member (circle_id, member_name, email, auth_token, role) VALUES (:cid, :name, :email, :token, :role)');
-    $memberStmt->execute([
-        ':cid' => $circleId,
-        ':name' => trim($creatorName),
-        ':email' => $email ? trim($email) : null,
-        ':token' => $authToken,
-        ':role' => 'creator',
-    ]);
+        $memberStmt = $pdo->prepare('INSERT INTO circle_member (circle_id, member_name, email, auth_token, role) VALUES (:cid, :name, :email, :token, :role)');
+        $memberStmt->execute([
+            ':cid' => $circleId,
+            ':name' => trim($creatorName),
+            ':email' => $email ? trim($email) : null,
+            ':token' => $authToken,
+            ':role' => 'creator',
+        ]);
 
-    // Set cookie for 1 year
-    setcookie(CIRCLE_COOKIE_NAME, $authToken, [
-        'expires' => time() + 31536000,
-        'path' => '/',
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
+        // Set cookie for 1 year
+        setcookie(CIRCLE_COOKIE_NAME, $authToken, [
+            'expires' => time() + 31536000,
+            'path' => '/',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
 
-    return [
-        'circle_id' => $circleId,
-        'name' => trim($circleName),
-        'invite_code' => $inviteCode,
-        'creator_name' => trim($creatorName),
-        'auth_token' => $authToken,
-    ];
+        return [
+            'circle_id' => $circleId,
+            'name' => trim($circleName),
+            'invite_code' => $inviteCode,
+            'creator_name' => trim($creatorName),
+            'auth_token' => $authToken,
+        ];
+    } catch (Throwable $e) {
+        error_log('Failed to create circle: ' . $e->getMessage());
+        return null;
+    }
 }
 
 function circle_join(PDO $pdo, string $inviteCode, string $memberName, ?string $email = null): ?array
 {
-    $stmt = $pdo->prepare('SELECT * FROM circle WHERE invite_code = :code LIMIT 1');
-    $stmt->execute([':code' => trim($inviteCode)]);
-    $circle = $stmt->fetch();
-    if (!$circle) {
+    circle_ensure_schema($pdo);
+    try {
+        $stmt = $pdo->prepare('SELECT * FROM circle WHERE invite_code = :code LIMIT 1');
+        $stmt->execute([':code' => trim($inviteCode)]);
+        $circle = $stmt->fetch();
+        if (!$circle) {
+            return null;
+        }
+
+        $authToken = bin2hex(random_bytes(32));
+        $memberStmt = $pdo->prepare('INSERT INTO circle_member (circle_id, member_name, email, auth_token, role) VALUES (:cid, :name, :email, :token, :role)');
+        $memberStmt->execute([
+            ':cid' => $circle['id'],
+            ':name' => trim($memberName),
+            ':email' => $email ? trim($email) : null,
+            ':token' => $authToken,
+            ':role' => 'member',
+        ]);
+
+        setcookie(CIRCLE_COOKIE_NAME, $authToken, [
+            'expires' => time() + 31536000,
+            'path' => '/',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+
+        return [
+            'circle_id' => $circle['id'],
+            'name' => $circle['name'],
+            'invite_code' => $circle['invite_code'],
+            'member_name' => trim($memberName),
+        ];
+    } catch (Throwable $e) {
+        error_log('Failed to join circle: ' . $e->getMessage());
         return null;
     }
-
-    $authToken = bin2hex(random_bytes(32));
-    $memberStmt = $pdo->prepare('INSERT INTO circle_member (circle_id, member_name, email, auth_token, role) VALUES (:cid, :name, :email, :token, :role)');
-    $memberStmt->execute([
-        ':cid' => $circle['id'],
-        ':name' => trim($memberName),
-        ':email' => $email ? trim($email) : null,
-        ':token' => $authToken,
-        ':role' => 'member',
-    ]);
-
-    setcookie(CIRCLE_COOKIE_NAME, $authToken, [
-        'expires' => time() + 31536000,
-        'path' => '/',
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
-
-    return [
-        'circle_id' => $circle['id'],
-        'name' => $circle['name'],
-        'invite_code' => $circle['invite_code'],
-        'member_name' => trim($memberName),
-    ];
 }
 
 function circle_find_google_matches(PDO $pdo, string $name): array

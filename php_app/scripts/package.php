@@ -59,10 +59,10 @@ try {
         'scripts/schema.php' => 'scripts/schema.php',
         'scripts/schema_helpers.php' => 'scripts/schema_helpers.php',
     ];
-    foreach (['config.php', 'db.php', 'request.php', 'catalogue.php', 'web.php'] as $file) {
+    foreach (['config.php', 'db.php', 'request.php', 'catalogue.php', 'web.php', 'circles.php'] as $file) {
         $files['includes/' . $file] = 'includes/' . $file;
     }
-    foreach (['header.php', 'footer.php', 'catalogue.php', 'cafe_detail.php', 'about.php', 'error.php', '_evidence.php'] as $file) {
+    foreach (['header.php', 'footer.php', 'catalogue.php', 'cafe_detail.php', 'about.php', 'error.php', '_evidence.php', 'circles.php'] as $file) {
         $files['templates/' . $file] = 'templates/' . $file;
     }
     if ($sharedSubdomain) {
