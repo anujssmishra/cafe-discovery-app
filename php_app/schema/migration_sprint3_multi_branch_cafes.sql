@@ -1,7 +1,7 @@
 -- =====================================================================
 -- Sprint 3 Database Migration: Multi-Branch Cafés Expansion (Lucknow)
 -- Targets: MariaDB 10.11+ / MySQL 8.x (Hostinger Single Web Hosting)
--- Safe & Idempotent: Uses ON DUPLICATE KEY UPDATE / INSERT IGNORE
+-- Safe & Idempotent: Uses ON DUPLICATE KEY UPDATE
 -- =====================================================================
 
 -- 1. Add New Café Neighbourhoods (Aliganj, Nirala Nagar, Indira Nagar)
@@ -20,6 +20,7 @@ UPDATE `cafe` SET `name` = 'Melting Point (Dayal Paradise)' WHERE `id` = 'c10100
 UPDATE `cafe` SET `name` = 'HoNS (House of No Sugar) (Kisan Bazar)' WHERE `id` = 'c1010001-0000-0000-0000-000000000008';
 
 -- 3. Insert Additional Branch Cards for Multi-Location Cafés
+-- Each row has EXACTLY 20 values matching the 20 columns specified below:
 INSERT INTO `cafe` (
     `id`, `name`, `area_id`, `address`, `latitude`, `longitude`, 
     `is_active`, `is_demo`, `checked_on`, `source`, 
@@ -27,7 +28,7 @@ INSERT INTO `cafe` (
     `independence_status`, `independence_source`, `independence_checked_on`,
     `vibe_tags`, `food_highlights`, `price_band`
 ) VALUES
--- The Hazelnut Factory: Rohtas Summit (Gomti Nagar)
+-- Row 1: The Hazelnut Factory: Rohtas Summit (Gomti Nagar)
 (
     'c1010001-0000-0000-0000-000000000020', 'The Hazelnut Factory (Rohtas Summit)', 1,
     'Ground Floor, Rohtas Summit, Vibhuti Khand, Gomti Nagar', 26.8625, 80.9990,
@@ -38,47 +39,51 @@ INSERT INTO `cafe` (
     'Specialty Desserts, French Cruffins, Luxury Pastries, Savory Platters',
     'moderate'
 ),
--- The Hazelnut Factory: Phoenix Palassio (Sushant Golf City)
+-- Row 2: The Hazelnut Factory: Phoenix Palassio (Sushant Golf City)
 (
     'c1010001-0000-0000-0000-000000000021', 'The Hazelnut Factory (Phoenix Palassio)', 2,
     '1st Floor, Phoenix Palassio Mall, Amar Shaheed Path, Sushant Golf City', 26.8090, 81.0062,
     1, 0, '2026-10-11', 'Store locator',
     12, 'worldwide', 'Store locator', '2026-10-11',
+    'verified_not_independent', 'Web research', '2026-10-11',
     'Aesthetic & Cozy, Lively & Social',
     'Specialty Desserts, French Cruffins, Artisanal Coffees, Macarons',
     'moderate'
 ),
--- The Hazelnut Factory: Nirala Nagar
+-- Row 3: The Hazelnut Factory: Nirala Nagar
 (
     'c1010001-0000-0000-0000-000000000022', 'The Hazelnut Factory (Nirala Nagar)', 8,
     'B-192, Aliganj Main Rd, Opposite Ram Krishna Math, Nirala Nagar', 26.8780, 80.9420,
     1, 0, '2026-10-11', 'Store locator',
     12, 'worldwide', 'Store locator', '2026-10-11',
+    'verified_not_independent', 'Web research', '2026-10-11',
     'Aesthetic & Cozy, Date Spot',
     'Specialty Desserts, French Cruffins, Gourmet Shakes, Tarts',
     'moderate'
 ),
--- The Hazelnut Factory: Manoj Pandey Chauraha (Gomti Nagar)
+-- Row 4: The Hazelnut Factory: Manoj Pandey Chauraha (Gomti Nagar)
 (
     'c1010001-0000-0000-0000-000000000023', 'The Hazelnut Factory (Manoj Pandey Chauraha)', 1,
     '2/140, Next to Gomti Nagar Police Station, Vijay Khand, Gomti Nagar', 26.8520, 80.9910,
     1, 0, '2026-10-11', 'Store locator',
     12, 'worldwide', 'Store locator', '2026-10-11',
+    'verified_not_independent', 'Web research', '2026-10-11',
     'Aesthetic & Cozy, Work & Study',
     'Specialty Desserts, French Cruffins, Croissants, Breakfast Bakes',
     'moderate'
 ),
--- The Hazelnut Factory: Aliganj (Ram Ram Bank)
+-- Row 5: The Hazelnut Factory: Aliganj (Ram Ram Bank)
 (
     'c1010001-0000-0000-0000-000000000024', 'The Hazelnut Factory (Aliganj)', 7,
     'Ram Ram Bank Chauraha, Sector B, Aliganj', 26.8910, 80.9440,
     1, 0, '2026-10-11', 'Store locator',
     12, 'worldwide', 'Store locator', '2026-10-11',
+    'verified_not_independent', 'Web research', '2026-10-11',
     'Aesthetic & Cozy, Lively & Social',
     'Specialty Desserts, French Cruffins, Artisanal Bakery, Pastries',
     'moderate'
 ),
--- The Cherry Tree: Nirala Nagar
+-- Row 6: The Cherry Tree: Nirala Nagar
 (
     'c1010001-0000-0000-0000-000000000025', 'The Cherry Tree Bakery & Cafe (Nirala Nagar)', 8,
     'B-11, Near 8 Number Chauraha, Nirala Nagar', 26.8770, 80.9410,
@@ -89,7 +94,7 @@ INSERT INTO `cafe` (
     'Fresh Bakes, Cheesecakes, Thin Crust Pizza, Signature Shakes',
     'moderate'
 ),
--- Third Wave Coffee: Hazratganj (Le Press)
+-- Row 7: Third Wave Coffee: Hazratganj (Le Press)
 (
     'c1010001-0000-0000-0000-000000000026', 'Third Wave Coffee (Hazratganj)', 3,
     'Le Press, 29 Nawal Kishore Road, Hazratganj', 26.8530, 80.9450,
@@ -100,7 +105,7 @@ INSERT INTO `cafe` (
     'Bagels, Sourdough Toasts, Croissants, Cookies, Specialty Espresso',
     'moderate'
 ),
--- NBC: Vivek Khand (Gomti Nagar)
+-- Row 8: NBC: Vivek Khand (Gomti Nagar)
 (
     'c1010001-0000-0000-0000-000000000027', 'NBC (Nothing Before Coffee) (Vivek Khand)', 1,
     '4/260, Vivek Khand 4, Gomti Nagar', 26.8510, 81.0020,
@@ -111,27 +116,29 @@ INSERT INTO `cafe` (
     'Quick Bites, Loaded Nachos, Brownies, Frappes, Shaka Laka Shake',
     'budget'
 ),
--- NBC: Indira Nagar
+-- Row 9: NBC: Indira Nagar
 (
     'c1010001-0000-0000-0000-000000000028', 'NBC (Nothing Before Coffee) (Indira Nagar)', 9,
     'Near Indira Nagar Metro Station, Indira Nagar', 26.8790, 80.9850,
     1, 0, '2026-10-11', 'Store locator',
     60, 'worldwide', 'Store locator', '2026-10-11',
+    'verified_not_independent', 'Web research', '2026-10-11',
     'Work & Study, Lively & Social',
     'Pocket Pizzas, Brownies, Specialty Cold Brews, Iced Lattes',
     'budget'
 ),
--- NBC: Aliganj (Kapoorthala)
+-- Row 10: NBC: Aliganj (Kapoorthala)
 (
     'c1010001-0000-0000-0000-000000000029', 'NBC (Nothing Before Coffee) (Aliganj)', 7,
     'Sector B, Kapoorthala Chauraha, Aliganj', 26.8870, 80.9450,
     1, 0, '2026-10-11', 'Store locator',
     60, 'worldwide', 'Store locator', '2026-10-11',
+    'verified_not_independent', 'Web research', '2026-10-11',
     'Lively & Social, Work & Study',
     'Cookies, Pastries, Handcrafted Coffees, Affogato, Shakes',
     'budget'
 ),
--- Melting Point: Dayal Gateway (Kisan Bazar, Gomti Nagar)
+-- Row 11: Melting Point: Dayal Gateway (Kisan Bazar, Gomti Nagar)
 (
     'c1010001-0000-0000-0000-000000000030', 'Melting Point (Dayal Gateway)', 1,
     'Kisan Bazar, Vibhuti Khand, Gomti Nagar', 26.8640, 80.9990,
@@ -142,22 +149,24 @@ INSERT INTO `cafe` (
     'French Pastries, Custom Cakes, Continental Breakfast, Hot Brews',
     'moderate'
 ),
--- Melting Point: Sushant Golf City
+-- Row 12: Melting Point: Sushant Golf City
 (
     'c1010001-0000-0000-0000-000000000031', 'Melting Point (Sushant Golf City)', 2,
     'IT/3, Dayal Bagh, Amar Shaheed Path, Sushant Golf City', 26.8050, 81.0100,
     1, 0, '2026-10-11', 'Web research',
     3, 'worldwide', 'Web research', '2026-10-11',
+    'verified_not_independent', 'Web research', '2026-10-11',
     'Garden & Outdoor, Aesthetic & Cozy',
     'Artisanal Pastries, Italian Pastas, Gourmet Coffee, High Tea',
     'moderate'
 ),
--- HoNS (House of No Sugar): Hazratganj
+-- Row 13: HoNS (House of No Sugar): Hazratganj
 (
     'c1010001-0000-0000-0000-000000000032', 'HoNS (House of No Sugar) (Hazratganj)', 3,
     'Near Mayfair Cinema, Hazratganj', 26.8510, 80.9430,
     1, 0, '2026-10-11', 'Web research',
     3, 'worldwide', 'Web research', '2026-10-11',
+    'verified_not_independent', 'Web research', '2026-10-11',
     'Aesthetic & Cozy, Minimalist & Quiet',
     'Sugar-Free Bakery, Keto Cheesecakes, Gluten-Free Waffles, Healthy Smoothies',
     'moderate'
@@ -166,7 +175,8 @@ ON DUPLICATE KEY UPDATE
     `name`=VALUES(`name`), `area_id`=VALUES(`area_id`), `address`=VALUES(`address`),
     `latitude`=VALUES(`latitude`), `longitude`=VALUES(`longitude`),
     `vibe_tags`=VALUES(`vibe_tags`), `food_highlights`=VALUES(`food_highlights`),
-    `price_band`=VALUES(`price_band`), `brand_location_count`=VALUES(`brand_location_count`);
+    `price_band`=VALUES(`price_band`), `brand_location_count`=VALUES(`brand_location_count`),
+    `independence_status`=VALUES(`independence_status`);
 
 -- 4. Insert Drink Offerings for New Branches
 INSERT INTO `cafe_offering` (`id`, `cafe_id`, `drink_type`, `brewing_method`, `price`, `currency`, `checked_on`, `source`) VALUES
