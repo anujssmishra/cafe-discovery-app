@@ -45,6 +45,7 @@ $canonicalUrl = $protocol . '://' . $host . ($_SERVER['REQUEST_URI'] ?? '/');
     <a class="brand" href="<?= h(app_url('/')) ?>">Café discovery<span>A good place to begin</span></a>
     <nav aria-label="Main navigation">
       <a href="<?= h(app_url('/')) ?>"<?= $isCatalogue ? ' aria-current="page"' : '' ?>>Browse cafés</a>
+      <a href="<?= h(app_url('/circles/')) ?>"<?= ($path ?? '') === 'circles' ? ' aria-current="page"' : '' ?>>👥 Circles</a>
       <a href="<?= h(app_url('/about/')) ?>"<?= ($path ?? '') === 'about' ? ' aria-current="page"' : '' ?>>About</a>
     </nav>
   </div>

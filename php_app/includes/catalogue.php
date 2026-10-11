@@ -72,13 +72,26 @@ function catalogue_detail(PDO $pdo, string $id, bool $demoMode): array|false
     return $statement->fetch();
 }
 
-function catalogue_friend_reviews(PDO $pdo, string $id): array
+function catalogue_friend_reviews(PDO $pdo, string $id, ?string $circleId = null): array
 {
     try {
-        $stmt = $pdo->prepare('SELECT * FROM friend_review 
-            WHERE cafe_id = :id AND is_verified_friend = 1 
-            ORDER BY visited_on DESC, created_at DESC');
-        $stmt->execute([':id' => $id]);
+        if ($circleId !== null && defined('DEFAULT_CIRCLE_ID') && $circleId !== DEFAULT_CIRCLE_ID) {
+            $stmt = $pdo->prepare('SELECT * FROM friend_review 
+                WHERE cafe_id = :id AND is_verified_friend = 1 
+                  AND (circle_id = :circle_id OR circle_id = :default_id OR circle_id IS NULL)
+                ORDER BY (circle_id = :active_id) DESC, visited_on DESC, created_at DESC');
+            $stmt->execute([
+                ':id' => $id,
+                ':circle_id' => $circleId,
+                ':default_id' => DEFAULT_CIRCLE_ID,
+                ':active_id' => $circleId,
+            ]);
+        } else {
+            $stmt = $pdo->prepare('SELECT * FROM friend_review 
+                WHERE cafe_id = :id AND is_verified_friend = 1 
+                ORDER BY visited_on DESC, created_at DESC');
+            $stmt->execute([':id' => $id]);
+        }
         return $stmt->fetchAll();
     } catch (Throwable) {
         return [];

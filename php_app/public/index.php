@@ -15,6 +15,7 @@ require_once $baseDir . '/includes/db.php';
 require_once $baseDir . '/includes/web.php';
 require_once $baseDir . '/includes/request.php';
 require_once $baseDir . '/includes/catalogue.php';
+require_once $baseDir . '/includes/circles.php';
 
 $config = ['base_path' => ''];
 $path = '';
@@ -24,8 +25,8 @@ try {
     header('Content-Type: text/html; charset=UTF-8');
     header('X-Content-Type-Options: nosniff');
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-    if (!in_array($method, ['GET', 'HEAD'], true)) {
-        header('Allow: GET, HEAD');
+    if (!in_array($method, ['GET', 'HEAD', 'POST'], true)) {
+        header('Allow: GET, HEAD, POST');
         $statusCode = 405;
         $errorTitle = 'Method not allowed';
         $errorMessage = 'Use a link or the catalogue search form to browse this guide.';
@@ -51,6 +52,7 @@ try {
                 http_response_code(400);
             } else {
                 $pdo = db_connect($config);
+                $session = circle_get_current_session($pdo);
                 $result = catalogue_page($pdo, $filters, $config['demo_mode']);
                 $cafes = $result['cafes'];
                 $pagination = $result['pagination'];
@@ -63,14 +65,71 @@ try {
             require $templateDir . '/catalogue.php';
         } elseif ($path === 'about') {
             require $templateDir . '/about.php';
+        } elseif ($path === 'circles') {
+            $pdo = db_connect($config);
+            $session = circle_get_current_session($pdo);
+            $matchName = trim((string) ($_GET['match_name'] ?? ''));
+            $matchedReviews = $matchName !== '' ? circle_find_google_matches($pdo, $matchName) : [];
+            $message = (string) ($_GET['msg'] ?? '');
+            require $templateDir . '/circles.php';
+        } elseif ($path === 'circles/create' && $method === 'POST') {
+            $pdo = db_connect($config);
+            $circleName = trim((string) ($_POST['circle_name'] ?? ''));
+            $creatorName = trim((string) ($_POST['creator_name'] ?? ''));
+            if ($circleName !== '' && $creatorName !== '') {
+                $newCircle = circle_create($pdo, $circleName, $creatorName);
+                header('Location: ' . app_url('/circles/', ['msg' => "Circle '{$newCircle['name']}' created! Share your invite link."]));
+                exit;
+            }
+            header('Location: ' . app_url('/circles/'));
+            exit;
+        } elseif ($path === 'circles/join-code' && $method === 'POST') {
+            $pdo = db_connect($config);
+            $inviteCode = trim((string) ($_POST['invite_code'] ?? ''));
+            $memberName = trim((string) ($_POST['member_name'] ?? ''));
+            if ($inviteCode !== '' && $memberName !== '') {
+                $joined = circle_join($pdo, $inviteCode, $memberName);
+                if ($joined) {
+                    header('Location: ' . app_url('/circles/', ['msg' => "Joined '{$joined['name']}'!"]));
+                    exit;
+                }
+            }
+            header('Location: ' . app_url('/circles/', ['msg' => 'Invalid invite code. Check and try again.']));
+            exit;
+        } elseif (preg_match('~^join/([^/]+)$~D', $path, $matches)) {
+            $pdo = db_connect($config);
+            $inviteCode = $matches[1];
+            $stmt = $pdo->prepare('SELECT * FROM circle WHERE invite_code = :code LIMIT 1');
+            $stmt->execute([':code' => $inviteCode]);
+            $circle = $stmt->fetch();
+            if ($circle) {
+                // Auto-join as guest or redirect to circles page
+                $session = circle_get_current_session($pdo);
+                if (!$session['is_logged_in']) {
+                    circle_join($pdo, $inviteCode, 'Circle Friend');
+                }
+                header('Location: ' . app_url('/circles/', ['msg' => "Welcome to {$circle['name']}!"]));
+                exit;
+            }
+            header('Location: ' . app_url('/circles/', ['msg' => 'Circle invite link expired or not found.']));
+            exit;
+        } elseif ($path === 'circles/import' && $method === 'POST') {
+            $pdo = db_connect($config);
+            $session = circle_get_current_session($pdo);
+            $memberName = trim((string) ($_POST['member_name'] ?? ($session['member_name'] !== 'Guest' ? $session['member_name'] : 'Circle Friend')));
+            $reviewIds = array_map('intval', (array) ($_POST['review_ids'] ?? []));
+            $count = circle_import_google_reviews($pdo, $session['circle_id'], $memberName, $reviewIds);
+            header('Location: ' . app_url('/circles/', ['msg' => "Successfully imported {$count} Google " . ($count === 1 ? 'review' : 'reviews') . " into {$session['circle_name']}!"]));
+            exit;
         } elseif (preg_match('~^cafes/([^/]+)$~D', $path, $matches) && valid_cafe_id($matches[1])) {
             $pdo = db_connect($config);
+            $session = circle_get_current_session($pdo);
             $cafe = catalogue_detail($pdo, $matches[1], $config['demo_mode']);
             if ($cafe !== false) {
                 $statement = $pdo->prepare('SELECT * FROM cafe_offering WHERE cafe_id = :id ORDER BY drink_type, brewing_method, id');
                 $statement->execute([':id' => $cafe['id']]);
                 $offerings = $statement->fetchAll();
-                $friendReviews = catalogue_friend_reviews($pdo, $cafe['id']);
+                $friendReviews = catalogue_friend_reviews($pdo, $cafe['id'], $session['circle_id'] ?? null);
                 require $templateDir . '/cafe_detail.php';
             } else {
                 $statusCode = 404;

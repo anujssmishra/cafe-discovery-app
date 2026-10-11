@@ -48,14 +48,14 @@ $priceBandLabels = [
           <span class="section-icon" aria-hidden="true">👥</span>
           <h2>Friends' Take</h2>
         </div>
-        <span class="private-badge">Private Circle Notes</span>
+        <a class="private-badge" href="<?= h(app_url('/circles/')) ?>" style="text-decoration:none;" title="Manage your circle">Circle: <?= h($session['circle_name'] ?? 'Private Circle') ?> ⚙</a>
       </div>
       <p class="section-subtitle">Real experiences and notes from your circle. No commercial star ratings, sponsored reviews, or bot inflation.</p>
 
       <?php if (empty($friendReviews)): ?>
         <div class="friend-empty-box">
           <p class="empty-copy">No notes recorded from your circle for this café yet.</p>
-          <p class="empty-hint">Visited this spot? Share your notes on food quality, vibe, and your must-try recommendation with the circle.</p>
+          <p class="empty-hint">Visited this spot? Have a Google Maps review? <a href="<?= h(app_url('/circles/')) ?>">Auto-match your Google review</a> or invite your friends.</p>
         </div>
       <?php else: ?>
         <div class="friend-reviews-list">
@@ -64,7 +64,11 @@ $priceBandLabels = [
               <header class="review-header">
                 <div class="reviewer-meta">
                   <strong class="friend-name"><?= h($review['friend_name']) ?></strong>
-                  <span class="verified-friend-pill">✓ Circle</span>
+                  <?php if (($review['source_type'] ?? '') === 'google_matched'): ?>
+                    <span class="verified-friend-pill" style="color:#1a73e8; background:#e8f0fe; border-color:#d2e3fc;">✓ Google Match<?= !empty($review['google_rating']) ? ' · ⭐ ' . (int) $review['google_rating'] . '★' : '' ?></span>
+                  <?php else: ?>
+                    <span class="verified-friend-pill">✓ Circle</span>
+                  <?php endif; ?>
                   <?php if (!empty($review['visit_context'])): ?>
                     <span class="visit-context">· <?= h($review['visit_context']) ?></span>
                   <?php endif; ?>
@@ -142,16 +146,10 @@ $priceBandLabels = [
         <h2>Café details</h2>
         <dl class="details-list">
           <div><dt>Address</dt><dd class="address-container"><?php if (trim((string) ($cafe['address'] ?? '')) !== ''): ?><a class="address-link" href="<?= h($directionsUrl) ?>" target="_blank" rel="noopener noreferrer"><?= h($cafe['address']) ?></a><a class="mini-btn" href="<?= h($directionsUrl) ?>" target="_blank" rel="noopener noreferrer" title="Open in Maps"><span aria-hidden="true">📍 </span>Open in Maps ↗</a><?php else: ?>Unknown<?php endif; ?></dd></div>
-          <?php if ($hasCoordinates): ?><div><dt>Location coordinates</dt><dd class="muted"><?= h($cafe['latitude']) ?>, <?= h($cafe['longitude']) ?></dd></div><?php endif; ?>
           <?php if ($websiteAllowed): ?>
             <div><dt>Official website</dt><dd class="address-container"><a class="address-link" href="<?= h($website) ?>" target="_blank" rel="noopener noreferrer"><?= h(preg_replace('#^https?://(www\.)?#', '', rtrim($website, '/'))) ?></a><a class="mini-btn website-btn" href="<?= h($website) ?>" target="_blank" rel="noopener noreferrer" title="Visit website"><span aria-hidden="true">🌐 </span>Visit ↗</a></dd></div>
           <?php endif; ?>
           <div><dt>Ownership</dt><dd><?= h(catalogue_ownership($cafe)) ?></dd></div>
-          <div><dt>Ownership source</dt><dd><?= h($ownershipEvidence['source'] !== '' ? $ownershipEvidence['source'] : 'Unknown') ?><?php if (!$ownershipEvidence['complete']): ?> <span class="muted">(no documented verification)</span><?php endif; ?></dd></div>
-          <div><dt>Brand location count</dt><dd><?php $brandCount = $cafe['brand_location_count'] ?? null; ?><?= $brandCount !== null && ctype_digit((string) $brandCount) && $brandEvidence['complete'] ? h($brandCount) . ' · recorded ' . h($brandEvidence['date']) : 'Unknown' ?></dd></div>
-          <div><dt>Catalogue source</dt><dd><?= h($verification['source'] !== '' ? $verification['source'] : 'Unknown') ?></dd></div>
-          <div><dt>Verification</dt><dd><?php if ($verification['complete']): ?><?= $verification['current'] ? 'Checked ' : 'Historical check: ' ?><?= h($verification['date']) ?><?php else: ?>Unknown — no documented verification<?php endif; ?></dd></div>
-          <?php if ($verification['date'] !== null && !$verification['complete']): ?><div><dt>Recorded check date</dt><dd><?= h($verification['date']) ?> <span class="muted">(evidence incomplete)</span></dd></div><?php endif; ?>
         </dl>
         <?php if ($websiteAllowed): ?>
           <div class="detail-actions">
