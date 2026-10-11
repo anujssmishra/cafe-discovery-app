@@ -58,6 +58,7 @@ try {
         'schema/README.md' => 'schema/README.md',
         'scripts/schema.php' => 'scripts/schema.php',
         'scripts/schema_helpers.php' => 'scripts/schema_helpers.php',
+        'scripts/sync_google_reviews.php' => 'scripts/sync_google_reviews.php',
     ];
     foreach (['config.php', 'db.php', 'request.php', 'catalogue.php', 'web.php', 'circles.php'] as $file) {
         $files['includes/' . $file] = 'includes/' . $file;
