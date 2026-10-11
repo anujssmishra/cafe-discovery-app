@@ -1,14 +1,14 @@
 <?php
 $pageTitle = $pageTitle ?? (isset($errorTitle) ? $errorTitle . ' · Café discovery'
     : (is_array($cafe ?? null) ? $cafe['name'] . ' · Café discovery'
-    : (($path ?? '') === 'about' ? 'About · Café discovery' : 'Explore cafés · Café discovery')));
+    : (($path ?? '') === 'about' ? 'About · Café discovery' : 'Explore cafés in your neighbourhood · Café discovery')));
 $isCatalogue = ($path ?? '') === '' || ($path ?? '') === 'index.php';
 
 $pageDesc = isset($cafe) && is_array($cafe)
     ? (!empty(trim((string) ($cafe['summary'] ?? ''))) ? trim((string) $cafe['summary']) : "Explore {$cafe['name']} in {$cafe['area_name']}, Lucknow. Verified drink offerings, ownership status, and turn-by-turn directions.")
     : (($path ?? '') === 'about'
         ? 'About the independent Café Discovery guide — verification methodology, provenance, and editorial standards.'
-        : 'Discover independent specialty cafés and third-wave coffee roasters in Lucknow, one neighbourhood at a time.');
+        : 'Discover independent specialty cafés and third-wave coffee roasters in your neighbourhood across Lucknow.');
 
 $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'myfanverse.in';

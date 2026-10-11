@@ -10,7 +10,7 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter, 'vibe' =>
 <main id="main-content" class="page-shell" tabindex="-1">
   <section class="catalogue-intro">
     <p class="eyebrow">Find your next coffee stop</p>
-    <h1>Explore cafés, one neighbourhood at a time.</h1>
+    <h1>Explore cafés in your neighbourhood</h1>
     <p class="intro-copy">Search by name, neighbourhood, or vibe. Open a café to see food highlights, indicative prices, and recommendations from your circle.</p>
   </section>
   <form class="filter-form panel" method="get" action="<?= h(app_url('/')) ?>">
