@@ -5,7 +5,7 @@ declare(strict_types=1);
 function catalogue_request(array $query): array
 {
     $errors = [];
-    $values = ['q' => '', 'area' => '', 'page' => '1'];
+    $values = ['q' => '', 'area' => '', 'vibe' => '', 'page' => '1'];
     foreach ($values as $key => $default) {
         if (!array_key_exists($key, $query)) {
             continue;
@@ -35,6 +35,13 @@ function catalogue_request(array $query): array
         $errors[] = 'Choose a valid area.';
         $values['area'] = '';
     }
+    if ($values['vibe'] !== '' && !preg_match('/^[a-z0-9-]+$/D', $values['vibe'])) {
+        $errors[] = 'Choose a valid vibe.';
+        $values['vibe'] = '';
+    } elseif (strlen($values['vibe']) > 50) {
+        $errors[] = 'Choose a valid vibe.';
+        $values['vibe'] = '';
+    }
     if ($values['page'] === '' || !ctype_digit($values['page'])) {
         $errors[] = 'Page must be a positive whole number.';
         $values['page'] = '1';
@@ -42,7 +49,7 @@ function catalogue_request(array $query): array
     // Saturate before conversion to avoid integer overflow from arbitrarily large inputs.
     $digits = ltrim($values['page'], '0');
     $page = strlen($digits) > 9 ? 1000000000 : max(1, (int) $digits);
-    return ['q' => $values['q'], 'area' => $values['area'], 'page' => $page, 'errors' => $errors];
+    return ['q' => $values['q'], 'area' => $values['area'], 'vibe' => $values['vibe'], 'page' => $page, 'errors' => $errors];
 }
 
 function valid_cafe_id(string $id): bool

@@ -35,9 +35,11 @@ try {
             $filters = catalogue_request($_GET);
             $searchQuery = $filters['q'];
             $areaFilter = $filters['area'];
+            $vibeFilter = $filters['vibe'];
             $errors = $filters['errors'];
             $cafes = [];
             $areas = [];
+            $vibes = VIBE_OPTIONS;
             $pagination = ['page' => 1, 'pages' => 1, 'total' => 0, 'page_size' => 12];
             if ($errors !== []) {
                 http_response_code(400);
@@ -62,6 +64,7 @@ try {
                 $statement = $pdo->prepare('SELECT * FROM cafe_offering WHERE cafe_id = :id ORDER BY drink_type, brewing_method, id');
                 $statement->execute([':id' => $cafe['id']]);
                 $offerings = $statement->fetchAll();
+                $friendReviews = catalogue_friend_reviews($pdo, $cafe['id']);
                 require __DIR__ . '/../templates/cafe_detail.php';
             } else {
                 $statusCode = 404;

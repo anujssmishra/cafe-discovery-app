@@ -1,6 +1,15 @@
 <?php
 declare(strict_types=1);
 
+const VIBE_OPTIONS = [
+    'work' => ['label' => 'Work & Study', 'search' => 'Work & Study'],
+    'aesthetic' => ['label' => 'Aesthetic & Cozy', 'search' => 'Aesthetic & Cozy'],
+    'garden' => ['label' => 'Garden & Outdoor', 'search' => 'Garden & Outdoor'],
+    'quiet' => ['label' => 'Minimalist & Quiet', 'search' => 'Minimalist & Quiet'],
+    'social' => ['label' => 'Lively & Social', 'search' => 'Lively & Social'],
+    'date' => ['label' => 'Date Spot', 'search' => 'Date Spot'],
+];
+
 function catalogue_page(PDO $pdo, array $filters, bool $demoMode): array
 {
     $where = 'c.is_active = 1 AND a.is_active = 1';
@@ -16,6 +25,10 @@ function catalogue_page(PDO $pdo, array $filters, bool $demoMode): array
         $where .= ' AND a.slug = :area';
         $params[':area'] = $filters['area'];
     }
+    if (!empty($filters['vibe']) && isset(VIBE_OPTIONS[$filters['vibe']])) {
+        $where .= " AND c.vibe_tags LIKE :vibe ESCAPE '!'";
+        $params[':vibe'] = '%' . strtr(VIBE_OPTIONS[$filters['vibe']]['search'], ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
+    }
     $from = ' FROM cafe c JOIN area a ON c.area_id = a.id WHERE ' . $where;
     $count = $pdo->prepare('SELECT COUNT(*)' . $from);
     $count->execute($params);
@@ -23,7 +36,8 @@ function catalogue_page(PDO $pdo, array $filters, bool $demoMode): array
     $pageSize = 12;
     $pages = max(1, (int) ceil($total / $pageSize));
     $page = min(max(1, $filters['page']), $pages);
-    $statement = $pdo->prepare('SELECT c.*, a.name AS area_name, a.city AS area_city'
+    $statement = $pdo->prepare('SELECT c.*, a.name AS area_name, a.city AS area_city,
+        (SELECT COUNT(*) FROM friend_review fr WHERE fr.cafe_id = c.id AND fr.is_verified_friend = 1) AS friend_review_count'
         . $from . ' ORDER BY c.name ASC, c.id ASC LIMIT :limit OFFSET :offset');
     foreach ($params as $key => $value) {
         $statement->bindValue($key, $value, PDO::PARAM_STR);
@@ -45,4 +59,13 @@ function catalogue_detail(PDO $pdo, string $id, bool $demoMode): array|false
         . ($demoMode ? '' : ' AND c.is_demo = 0'));
     $statement->execute([':id' => $id]);
     return $statement->fetch();
+}
+
+function catalogue_friend_reviews(PDO $pdo, string $id): array
+{
+    $stmt = $pdo->prepare('SELECT * FROM friend_review 
+        WHERE cafe_id = :id AND is_verified_friend = 1 
+        ORDER BY visited_on DESC, created_at DESC');
+    $stmt->execute([':id' => $id]);
+    return $stmt->fetchAll();
 }
