@@ -8,12 +8,14 @@ Updated: 2026-10-11. Transfer context through source and evidence, not credentia
 - **Domain Isolation:** Sibling subdomains (`sitascanvas.myfanverse.in` and `anujssmishra.myfanverse.in`) remain untouched in their respective subdirectories.
 - **Active Tech Stack:** Native PHP 8.2+ with MariaDB (InnoDB, utf8mb4), PDO prepared statements, vanilla semantic HTML5 & responsive CSS (`site.css`). No node_modules, no build step, minimal overhead.
 - **Security Posture:** Enterprise-grade config loader (`includes/config.php`) strictly enforcing credentials via `.htaccess` `SetEnv` or private server environment, rejecting public credential files.
-- **Live Pilot Dataset:** 19 verified specialty cafés across 6 Lucknow neighbourhoods (Gomti Nagar, Hazratganj, Sushant Golf City, Mall Avenue, Cantonment, Badshahnagar) seeded with coordinates, drink prices, and verified independence status.
+- **Live Pilot Dataset:** 32 verified specialty café locations across 9 Lucknow neighbourhoods (Gomti Nagar, Hazratganj, Sushant Golf City, Mall Avenue, Cantonment, Badshahnagar, Aliganj, Nirala Nagar, Indira Nagar) covering multi-branch chains (THF, Cherry Tree, NBC, Third Wave, Melting Point, HoNS) and landmark independents.
 - **Live Features:**
   - Debounced instant live search (250ms fetch + DOMParser + URL history sync)
-  - Area filter dropdown
+  - 9-neighbourhood area filter dropdown & mood/vibe filter dropdown
   - Clickable address with Google Maps directions link and mini `[📍 Maps ↗]` action button
-  - Context-aware Open Graph, Twitter Cards, and SEO meta tags
+  - Spend tiers (`₹`, `₹₹`, `₹₹₹`) and signature food & bakery highlights on every card
+  - **Friends' Take (Private Circle Notes)** hero placement at the top of café details with verified must-orders and food quality verdicts
+  - Circle pick indicator badges on catalogue cards
   - Full UUID detail views (`/cafes/{uuid}`) with drink offerings and provenance
   - Friendly 404 / 503 error handling
 
