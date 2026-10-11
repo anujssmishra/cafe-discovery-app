@@ -36,9 +36,20 @@ function catalogue_page(PDO $pdo, array $filters, bool $demoMode): array
     $pageSize = 12;
     $pages = max(1, (int) ceil($total / $pageSize));
     $page = min(max(1, $filters['page']), $pages);
-    $statement = $pdo->prepare('SELECT c.*, a.name AS area_name, a.city AS area_city,
-        (SELECT COUNT(*) FROM friend_review fr WHERE fr.cafe_id = c.id AND fr.is_verified_friend = 1) AS friend_review_count'
-        . $from . ' ORDER BY c.name ASC, c.id ASC LIMIT :limit OFFSET :offset');
+
+    // Defensive check: only subquery friend_review if table exists
+    $friendCountExpr = '0 AS friend_review_count';
+    try {
+        $tableCheck = $pdo->query("SHOW TABLES LIKE 'friend_review'");
+        if ($tableCheck && $tableCheck->rowCount() > 0) {
+            $friendCountExpr = '(SELECT COUNT(*) FROM friend_review fr WHERE fr.cafe_id = c.id AND fr.is_verified_friend = 1) AS friend_review_count';
+        }
+    } catch (Throwable) {
+        $friendCountExpr = '0 AS friend_review_count';
+    }
+
+    $statement = $pdo->prepare('SELECT c.*, a.name AS area_name, a.city AS area_city, '
+        . $friendCountExpr . $from . ' ORDER BY c.name ASC, c.id ASC LIMIT :limit OFFSET :offset');
     foreach ($params as $key => $value) {
         $statement->bindValue($key, $value, PDO::PARAM_STR);
     }
@@ -63,9 +74,13 @@ function catalogue_detail(PDO $pdo, string $id, bool $demoMode): array|false
 
 function catalogue_friend_reviews(PDO $pdo, string $id): array
 {
-    $stmt = $pdo->prepare('SELECT * FROM friend_review 
-        WHERE cafe_id = :id AND is_verified_friend = 1 
-        ORDER BY visited_on DESC, created_at DESC');
-    $stmt->execute([':id' => $id]);
-    return $stmt->fetchAll();
+    try {
+        $stmt = $pdo->prepare('SELECT * FROM friend_review 
+            WHERE cafe_id = :id AND is_verified_friend = 1 
+            ORDER BY visited_on DESC, created_at DESC');
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetchAll();
+    } catch (Throwable) {
+        return [];
+    }
 }

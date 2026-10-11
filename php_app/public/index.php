@@ -1,14 +1,17 @@
 <?php
 declare(strict_types=1);
 
+// Auto-detect base directory for flat (public_html/) or nested (php_app/public/) deployment
+$baseDir = is_dir(__DIR__ . '/includes') ? __DIR__ : dirname(__DIR__);
+
 // Visitors receive one generic response, including when configuration or connection fails.
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 error_reporting(E_ALL);
-require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/web.php';
-require_once __DIR__ . '/../includes/request.php';
-require_once __DIR__ . '/../includes/catalogue.php';
+require_once $baseDir . '/includes/db.php';
+require_once $baseDir . '/includes/web.php';
+require_once $baseDir . '/includes/request.php';
+require_once $baseDir . '/includes/catalogue.php';
 
 $config = ['base_path' => ''];
 $path = '';
@@ -24,7 +27,7 @@ try {
         $errorTitle = 'Method not allowed';
         $errorMessage = 'Use a link or the catalogue search form to browse this guide.';
         http_response_code($statusCode);
-        require __DIR__ . '/../templates/error.php';
+        require $baseDir . '/templates/error.php';
     } else {
         $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
         $base = $config['base_path'];
@@ -54,9 +57,9 @@ try {
                 }
                 $areas = $pdo->query($areaSql . ' ORDER BY a.display_order, a.name, a.slug')->fetchAll();
             }
-            require __DIR__ . '/../templates/catalogue.php';
+            require $baseDir . '/templates/catalogue.php';
         } elseif ($path === 'about') {
-            require __DIR__ . '/../templates/about.php';
+            require $baseDir . '/templates/about.php';
         } elseif (preg_match('~^cafes/([^/]+)$~D', $path, $matches) && valid_cafe_id($matches[1])) {
             $pdo = db_connect($config);
             $cafe = catalogue_detail($pdo, $matches[1], $config['demo_mode']);
@@ -65,20 +68,20 @@ try {
                 $statement->execute([':id' => $cafe['id']]);
                 $offerings = $statement->fetchAll();
                 $friendReviews = catalogue_friend_reviews($pdo, $cafe['id']);
-                require __DIR__ . '/../templates/cafe_detail.php';
+                require $baseDir . '/templates/cafe_detail.php';
             } else {
                 $statusCode = 404;
                 $errorTitle = 'Café not found';
                 $errorMessage = 'This café is unavailable. Browse the catalogue for active listings.';
                 http_response_code($statusCode);
-                require __DIR__ . '/../templates/error.php';
+                require $baseDir . '/templates/error.php';
             }
         } else {
             $statusCode = 404;
             $errorTitle = 'Page not found';
             $errorMessage = 'The requested page is unavailable. Browse the catalogue to continue.';
             http_response_code($statusCode);
-            require __DIR__ . '/../templates/error.php';
+            require $baseDir . '/templates/error.php';
         }
     }
 } catch (Throwable $exception) {
@@ -91,7 +94,7 @@ try {
     $statusCode = 503;
     $errorTitle = 'Catalogue temporarily unavailable';
     $errorMessage = 'Please try again later.';
-    require __DIR__ . '/../templates/error.php';
+    require $baseDir . '/templates/error.php';
 }
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'HEAD') {
     ob_end_clean();
