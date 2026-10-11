@@ -70,6 +70,7 @@ try {
             $session = circle_get_current_session($pdo);
             $matchName = trim((string) ($_GET['match_name'] ?? ''));
             $matchedReviews = $matchName !== '' ? circle_find_google_matches($pdo, $matchName) : [];
+            $circleReviews = circle_get_reviews($pdo, $session['circle_id']);
             $message = (string) ($_GET['msg'] ?? '');
             require $templateDir . '/circles.php';
         } elseif ($path === 'circles/create' && $method === 'POST') {

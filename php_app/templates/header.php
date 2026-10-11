@@ -36,7 +36,7 @@ $canonicalUrl = $protocol . '://' . $host . ($_SERVER['REQUEST_URI'] ?? '/');
   <meta name="twitter:title" content="<?= h($pageTitle) ?>">
   <meta name="twitter:description" content="<?= h($pageDesc) ?>">
 
-  <link rel="stylesheet" href="<?= h(app_url('/static/site.css')) ?>">
+  <link rel="stylesheet" href="<?= h(app_url('/static/site.css')) ?>?v=sprint4.2">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>

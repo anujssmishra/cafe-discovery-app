@@ -270,3 +270,26 @@ function circle_import_google_reviews(PDO $pdo, string $circleId, string $member
 
     return $imported;
 }
+
+function circle_get_reviews(PDO $pdo, string $circleId): array
+{
+    try {
+        $stmt = $pdo->prepare('SELECT fr.*, c.name AS cafe_name, a.name AS area_name 
+            FROM friend_review fr
+            JOIN cafe c ON fr.cafe_id = c.id
+            JOIN area a ON c.area_id = a.id
+            WHERE fr.is_verified_friend = 1 
+              AND (fr.circle_id = :cid OR (:is_default = 1 AND (fr.circle_id = :default_id OR fr.circle_id IS NULL)))
+            ORDER BY fr.visited_on DESC, fr.created_at DESC LIMIT 12');
+        $isDefault = ($circleId === DEFAULT_CIRCLE_ID) ? 1 : 0;
+        $stmt->execute([
+            ':cid' => $circleId,
+            ':is_default' => $isDefault,
+            ':default_id' => DEFAULT_CIRCLE_ID,
+        ]);
+        return $stmt->fetchAll();
+    } catch (Throwable) {
+        return [];
+    }
+}
+
