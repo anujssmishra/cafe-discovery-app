@@ -25,7 +25,12 @@ $priceBandLabels = [
   <article>
     <header class="detail-heading">
       <p class="eyebrow"><?= h($cafe['area_name']) ?><?= empty($cafe['area_city']) ? '' : ' · ' . h($cafe['area_city']) ?></p>
-      <h1><?= h($cafe['name']) ?></h1>
+      <div class="detail-title-row">
+        <h1><?= h($cafe['name']) ?></h1>
+        <?php if ($websiteAllowed): ?>
+          <a class="header-website-btn" href="<?= h($website) ?>" target="_blank" rel="noopener noreferrer" title="Official website for <?= h($cafe['name']) ?>"><span aria-hidden="true">🌐 </span>Visit Website ↗</a>
+        <?php endif; ?>
+      </div>
       <?php if ($isDemo): ?><span class="badge">Fictional demo</span><?php endif; ?>
       <?php if (trim((string) ($cafe['summary'] ?? '')) !== '' && $cafe['summary'] !== 'More details are not recorded yet.'): ?>
         <p class="intro-copy"><?= h($cafe['summary']) ?></p>

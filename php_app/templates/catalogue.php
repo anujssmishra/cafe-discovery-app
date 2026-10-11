@@ -30,6 +30,12 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter, 'vibe' =>
     <?php else: ?>
       <div class="cafe-grid">
         <?php foreach ($cafes as $item): ?>
+          <?php
+          $itemWebsite = (string) ($item['website'] ?? '');
+          $itemWebsiteAllowed = !($item['is_demo'] ?? false) && filter_var($itemWebsite, FILTER_VALIDATE_URL)
+              && in_array(strtolower((string) parse_url($itemWebsite, PHP_URL_SCHEME)), ['http', 'https'], true)
+              && parse_url($itemWebsite, PHP_URL_USER) === null && parse_url($itemWebsite, PHP_URL_PASS) === null;
+          ?>
           <article class="cafe-card panel">
             <div class="card-topline">
               <p class="eyebrow"><?= h($item['area_name']) ?><?= empty($item['area_city']) ? '' : ' · ' . h($item['area_city']) ?></p>
@@ -45,7 +51,12 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter, 'vibe' =>
                 <?php if ($item['is_demo'] ?? false): ?><span class="badge">Demo</span><?php endif; ?>
               </div>
             </div>
-            <h3><a href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>"><?= h($item['name']) ?></a></h3>
+            <div class="card-title-row">
+              <h3><a href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>"><?= h($item['name']) ?></a></h3>
+              <?php if ($itemWebsiteAllowed): ?>
+                <a class="card-website-btn" href="<?= h($itemWebsite) ?>" target="_blank" rel="noopener noreferrer" title="Official website: <?= h($item['name']) ?>"><span aria-hidden="true">🌐 </span>Website ↗</a>
+              <?php endif; ?>
+            </div>
             <?php if (trim((string) ($item['summary'] ?? '')) !== '' && $item['summary'] !== 'More details are not recorded yet.'): ?>
               <p class="card-summary"><?= h($item['summary']) ?></p>
             <?php endif; ?>
@@ -67,12 +78,8 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter, 'vibe' =>
             $itemMapUrl = $itemCoords
                 ? 'https://www.google.com/maps/dir/?api=1&destination=' . rawurlencode($item['latitude'] . ',' . $item['longitude'])
                 : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($item['name'] . ', ' . ($item['address'] ?? '') . ', ' . ($item['area_name'] ?? ''));
-            $itemWebsite = (string) ($item['website'] ?? '');
-            $itemWebsiteAllowed = !($item['is_demo'] ?? false) && filter_var($itemWebsite, FILTER_VALIDATE_URL)
-                && in_array(strtolower((string) parse_url($itemWebsite, PHP_URL_SCHEME)), ['http', 'https'], true)
-                && parse_url($itemWebsite, PHP_URL_USER) === null && parse_url($itemWebsite, PHP_URL_PASS) === null;
             ?>
-            <p class="address address-container"><?php if (trim((string) ($item['address'] ?? '')) !== ''): ?><a class="address-link" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer"><?= h($item['address']) ?></a><a class="mini-btn" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer" title="Open in Maps"><span aria-hidden="true">📍 </span>Maps ↗</a><?php else: ?>Address not recorded<?php endif; ?><?php if ($itemWebsiteAllowed): ?><a class="mini-btn website-btn" href="<?= h($itemWebsite) ?>" target="_blank" rel="noopener noreferrer" title="Official website"><span aria-hidden="true">🌐 </span>Website ↗</a><?php endif; ?></p>
+            <p class="address address-container"><?php if (trim((string) ($item['address'] ?? '')) !== ''): ?><a class="address-link" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer"><?= h($item['address']) ?></a><a class="mini-btn" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer" title="Open in Maps"><span aria-hidden="true">📍 </span>Maps ↗</a><?php else: ?>Address not recorded<?php endif; ?></p>
             <p class="evidence-line"><span>Ownership:</span> <?= h(catalogue_ownership($item)) ?></p>
             <a class="detail-link" href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>">View details<span class="sr-only"> for <?= h($item['name']) ?></span><span aria-hidden="true"> →</span></a>
           </article>
