@@ -260,9 +260,65 @@ The application is deployed on **Hostinger Single Web Hosting** serving `myfanve
 
 ---
 
-## 8. Future Roadmap
+## 8. Current Progression & Roadmap
 
-* **Interactive Map View:** Optional client-side Leaflet.js map layer with custom coffee cup markers, respecting list fallbacks.
-* **Member Taste Profiles:** Optional account creation allowing users to save preferred drink types, budget thresholds, and bookmarked venues.
-* **Community Repeat Signal:** Collaborative recommendation weighting based on repeated visits rather than one-off ratings.
-* **Curator Editorial Reviews:** Structured reviews with visit dates, coffee quality scores, and verified reviewer attribution.
+* **Sprint 2 (Done):** Lightweight PHP/MySQL core architecture, 19 Lucknow cafés seeded, Hostinger deployment (`myfanverse.in`), live search, directions integration, Open Graph SEO.
+* **Sprint 3 (Active):** **Friend-Informed Discovery & Private Circles** (Vibe taxonomy, food variety/quality badges, price bands, and "Friends' Take" private circle reviews).
+* **Sprint 4 (Planned):** **Interactive Map View:** Optional client-side Leaflet.js map layer with custom coffee cup markers, respecting list fallbacks.
+* **Sprint 5 (Planned):** **Member Taste Profiles & Private Saves:** Optional account creation allowing users to save preferred drink types, budget thresholds, and bookmarked venues.
+* **Sprint 6 (Planned):** **Community Repeat Signal:** Collaborative recommendation weighting based on repeated visits rather than one-off ratings.
+
+---
+
+## 9. Sprint 3: Friend-Informed Discovery Architecture
+
+Following primary user research conducted by Product Owner Anuj with his cohort, seven essential pre-visit decision factors were identified. Sprint 3 directly translates these insights into database models and user interfaces:
+
+```
++-----------------------------------------------------------------------------------------+
+|                                    USER RESEARCH FEEDBACK                               |
+|  1. Food Quality   2. Food Variety   3. Ambiance   4. Aesthetics   5. Price   6. Location   |
+|                                7. Reviews by friends, not public                        |
++-----------------------------------------------------------------------------------------+
+                                             |
+                                             v
++-----------------------------------------------------------------------------------------+
+|                                  ARCHITECTURAL MAPPING                                  |
+|  * Ambiance & Aesthetics   --->  Curated Vibe Tags (`Work & Study`, `Aesthetic / Cozy`)|
+|  * Food Quality & Variety  --->  Food Highlights & Badges (`Fresh Bakery`, `Sourdough`)|
+|  * Price Band              --->  3-Tier Spend Band (`₹`, `₹₹`, `₹₹₹`)                   |
+|  * Location Navigation     --->  Clickable Address + Direct Maps Button [LIVE]          |
+|  * Reviews by Friends      --->  "Friends' Take" Private Circle Notes (Zero Public Spam)|
++-----------------------------------------------------------------------------------------+
+```
+
+### 9.1 Vibe & Aesthetics Taxonomy
+
+Cafés are tagged with a controlled vocabulary of recognizable ambiance styles:
+* `Work & Study` (high table space, charging outlets, reliable Wi-Fi, low distraction)
+* `Aesthetic & Cozy` (warm lighting, comfortable seating, visually curated decor, photo-friendly)
+* `Garden & Outdoor` (open-air seating, greenery, natural breeze)
+* `Minimalist & Quiet` (understated design, low ambient decibels, contemplative space)
+* `Lively & Social` (vibrant music, group seating, conversational energy)
+* `Date Spot` (intimate seating, mood lighting, refined atmosphere)
+
+### 9.2 Food Quality & Variety Badging
+
+* **Food Highlights:** Tags highlighting culinary specialties: `In-house Bakery`, `Artisan Sourdough`, `Specialty Desserts`, `All-Day Brunch`, `Vegan & Healthy`, `Savory Small Plates`.
+* **Detail View Preview:** Dedicated "Food & Bakery" showcase section on café detail pages detailing food craft and provenance.
+
+### 9.3 Price Band Indicator
+
+* **`₹` (Budget):** Typical drink/snack under ₹150 per person.
+* **`₹₹` (Moderate):** Typical specialty coffee and food ₹150–₹300 per person.
+* **`₹₹₹` (Premium):** Single-origin pour-overs, artisan dining ₹300+ per person.
+
+### 9.4 "Friends' Take" — Private Circle Reviews
+
+Aggregator star reviews (Google Maps, Zomato) suffer from bot inflation, owner manipulation, and conflicting standards. Users explicitly requested **"Reviews by my friends, not public"**.
+
+* **Architecture:**
+  * Dedicated `friend_review` table linking trusted individuals to cafés.
+  * Fields: `friend_name`, `visit_context` ("Late evening work sprint", "Weekend brunch"), `food_quality_verdict`, `ambiance_rating`, `must_try_item` ("Iced Spanish Latte + Almond Croissant"), `review_text`, `visited_on`.
+  * **Zero Public Spam:** Only verified friends' recommendations appear. No public registration for anonymous trolling.
+

@@ -25,6 +25,8 @@ Last updated: 2026-10-08. Use this file as the decision record and [DEVELOPMENT_
 | D10 | Use `feat/sprint-1-catalogue` as the first integration branch | Keeps the first source increment reviewable; root owns remote publication and integration | Confirmed workflow; remote status recorded separately |
 | D11 | Keep continuation context tool-neutral so Anuj can code with Codex, Claude, Gemini or another developer | Owner requested transfer for coding, then explicitly requested generic use across assistants on 2026-10-08 | Confirmed direction; shared DEVELOPMENT_HANDOFF/STARTER_PROMPT and assistant pointer files |
 | D12 | Pivot entire application architecture from Python/Django to PHP/MySQL | Owner decision to utilize existing Hostinger Single Web Hosting plan; avoiding new infrastructure | Confirmed |
+| D13 | Friend-Informed Discovery & Private Circle Reviews | User survey feedback: replace noisy public star ratings with trusted private circle notes and must-order recommendations | Confirmed |
+| D14 | Controlled Ambiance Vibe & Food Variety Taxonomy | Enforce standardized vibe tags and food highlight badges rather than freeform unindexed text | Confirmed |
 
 ## 3. Proposed Starting Choices
 

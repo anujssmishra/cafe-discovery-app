@@ -18,21 +18,36 @@ Anuj owns product ordering. Developers refine and select feasible work against t
 | E5: Editorial context | Original opinions and selection rules are transparent | P7, P11, P12, P13; F05, F06, F08, F09 | CAFE-024–027 |
 | E6: Safe pilot and learning | A supported cohort tests usefulness on reliable infrastructure | P6, P8 and release criteria | CAFE-028–031 |
 | E7: Evidence-led extensions | Add signals or coverage only when justified | P3 and later candidates | CAFE-032–034 |
-| E8: PHP Rebuild | Entire application rebuilt in PHP to support Hostinger Shared Hosting | D12 | CAFE-101-105 |
+| E8: PHP Architecture & Hostinger Deployment | Rebuild catalogue in PHP/MySQL and deploy live to Hostinger shared hosting | D12 | CAFE-101–105 |
+| E9: Friend-Driven Discovery & Private Circles | Discover cafés by vibe, food variety/quality, price tier, and trusted friends' reviews | D13, D14 | CAFE-106–112 |
 
-## 2. Current Sprint Selection (PHP Pivot)
+## 2. Current Sprint Selection: Sprint 3 (Friend-Informed Discovery & Private Circles)
 
-**Sprint 2 Goal:** Rebuild the Sprint 1 catalogue features in PHP/MySQL so parallel agents can deploy to Hostinger.
+**Sprint 3 Goal:** Deliver the user-requested café evaluation factors identified in primary user research: Ambiance & Aesthetics ("Vibes"), Food Variety & Quality highlights, Indicative Price Bands, and "Friends' Take" trusted private reviews (zero public aggregator spam).
 
-| ID | User outcome | Lead / package | Status |
-|---|---|---|---|
-| CAFE-101 | Initialize PHP project structure, DB connection, and routing | Root | Backlog |
-| CAFE-102 | Create MySQL schemas for Area, Cafe, and Offerings | Database | Backlog |
-| CAFE-103 | Build PHP backend API/controllers for search and details | Backend | Backlog |
-| CAFE-104 | Migrate frontend HTML/CSS to PHP templates | Frontend | Backlog |
-| CAFE-105 | Write seed scripts in PHP to populate pilot data | Backend | Backlog |
+| ID | User outcome and acceptance criteria | Lead / package | Dependencies | Mapping | Status |
+|---|---|---|---|---|---|
+| CAFE-106 | **Ambiance & Aesthetics Taxonomy ("Vibes"):** As a visitor, I can see clear vibe/ambiance badges on café cards (e.g. `Work & Study`, `Aesthetic / Cozy`, `Garden / Outdoor`, `Minimalist / Quiet`, `Lively / Social`, `Date Spot`) and filter by vibe so I know the atmosphere before visiting. Public catalogue queries support vibe filtering. | Backend + Frontend / W1 | Database schema | E9; P2, F03 | Backlog |
+| CAFE-107 | **Food Highlights & Menu Variety Badges:** As a visitor, I can quickly tell what food variety and quality the café offers (e.g. `Fresh Bakery`, `Artisan Sourdough`, `Specialty Desserts`, `Vegan Friendly`, `All-Day Brunch`) on catalogue cards and detailed menu food previews on the detail page. | Backend + Frontend / W2 | CAFE-106 | E9; P1, P7 | Backlog |
+| CAFE-108 | **Price Band & Affordability Indicator:** As a visitor, I can see a simple price band (`₹` budget under ₹150, `₹₹` moderate ₹150-₹300, `₹₹₹` specialty/premium ₹300+) derived from typical coffee and food spend, allowing quick budget alignment. | Backend + Frontend / W2 | 106 | E9; P2 | Backlog |
+| CAFE-109 | **"Friends' Take" / Private Circle Reviews System:** As a visitor, I can view trusted notes, must-order recommendations, and ambiance/food verdicts from verified friends/private circle, rather than noisy, unverified public reviews or 5-star rating aggregators. New `friend_review` table created; detail page renders a dedicated "Friends' Take" section; zero public spam. | Backend + Frontend / W3 | Database migration | E9; P4, P5, F05 | Backlog |
+| CAFE-110 | **Lucknow Pilot Dataset Enrichment:** As Product Owner, all 19 Lucknow pilot cafés are enriched with verified vibe tags, food highlights, price bands, and initial trusted circle recommendations based on real Lucknow field visits. | Anuj (Curator) / W4 | CAFE-106–109 | E9; Pilot | Backlog |
+| CAFE-111 | **Hostinger Database Migration & Verification:** As operations maintainer, an idempotent SQL migration script (`migration_sprint3_vibes_and_friends.sql`) is provided for Hostinger phpMyAdmin to add the new tables and columns to MariaDB without data loss on live `myfanverse.in`. | Operations / W5 | CAFE-106, 109 | E9; Release | Backlog |
+| CAFE-112 | **Interactive Leaflet Map Layer (Toggle):** As a visitor, I can toggle an interactive map view showing the cafés with custom coffee-cup markers using their already-stored GPS coordinates, maintaining parity with list filters and gracefully falling back to list mode. | Frontend / W6 | Catalogue coordinates | E4; P9, F01 | Backlog |
 
-## 2.1 Previous Sprint (Deprecated Django Build)
+## 2.1 Previous Sprint: Sprint 2 (PHP Pivot & Hostinger Deployment)
+
+**Sprint 2 Goal:** Rebuild the catalogue features in lightweight PHP/MySQL, seed 19 Lucknow cafés, and deploy to Hostinger Shared Hosting (`myfanverse.in`).
+
+| ID | User outcome | Lead / package | Status | Evidence |
+|---|---|---|---|---|
+| CAFE-101 | Initialize PHP project structure, DB connection, and routing | Root | Done | Enterprise config loader, PDO MySQL factory, parameter routing in `php_app/` |
+| CAFE-102 | Create MySQL schemas for Area, Cafe, and Offerings | Database | Done | `php_app/schema/schema.sql` with UUID PKs, FK cascades, check constraints |
+| CAFE-103 | Build PHP backend queries and sanitization for search and details | Backend | Done | PDO prepared statements in `php_app/includes/catalogue.php`, clean 404s |
+| CAFE-104 | Build responsive frontend PHP templates, live search & clickable directions | Frontend | Done | Debounced instant search, clickable address with Google Maps directions, mini Maps button, Open Graph meta tags |
+| CAFE-105 | Populate pilot data with 19 Lucknow cafés across 6 areas | Backend | Done | `php_app/schema/lucknow_cafes.sql` imported and verified live on `myfanverse.in` |
+
+## 2.2 Historical Sprint (Deprecated Django Build)
 
 **Sprint 1 Goal:** a guest can search and inspect an explicitly synthetic café catalogue, and another developer can reproduce and verify the local application.
 
