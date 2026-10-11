@@ -83,3 +83,15 @@ INSERT INTO `cafe_offering` (`id`, `cafe_id`, `drink_type`, `brewing_method`, `p
 (31, 'c1010001-0000-0000-0000-000000000031', 'espresso', 'Espresso machine', 180.00, 'INR', '2026-10-11', 'Menu'),
 (32, 'c1010001-0000-0000-0000-000000000032', 'filter', 'Filter coffee', 160.00, 'INR', '2026-10-11', 'Menu')
 ON DUPLICATE KEY UPDATE `price`=VALUES(`price`);
+
+-- Verified Official Websites
+UPDATE `cafe` SET `website` = 'https://roasterycoffee.co.in/' WHERE `id` = 'c1010001-0000-0000-0000-000000000001';
+UPDATE `cafe` SET `website` = 'https://overflowcoffee.in/' WHERE `id` = 'c1010001-0000-0000-0000-000000000002';
+UPDATE `cafe` SET `website` = 'https://thehazelnutfactory.com/' WHERE `id` IN ('c1010001-0000-0000-0000-000000000003', 'c1010001-0000-0000-0000-000000000020', 'c1010001-0000-0000-0000-000000000021', 'c1010001-0000-0000-0000-000000000022', 'c1010001-0000-0000-0000-000000000023', 'c1010001-0000-0000-0000-000000000024');
+UPDATE `cafe` SET `website` = 'https://chaicoffeecommunity.com/' WHERE `id` = 'c1010001-0000-0000-0000-000000000006';
+UPDATE `cafe` SET `website` = 'https://www.cafehons.com/' WHERE `id` IN ('c1010001-0000-0000-0000-000000000008', 'c1010001-0000-0000-0000-000000000032');
+UPDATE `cafe` SET `website` = 'https://www.cappuccinoblast.in/' WHERE `id` = 'c1010001-0000-0000-0000-000000000009';
+UPDATE `cafe` SET `website` = 'https://mocha.co.in/' WHERE `id` = 'c1010001-0000-0000-0000-000000000010';
+UPDATE `cafe` SET `website` = 'https://nothingbeforecoffee.com/' WHERE `id` IN ('c1010001-0000-0000-0000-000000000018', 'c1010001-0000-0000-0000-000000000027', 'c1010001-0000-0000-0000-000000000028', 'c1010001-0000-0000-0000-000000000029');
+UPDATE `cafe` SET `website` = 'https://thirdwavecoffee.in/' WHERE `id` IN ('c1010001-0000-0000-0000-000000000019', 'c1010001-0000-0000-0000-000000000026');
+
