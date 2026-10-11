@@ -27,12 +27,81 @@ $priceBandLabels = [
       <p class="eyebrow"><?= h($cafe['area_name']) ?><?= empty($cafe['area_city']) ? '' : ' · ' . h($cafe['area_city']) ?></p>
       <h1><?= h($cafe['name']) ?></h1>
       <?php if ($isDemo): ?><span class="badge">Fictional demo</span><?php endif; ?>
-      <p class="intro-copy"><?= h(trim((string) ($cafe['summary'] ?? '')) !== '' ? $cafe['summary'] : 'More details are not recorded yet.') ?></p>
+      <?php if (trim((string) ($cafe['summary'] ?? '')) !== '' && $cafe['summary'] !== 'More details are not recorded yet.'): ?>
+        <p class="intro-copy"><?= h($cafe['summary']) ?></p>
+      <?php endif; ?>
     </header>
 
     <?php if ($isDemo): ?>
       <p class="notice">This is fictional development data. This café and its offerings do not represent a real business.</p>
     <?php endif; ?>
+
+    <!-- Friends' Take Section (Placed at the top) -->
+    <section class="panel friends-take-section">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="section-icon" aria-hidden="true">👥</span>
+          <h2>Friends' Take</h2>
+        </div>
+        <span class="private-badge">Private Circle Notes</span>
+      </div>
+      <p class="section-subtitle">Real experiences and notes from your circle. No commercial star ratings, sponsored reviews, or bot inflation.</p>
+
+      <?php if (empty($friendReviews)): ?>
+        <div class="friend-empty-box">
+          <p class="empty-copy">No notes recorded from your circle for this café yet.</p>
+          <p class="empty-hint">Visited this spot? Share your notes on food quality, vibe, and your must-try recommendation with the circle.</p>
+        </div>
+      <?php else: ?>
+        <div class="friend-reviews-list">
+          <?php foreach ($friendReviews as $review): ?>
+            <article class="friend-review-card">
+              <header class="review-header">
+                <div class="reviewer-meta">
+                  <strong class="friend-name"><?= h($review['friend_name']) ?></strong>
+                  <span class="verified-friend-pill">✓ Circle</span>
+                  <?php if (!empty($review['visit_context'])): ?>
+                    <span class="visit-context">· <?= h($review['visit_context']) ?></span>
+                  <?php endif; ?>
+                </div>
+                <?php if (!empty($review['visited_on'])): ?>
+                  <time class="visited-date" datetime="<?= h($review['visited_on']) ?>"><?= date('M Y', strtotime($review['visited_on'])) ?></time>
+                <?php endif; ?>
+              </header>
+
+              <?php if (!empty($review['must_try_item'])): ?>
+                <div class="must-try-box">
+                  <span class="must-try-label">⭐ Must-Order:</span>
+                  <strong class="must-try-val"><?= h($review['must_try_item']) ?></strong>
+                </div>
+              <?php endif; ?>
+
+              <div class="review-verdicts">
+                <?php if (!empty($review['food_quality_verdict'])): ?>
+                  <div class="verdict-item">
+                    <span class="verdict-label">🥐 Food Quality:</span>
+                    <span><?= h($review['food_quality_verdict']) ?></span>
+                    <?php if (!empty($review['food_variety_rating'])): ?>
+                      <span class="variety-pill"><?= h(ucfirst($review['food_variety_rating'])) ?> variety</span>
+                    <?php endif; ?>
+                  </div>
+                <?php endif; ?>
+                <?php if (!empty($review['ambiance_rating'])): ?>
+                  <div class="verdict-item">
+                    <span class="verdict-label">✨ Vibe:</span>
+                    <span><?= h(ucwords(str_replace('_', ' ', $review['ambiance_rating']))) ?></span>
+                  </div>
+                <?php endif; ?>
+              </div>
+
+              <div class="review-content">
+                <p><?= nl2br(h($review['review_text'])) ?></p>
+              </div>
+            </article>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+    </section>
 
     <!-- Ambiance, Vibes, Food & Price Bar -->
     <div class="detail-atmosphere-bar panel">
@@ -110,70 +179,6 @@ $priceBandLabels = [
         <?php endif; ?>
       </section>
     </div>
-
-    <!-- Friends' Take Section -->
-    <section class="panel friends-take-section">
-      <div class="section-header">
-        <div class="section-title-group">
-          <span class="section-icon" aria-hidden="true">👥</span>
-          <h2>Friends' Take</h2>
-        </div>
-        <span class="private-badge">Private Circle Notes</span>
-      </div>
-      <p class="section-subtitle">Real experiences and notes from your circle. No commercial star ratings, sponsored reviews, or bot inflation.</p>
-
-      <?php if (empty($friendReviews)): ?>
-        <p class="empty-copy">No notes recorded from your circle for this café yet.</p>
-      <?php else: ?>
-        <div class="friend-reviews-list">
-          <?php foreach ($friendReviews as $review): ?>
-            <article class="friend-review-card">
-              <header class="review-header">
-                <div class="reviewer-meta">
-                  <strong class="friend-name"><?= h($review['friend_name']) ?></strong>
-                  <span class="verified-friend-pill">✓ Circle</span>
-                  <?php if (!empty($review['visit_context'])): ?>
-                    <span class="visit-context">· <?= h($review['visit_context']) ?></span>
-                  <?php endif; ?>
-                </div>
-                <?php if (!empty($review['visited_on'])): ?>
-                  <time class="visited-date" datetime="<?= h($review['visited_on']) ?>"><?= date('M Y', strtotime($review['visited_on'])) ?></time>
-                <?php endif; ?>
-              </header>
-
-              <?php if (!empty($review['must_try_item'])): ?>
-                <div class="must-try-box">
-                  <span class="must-try-label">⭐ Must-Order:</span>
-                  <strong class="must-try-val"><?= h($review['must_try_item']) ?></strong>
-                </div>
-              <?php endif; ?>
-
-              <div class="review-verdicts">
-                <?php if (!empty($review['food_quality_verdict'])): ?>
-                  <div class="verdict-item">
-                    <span class="verdict-label">🥐 Food Quality:</span>
-                    <span><?= h($review['food_quality_verdict']) ?></span>
-                    <?php if (!empty($review['food_variety_rating'])): ?>
-                      <span class="variety-pill"><?= h(ucfirst($review['food_variety_rating'])) ?> variety</span>
-                    <?php endif; ?>
-                  </div>
-                <?php endif; ?>
-                <?php if (!empty($review['ambiance_rating'])): ?>
-                  <div class="verdict-item">
-                    <span class="verdict-label">✨ Vibe:</span>
-                    <span><?= h(ucwords(str_replace('_', ' ', $review['ambiance_rating']))) ?></span>
-                  </div>
-                <?php endif; ?>
-              </div>
-
-              <div class="review-content">
-                <p><?= nl2br(h($review['review_text'])) ?></p>
-              </div>
-            </article>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
-    </section>
   </article>
 </main>
 <?php require __DIR__ . '/footer.php'; ?>

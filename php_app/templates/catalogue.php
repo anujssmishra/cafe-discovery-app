@@ -34,6 +34,9 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter, 'vibe' =>
             <div class="card-topline">
               <p class="eyebrow"><?= h($item['area_name']) ?><?= empty($item['area_city']) ? '' : ' · ' . h($item['area_city']) ?></p>
               <div class="card-pills">
+                <?php if (!empty($item['friend_review_count']) && (int) $item['friend_review_count'] > 0): ?>
+                  <span class="circle-pill" title="Reviewed by friends">👥 Circle pick</span>
+                <?php endif; ?>
                 <?php if (!empty($item['price_band'])): ?>
                   <span class="price-band-badge price-<?= h($item['price_band']) ?>" title="Spend tier: <?= h(ucfirst($item['price_band'])) ?>">
                     <?= $item['price_band'] === 'budget' ? '₹' : ($item['price_band'] === 'premium' ? '₹₹₹' : '₹₹') ?>
@@ -43,7 +46,9 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter, 'vibe' =>
               </div>
             </div>
             <h3><a href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>"><?= h($item['name']) ?></a></h3>
-            <p class="card-summary"><?= h(trim((string) ($item['summary'] ?? '')) !== '' ? $item['summary'] : 'More details are not recorded yet.') ?></p>
+            <?php if (trim((string) ($item['summary'] ?? '')) !== '' && $item['summary'] !== 'More details are not recorded yet.'): ?>
+              <p class="card-summary"><?= h($item['summary']) ?></p>
+            <?php endif; ?>
             <?php if (!empty($item['vibe_tags'])): ?>
               <div class="vibe-tags-container">
                 <?php foreach (array_map('trim', explode(',', $item['vibe_tags'])) as $vTag): ?>
@@ -54,6 +59,9 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter, 'vibe' =>
             <?php if (!empty($item['food_highlights'])): ?>
               <p class="card-food-line"><span aria-hidden="true">🥐 </span><strong>Food:</strong> <?= h($item['food_highlights']) ?></p>
             <?php endif; ?>
+            <?php if (!empty($item['friend_review_count']) && (int) $item['friend_review_count'] > 0): ?>
+              <p class="friend-take-indicator"><span aria-hidden="true">👥 </span><strong>Friends' Take:</strong> <?= (int) $item['friend_review_count'] ?> <?= (int) $item['friend_review_count'] === 1 ? 'review' : 'reviews' ?> from your circle</p>
+            <?php endif; ?>
             <?php
             $itemCoords = isset($item['latitude'], $item['longitude']) && is_numeric($item['latitude']) && is_numeric($item['longitude']);
             $itemMapUrl = $itemCoords
@@ -61,9 +69,6 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter, 'vibe' =>
                 : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($item['name'] . ', ' . ($item['address'] ?? '') . ', ' . ($item['area_name'] ?? ''));
             ?>
             <p class="address address-container"><?php if (trim((string) ($item['address'] ?? '')) !== ''): ?><a class="address-link" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer"><?= h($item['address']) ?></a><a class="mini-btn" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer" title="Open in Maps"><span aria-hidden="true">📍 </span>Maps ↗</a><?php else: ?>Address not recorded<?php endif; ?></p>
-            <?php if (!empty($item['friend_review_count']) && (int) $item['friend_review_count'] > 0): ?>
-              <p class="friend-take-indicator"><span aria-hidden="true">👥 </span><strong>Friends' Take:</strong> <?= (int) $item['friend_review_count'] ?> <?= (int) $item['friend_review_count'] === 1 ? 'review' : 'reviews' ?> from your circle</p>
-            <?php endif; ?>
             <p class="evidence-line"><span>Ownership:</span> <?= h(catalogue_ownership($item)) ?></p>
             <a class="detail-link" href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>">View details<span class="sr-only"> for <?= h($item['name']) ?></span><span aria-hidden="true"> →</span></a>
           </article>
