@@ -174,18 +174,55 @@ $priceBandLabels = [
         <?php if (!$offerings): ?>
           <p class="empty-copy">No offerings have been recorded yet.</p>
         <?php else: ?>
-          <div class="table-scroll" tabindex="0" role="region" aria-label="Recorded offerings table">
+          <!-- Mobile-Optimized List View (Shown on screens <= 600px) -->
+          <div class="offerings-mobile-list" aria-label="Recorded offerings list">
+            <?php foreach ($offerings as $offering): ?>
+              <?php
+              $offeringEvidence = catalogue_evidence($offering['source'] ?? null, $offering['checked_on'] ?? null, $isDemo);
+              $drinkName = trim((string) ($offering['drink_type'] ?? '')) !== '' ? ucwords(str_replace('_', ' ', $offering['drink_type'])) : 'Unknown';
+              $brewMethod = trim((string) ($offering['brewing_method'] ?? '')) !== '' ? $offering['brewing_method'] : 'Unknown';
+              $rawCurrency = trim((string) ($offering['currency'] ?? ''));
+              $currSymbol = ($rawCurrency === 'INR' || $rawCurrency === '') ? '₹' : $rawCurrency . ' ';
+              $formattedPrice = ($offering['price'] ?? null) === null ? 'Unknown' : $currSymbol . number_format((float) $offering['price'], 0);
+              ?>
+              <div class="offering-mobile-card">
+                <div class="offering-mobile-header">
+                  <strong class="offering-mobile-name"><?= h($drinkName) ?></strong>
+                  <span class="offering-mobile-price"><?= h($formattedPrice) ?></span>
+                </div>
+                <div class="offering-mobile-body">
+                  <span class="offering-mobile-method">⚙ <?= h($brewMethod) ?></span>
+                  <span class="offering-mobile-evidence">
+                    <?php if ($offeringEvidence['complete']): ?>
+                      📋 <?= h($offeringEvidence['source']) ?><?= $offeringEvidence['date'] !== '' ? ' (' . h($offeringEvidence['date']) . ')' : '' ?>
+                    <?php else: ?>
+                      📋 Evidence incomplete
+                    <?php endif; ?>
+                  </span>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          </div>
+
+          <!-- Desktop Table View (Shown on screens > 600px) -->
+          <div class="table-scroll offerings-desktop-table" tabindex="0" role="region" aria-label="Recorded offerings table">
             <table>
               <caption class="sr-only">Drinks, brewing methods, prices and verification</caption>
               <thead><tr><th scope="col">Drink</th><th scope="col">Method</th><th scope="col">Price</th><th scope="col">Evidence</th></tr></thead>
               <tbody>
                 <?php foreach ($offerings as $offering): ?>
-                  <?php $offeringEvidence = catalogue_evidence($offering['source'] ?? null, $offering['checked_on'] ?? null, $isDemo); ?>
+                  <?php
+                  $offeringEvidence = catalogue_evidence($offering['source'] ?? null, $offering['checked_on'] ?? null, $isDemo);
+                  $drinkName = trim((string) ($offering['drink_type'] ?? '')) !== '' ? ucwords(str_replace('_', ' ', $offering['drink_type'])) : 'Unknown';
+                  $rawCurrency = trim((string) ($offering['currency'] ?? ''));
+                  $currSymbol = ($rawCurrency === 'INR' || $rawCurrency === '') ? '₹' : $rawCurrency . ' ';
+                  $formattedPrice = ($offering['price'] ?? null) === null ? 'Unknown' : $currSymbol . number_format((float) $offering['price'], 2, '.', '');
+                  ?>
                   <tr>
-                    <th scope="row"><?= h(trim((string) ($offering['drink_type'] ?? '')) !== '' ? str_replace('_', ' ', $offering['drink_type']) : 'Unknown') ?></th>
-                    <td><?= h(trim((string) ($offering['brewing_method'] ?? '')) !== '' ? $offering['brewing_method'] : 'Unknown') ?></td>
-                    <td class="price"><?php if (($offering['price'] ?? null) === null): ?>Unknown<?php else: ?><?= h(trim((string) ($offering['currency'] ?? '')) !== '' ? $offering['currency'] : 'Currency unknown') ?> <?= h(number_format((float) $offering['price'], 2, '.', '')) ?><?php endif; ?></td>
-                    <td><?php if ($offeringEvidence['complete']): ?><?= h($offeringEvidence['source']) ?><br><span class="muted"><?= $offeringEvidence['current'] ? 'Checked ' : 'Historical check: ' ?><?= h($offeringEvidence['date']) ?></span><?php else: ?>Unknown<?php if ($offeringEvidence['source'] !== ''): ?><br><span class="muted">Recorded source: <?= h($offeringEvidence['source']) ?>; evidence incomplete</span><?php endif; ?><?php endif; ?></td>
+                    <th scope="row" class="drink-cell"><?= h($drinkName) ?></th>
+                    <td class="method-cell"><?= h(trim((string) ($offering['brewing_method'] ?? '')) !== '' ? $offering['brewing_method'] : 'Unknown') ?></td>
+                    <td class="price price-cell"><?= h($formattedPrice) ?></td>
+                    <td class="evidence-cell"><?php if ($offeringEvidence['complete']): ?><?= h($offeringEvidence['source']) ?><br><span class="muted"><?= $offeringEvidence['current'] ? 'Checked ' : 'Historical check: ' ?><?= h($offeringEvidence['date']) ?></span><?php else: ?>Unknown<?php if ($offeringEvidence['source'] !== ''): ?><br><span class="muted">Recorded source: <?= h($offeringEvidence['source']) ?>; evidence incomplete</span><?php endif; ?><?php endif; ?></td>
                   </tr>
                 <?php endforeach; ?>
               </tbody>
