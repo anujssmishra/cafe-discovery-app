@@ -42,6 +42,7 @@ Anuj owns product ordering. Developers refine and select feasible work against t
 | CAFE-117 | Align card Website button cleanly beside Maps button in address row | Frontend | Done | Commit `45de1b4`, `catalogue.php`, `.mini-btn.website-btn` |
 | CAFE-118 | Mobile UX optimization: 16px form controls (no iOS auto-zoom) & momentum touch scroll | Frontend | Done | Commit `1f692e2`, `site.css?v=sprint5.1`, `header.php` |
 | CAFE-119 | Hostinger production resilience: `config/local.php` loader & LiteSpeed env fallbacks | Ops / Root | Done | Commit `45de1b4`, `config.php`, live HTTP 200 on `myfanverse.in` |
+| CAFE-120 | Responsive mobile card list for drink offerings (replacing cramped table on <= 600px) | Frontend / Anuj | Done | Commit `54eb82b`, `cafe_detail.php`, `site.css?v=sprint5.2` |
 
 ## 2.2 Previous Sprint: Sprint 3 (Friend-Informed Discovery & Private Circles)
 

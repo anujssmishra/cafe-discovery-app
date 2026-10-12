@@ -6,7 +6,7 @@ Updated: 2026-10-12. Transfer context through source and evidence, not credentia
 
 - **Live Production URL:** `https://myfanverse.in` (Hostinger Single Web Hosting, account `u493193058`, PHP 8.3 + LiteSpeed + MariaDB).
 - **Domain Isolation:** Sibling subdomains (`sitascanvas.myfanverse.in` and `anujssmishra.myfanverse.in`) remain untouched in their respective subdirectories.
-- **Active Tech Stack:** Native PHP 8.2+ with MariaDB (InnoDB, utf8mb4), PDO prepared statements, vanilla semantic HTML5 & responsive CSS (`site.css?v=sprint5.1`). Zero build step, zero client framework overhead.
+- **Active Tech Stack:** Native PHP 8.2+ with MariaDB (InnoDB, utf8mb4), PDO prepared statements, vanilla semantic HTML5 & responsive CSS (`site.css?v=sprint5.2`). Zero build step, zero client framework overhead.
 - **Security Posture:** Dedicated `config/local.php` private configuration loader (`includes/config.php`), strictly isolated outside public git history, supporting server-level fallbacks.
 - **Live Pilot Dataset:** 32 verified specialty café locations across 9 Lucknow neighbourhoods (Gomti Nagar, Hazratganj, Sushant Golf City, Mall Avenue, Cantonment, Badshahnagar, Aliganj, Nirala Nagar, Indira Nagar).
 - **Visual Ambiance & Media:** Real-world interior, garden, and seating ambiance photos and hero banners populated across all 32 cafés (verified from local publications and field research).
@@ -19,7 +19,7 @@ Updated: 2026-10-12. Transfer context through source and evidence, not credentia
   - **Friends' Take (Private Circle Notes)** hero placement at the top of café details with verified must-orders and food quality verdicts
   - Circle pick indicator badges on catalogue cards
   - `/circles/` hub with WhatsApp invite sharing and on-demand Google review import
-  - Mobile optimizations: 16px form controls (no iOS auto-zoom), momentum touch scroll, responsive cards
+  - Mobile optimizations: 16px form controls (no iOS auto-zoom), momentum touch scroll, responsive cards, and clean mobile offerings card list replacing cramped tables on small screens (commit `54eb82b`)
   - Full UUID detail views (`/cafes/{uuid}/`) with drink offerings and provenance
   - Friendly 404 / 503 error handling with operator diagnostic mode (`?diag=lucknow`)
 
