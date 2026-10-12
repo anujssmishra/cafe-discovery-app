@@ -51,7 +51,7 @@ $priceBandLabels = [
     <?php endif; ?>
 
     <!-- Friends' Take Section (Placed at the top) -->
-    <section class="panel friends-take-section">
+    <section class="panel friends-take-section" id="friends-take">
       <div class="section-header">
         <div class="section-title-group">
           <span class="section-icon" aria-hidden="true">👥</span>
@@ -61,10 +61,16 @@ $priceBandLabels = [
       </div>
       <p class="section-subtitle">Real experiences and notes from your circle. No commercial star ratings, sponsored reviews, or bot inflation.</p>
 
+      <?php if (!empty($message)): ?>
+        <div class="notice" style="background:#e8f5e9; border-color:#81c784; color:#1b5e20; margin-bottom:1.25rem;">
+          <p style="margin:0; font-weight:650;">✓ <?= h($message) ?></p>
+        </div>
+      <?php endif; ?>
+
       <?php if (empty($friendReviews)): ?>
         <div class="friend-empty-box">
           <p class="empty-copy">No notes recorded from your circle for this café yet.</p>
-          <p class="empty-hint">Visited this spot? Have a Google Maps review? <a href="<?= h(app_url('/circles/')) ?>">Auto-match your Google review</a> or invite your friends.</p>
+          <p class="empty-hint">Visited this spot? Have a Google Maps review? <a href="<?= h(app_url('/circles/')) ?>">Auto-match your Google review</a> or post a quick note below.</p>
         </div>
       <?php else: ?>
         <div class="friend-reviews-list">
@@ -119,6 +125,48 @@ $priceBandLabels = [
           <?php endforeach; ?>
         </div>
       <?php endif; ?>
+
+      <!-- Inline Circle Note Submission Form -->
+      <div class="inline-note-form-box">
+        <h3 style="font-size:1.1rem; margin-bottom:0.3rem;"><span aria-hidden="true">✍️ </span>Add a Note to Your Circle</h3>
+        <p class="muted" style="margin-bottom:1rem; font-size:0.85rem;">Post your recommendation or order tips directly to <strong><?= h($session['circle_name'] ?? 'Lucknow Coffee Circle') ?></strong>.</p>
+
+        <form method="post" action="<?= h(app_url('/cafes/' . $cafe['id'] . '/note')) ?>" class="inline-review-form">
+          <input type="hidden" name="cafe_id" value="<?= h($cafe['id']) ?>">
+          <div class="inline-note-form-grid">
+            <div class="form-field">
+              <label for="note-friend-name">Your Name</label>
+              <input id="note-friend-name" name="friend_name" type="text" maxlength="80" value="<?= h($session['member_name'] !== 'Guest' ? $session['member_name'] : '') ?>" placeholder="e.g. Anuj" required>
+            </div>
+            <div class="form-field">
+              <label for="note-visit-context">Visit Context / Time</label>
+              <input id="note-visit-context" name="visit_context" type="text" maxlength="80" placeholder="e.g. Work Session, Sunday Brunch">
+            </div>
+          </div>
+
+          <div class="inline-note-form-grid">
+            <div class="form-field">
+              <label for="note-must-try">Must-Order Food / Drink Pick</label>
+              <input id="note-must-try" name="must_try" type="text" maxlength="120" placeholder="e.g. Cold Brew & Almond Croissant">
+            </div>
+            <div class="form-field">
+              <label for="note-rating">Overall Vibe Score</label>
+              <select id="note-rating" name="rating">
+                <option value="5" selected>⭐⭐⭐⭐⭐ 5/5 - Outstanding</option>
+                <option value="4">⭐⭐⭐⭐ 4/5 - Good Spot</option>
+                <option value="3">⭐⭐⭐ 3/5 - Average</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field" style="margin-bottom: 1rem;">
+            <label for="note-text">Recommendation Note / Experience</label>
+            <textarea id="note-text" name="review_text" rows="3" maxlength="1000" placeholder="What makes this café worth visiting? Seating comfort, quiet corners, wifi speed, signature brews..." required style="width:100%; border:1px solid #9cae9e; border-radius:.45rem; padding:.7rem; font-family:inherit; font-size:16px;"></textarea>
+          </div>
+
+          <button type="submit" class="button" style="min-height:44px;"><span aria-hidden="true">💬 </span>Post Note to Circle</button>
+        </form>
+      </div>
     </section>
 
     <!-- Ambiance, Vibes, Food & Price Bar -->

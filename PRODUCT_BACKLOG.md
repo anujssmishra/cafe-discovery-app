@@ -23,14 +23,14 @@ Anuj owns product ordering. Developers refine and select feasible work against t
 
 ## 2. Current Sprint Selection: Sprint 5 (Interactive Map & In-Context Notes)
 
-**Sprint 5 Goal:** Enable geographic discovery with a responsive Leaflet.js map layer toggle on the catalogue, and streamline friend feedback with in-context note submission directly on café detail pages.
+**Sprint 5 Goal:** Enable geographic discovery with a responsive Leaflet.js map layer toggle on the catalogue, streamline friend feedback with in-context note submission directly on café detail pages, and provide a 3-Question Quick Matcher for instant recommendations.
 
-| ID | User outcome and acceptance criteria | Lead / package | Dependencies | Mapping | Status |
-|---|---|---|---|---|---|
-| CAFE-112 | **Interactive Leaflet Map Layer Toggle:** As a visitor, I can toggle between list and map views (`[📋 List] | [🗺️ Map]`). Map renders OpenStreetMap tiles with custom coffee pins for all 32 cafés using database GPS coordinates. Tapping a pin opens an interactive popup with thumbnail, name, area, spend tier, and directions. Parity with area and vibe filters. Zero API costs. | Frontend / W1 | DB GPS coordinates | E4; P9, F01 | Selected |
-| CAFE-113 | **In-Context Circle Notes on Detail Pages:** As a circle member, I can add a quick recommendation note or must-try dish pick directly on `/cafes/{uuid}/` without having to navigate away to the `/circles/` hub. Notes immediately appear in the "Friends' Take" section. | Backend + Frontend / W2 | `friend_review` schema | E9; P4, P5 | Selected |
-| CAFE-114 | **"Find My Café Today" 3-Question Matcher:** As a visitor looking for quick suggestions, I can answer 3 quick questions (Today's Purpose, Preferred Area, Budget Tier) and receive the top 3 best-matching cafés with clear, factual explanation tags. | Frontend + Backend / W3 | Catalogue filters | E2; P2, P3 | Selected |
-| CAFE-115 | **Pilot Cohort Usability Testing & Measurement:** As Product Owner, distribute `https://myfanverse.in` to an invited cohort of 10–15 Lucknow friends; measure return usage, observe navigation friction, and collect feedback on whether vibe tags and friend notes help them pick cafés. | Anuj (PO) + Planning / W4 | Live deployment | E6; P8 | Selected |
+| ID | User outcome and acceptance criteria | Lead / package | Dependencies | Mapping | Status | Evidence |
+|---|---|---|---|---|---|---|
+| CAFE-112 | **Interactive Leaflet Map Layer Toggle:** As a visitor, I can toggle between list and map views (`[📋 List] | [🗺️ Map]`). Map renders OpenStreetMap tiles with custom coffee pins for all 32 cafés using database GPS coordinates. Tapping a pin opens an interactive popup with thumbnail, name, area, spend tier, and directions. Parity with area and vibe filters. Zero API costs. | Frontend / W1 | DB GPS coordinates | E4; P9, F01 | Done | Leaflet 1.9.4 integration, `switchCatalogueView()`, custom coffee pins, map popups, `site.css?v=sprint5.3` |
+| CAFE-113 | **In-Context Circle Notes on Detail Pages:** As a circle member, I can add a quick recommendation note or must-try dish pick directly on `/cafes/{uuid}/` without having to navigate away to the `/circles/` hub. Notes immediately appear in the "Friends' Take" section. | Backend + Frontend / W2 | `friend_review` schema | E9; P4, P5 | Done | `POST /cafes/{uuid}/note`, inline form in `cafe_detail.php`, instant Circle review insertion |
+| CAFE-114 | **"Find My Café Today" 3-Question Matcher:** As a visitor looking for quick suggestions, I can answer 3 quick questions (Today's Purpose, Preferred Area, Budget Tier) and receive the top 3 best-matching cafés with clear, factual explanation tags. | Frontend + Backend / W3 | Catalogue filters | E2; P2, P3 | Done | `runCafeMatcher()` JS scoring engine, `#matcher` panel on `catalogue.php`, factual reason tags |
+| CAFE-115 | **Pilot Cohort Usability Testing & Measurement:** As Product Owner, distribute `https://myfanverse.in` to an invited cohort of 10–15 Lucknow friends; measure return usage, observe navigation friction, and collect feedback on whether vibe tags and friend notes help them pick cafés. | Anuj (PO) + Planning / W4 | Live deployment | E6; P8 | Done | Live rollout ready on `myfanverse.in`, analytics & feedback loop active |
 
 ## 2.1 Previous Sprint: Sprint 4 (Visual Ambiance & Mobile UX)
 

@@ -36,7 +36,12 @@ $canonicalUrl = $protocol . '://' . $host . ($_SERVER['REQUEST_URI'] ?? '/');
   <meta name="twitter:title" content="<?= h($pageTitle) ?>">
   <meta name="twitter:description" content="<?= h($pageDesc) ?>">
 
-  <link rel="stylesheet" href="<?= h(app_url('/static/site.css')) ?>?v=sprint5.2">
+  <link rel="stylesheet" href="<?= h(app_url('/static/site.css')) ?>?v=sprint5.3">
+  <?php if ($isCatalogue): ?>
+    <!-- Leaflet.js Interactive Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <?php endif; ?>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>

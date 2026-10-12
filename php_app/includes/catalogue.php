@@ -62,6 +62,42 @@ function catalogue_page(PDO $pdo, array $filters, bool $demoMode): array
     ];
 }
 
+function catalogue_all_cafes(PDO $pdo, array $filters, bool $demoMode): array
+{
+    $where = 'c.is_active = 1 AND a.is_active = 1';
+    $params = [];
+    if (!$demoMode) {
+        $where .= ' AND c.is_demo = 0';
+    }
+    if ($filters['q'] !== '') {
+        $where .= " AND c.name LIKE :q ESCAPE '!'";
+        $params[':q'] = '%' . strtr($filters['q'], ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
+    }
+    if ($filters['area'] !== '') {
+        $where .= ' AND a.slug = :area';
+        $params[':area'] = $filters['area'];
+    }
+    if (!empty($filters['vibe']) && isset(VIBE_OPTIONS[$filters['vibe']])) {
+        $where .= " AND c.vibe_tags LIKE :vibe ESCAPE '!'";
+        $params[':vibe'] = '%' . strtr(VIBE_OPTIONS[$filters['vibe']]['search'], ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
+    }
+
+    $friendCountExpr = '0 AS friend_review_count';
+    try {
+        $tableCheck = $pdo->query("SHOW TABLES LIKE 'friend_review'");
+        if ($tableCheck && $tableCheck->rowCount() > 0) {
+            $friendCountExpr = '(SELECT COUNT(*) FROM friend_review fr WHERE fr.cafe_id = c.id AND fr.is_verified_friend = 1) AS friend_review_count';
+        }
+    } catch (Throwable) {
+        $friendCountExpr = '0 AS friend_review_count';
+    }
+
+    $statement = $pdo->prepare('SELECT c.id, c.name, c.latitude, c.longitude, c.address, c.price_band, c.photo_url, c.vibe_tags, c.food_highlights, c.summary, a.name AS area_name, a.city AS area_city, a.slug AS area_slug, '
+        . $friendCountExpr . ' FROM cafe c JOIN area a ON c.area_id = a.id WHERE ' . $where . ' ORDER BY c.name ASC');
+    $statement->execute($params);
+    return $statement->fetchAll();
+}
+
 function catalogue_detail(PDO $pdo, string $id, bool $demoMode): array|false
 {
     $statement = $pdo->prepare('SELECT c.*, a.name AS area_name, a.city AS area_city

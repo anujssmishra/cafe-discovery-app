@@ -55,6 +55,7 @@ try {
                 $session = circle_get_current_session($pdo);
                 $result = catalogue_page($pdo, $filters, $config['demo_mode']);
                 $cafes = $result['cafes'];
+                $allCafes = catalogue_all_cafes($pdo, $filters, $config['demo_mode']);
                 $pagination = $result['pagination'];
                 $areaSql = 'SELECT a.* FROM area a WHERE a.is_active = 1';
                 if (!$config['demo_mode']) {
@@ -142,6 +143,23 @@ try {
             $count = circle_import_google_reviews($pdo, $session['circle_id'], $memberName, $reviewIds);
             header('Location: ' . app_url('/circles/', ['msg' => "Successfully imported {$count} Google " . ($count === 1 ? 'review' : 'reviews') . " into {$session['circle_name']}!"]));
             exit;
+        } elseif (preg_match('~^cafes/([^/]+)/note$~D', $path, $matches) && $method === 'POST' && valid_cafe_id($matches[1])) {
+            $pdo = db_connect($config);
+            $session = circle_get_current_session($pdo);
+            $cafeId = $matches[1];
+            $friendName = trim((string) ($_POST['friend_name'] ?? ($session['member_name'] !== 'Guest' ? $session['member_name'] : 'Circle Friend')));
+            $reviewText = trim((string) ($_POST['review_text'] ?? ''));
+            $rating = max(1, min(5, (int) ($_POST['rating'] ?? 5)));
+            $mustTry = trim((string) ($_POST['must_try'] ?? ''));
+            $context = trim((string) ($_POST['visit_context'] ?? ''));
+
+            if ($cafeId !== '' && $reviewText !== '' && $friendName !== '') {
+                circle_add_direct_review($pdo, $session['circle_id'], $cafeId, $friendName, $reviewText, $rating, $mustTry, $context);
+                header('Location: ' . app_url('/cafes/' . $cafeId . '/', ['msg' => 'Note added to ' . $session['circle_name'] . '!']) . '#friends-take');
+                exit;
+            }
+            header('Location: ' . app_url('/cafes/' . $cafeId . '/', ['msg' => 'Please provide a valid name and recommendation note.']) . '#friends-take');
+            exit;
         } elseif (preg_match('~^cafes/([^/]+)$~D', $path, $matches) && valid_cafe_id($matches[1])) {
             $pdo = db_connect($config);
             $session = circle_get_current_session($pdo);
@@ -151,6 +169,7 @@ try {
                 $statement->execute([':id' => $cafe['id']]);
                 $offerings = $statement->fetchAll();
                 $friendReviews = catalogue_friend_reviews($pdo, $cafe['id'], $session['circle_id'] ?? null);
+                $message = (string) ($_GET['msg'] ?? '');
                 require $templateDir . '/cafe_detail.php';
             } else {
                 $statusCode = 404;
