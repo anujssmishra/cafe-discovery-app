@@ -50,7 +50,7 @@ $hasBranchTag = ($branchTag !== $cafe['name']);
       <section class="panel branch-selector-box" style="margin-bottom: 1.5rem; background: #edf4eb; border: 1px solid #cadbc6; border-left: 4px solid var(--green);">
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.85rem;">
           <div>
-            <p class="eyebrow" style="margin-bottom:0.2rem; color:var(--green);">Multi-Branch Café (<?= count($branches) ?> Branches in Lucknow)</p>
+            <p class="eyebrow" style="margin-bottom:0.2rem; color:var(--green);">Multi-Branch Café Locations</p>
             <h3 style="margin:0; font-size:1.1rem; color:var(--ink);"><span aria-hidden="true">📍 </span>Select Branch Location</h3>
             <p class="muted" style="margin:0; font-size:0.85rem;">Choose a branch to view location address, directions, and menu offerings.</p>
           </div>

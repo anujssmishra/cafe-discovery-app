@@ -44,7 +44,7 @@ function catalogue_group_cafes_by_brand(array $rawCafes): array
 
         if ($branchCount > 1) {
             $brandItem['name'] = $brandItem['brand_name'];
-            $brandItem['area_display'] = $branchCount . ' branches in Lucknow (' . implode(', ', array_slice($brandItem['branch_areas'], 0, 4)) . (count($brandItem['branch_areas']) > 4 ? '...' : '') . ')';
+            $brandItem['area_display'] = implode(', ', array_slice($brandItem['branch_areas'], 0, 5)) . (count($brandItem['branch_areas']) > 5 ? '...' : '');
         } else {
             $brandItem['area_display'] = $brandItem['area_name'] . (!empty($brandItem['area_city']) ? ' · ' . $brandItem['area_city'] : '');
         }
