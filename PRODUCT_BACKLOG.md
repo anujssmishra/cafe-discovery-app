@@ -21,21 +21,42 @@ Anuj owns product ordering. Developers refine and select feasible work against t
 | E8: PHP Architecture & Hostinger Deployment | Rebuild catalogue in PHP/MySQL and deploy live to Hostinger shared hosting | D12 | CAFE-101–105 |
 | E9: Friend-Driven Discovery & Private Circles | Discover cafés by vibe, food variety/quality, price tier, and trusted friends' reviews | D13, D14 | CAFE-106–112 |
 
-## 2. Current Sprint Selection: Sprint 3 (Friend-Informed Discovery & Private Circles)
+## 2. Current Sprint Selection: Sprint 5 (Interactive Map & In-Context Notes)
 
-**Sprint 3 Goal:** Deliver the user-requested café evaluation factors identified in primary user research: Ambiance & Aesthetics ("Vibes"), Food Variety & Quality highlights, Indicative Price Bands, and "Friends' Take" trusted private reviews (zero public aggregator spam).
+**Sprint 5 Goal:** Enable geographic discovery with a responsive Leaflet.js map layer toggle on the catalogue, and streamline friend feedback with in-context note submission directly on café detail pages.
 
 | ID | User outcome and acceptance criteria | Lead / package | Dependencies | Mapping | Status |
 |---|---|---|---|---|---|
-| CAFE-106 | **Ambiance & Aesthetics Taxonomy ("Vibes"):** As a visitor, I can see clear vibe/ambiance badges on café cards (e.g. `Work & Study`, `Aesthetic / Cozy`, `Garden / Outdoor`, `Minimalist / Quiet`, `Lively / Social`, `Date Spot`) and filter by vibe so I know the atmosphere before visiting. Public catalogue queries support vibe filtering. | Backend + Frontend / W1 | Database schema | E9; P2, F03 | In Review |
-| CAFE-107 | **Food Highlights & Menu Variety Badges:** As a visitor, I can quickly tell what food variety and quality the café offers (e.g. `Fresh Bakery`, `Artisan Sourdough`, `Specialty Desserts`, `Vegan Friendly`, `All-Day Brunch`) on catalogue cards and detailed menu food previews on the detail page. | Backend + Frontend / W2 | CAFE-106 | E9; P1, P7 | In Review |
-| CAFE-108 | **Price Band & Affordability Indicator:** As a visitor, I can see a simple price band (`₹` budget under ₹150, `₹₹` moderate ₹150-₹300, `₹₹₹` specialty/premium ₹300+) derived from typical coffee and food spend, allowing quick budget alignment. | Backend + Frontend / W2 | 106 | E9; P2 | In Review |
-| CAFE-109 | **"Friends' Take" / Private Circle Reviews System:** As a visitor, I can view trusted notes, must-order recommendations, and ambiance/food verdicts from verified friends/private circle, rather than noisy, unverified public reviews or 5-star rating aggregators. New `friend_review` table created; detail page renders a dedicated "Friends' Take" section; zero public spam. | Backend + Frontend / W3 | Database migration | E9; P4, P5, F05 | In Review |
-| CAFE-110 | **Lucknow Pilot Dataset Enrichment:** As Product Owner, all 19 Lucknow pilot cafés are enriched with verified vibe tags, food highlights, price bands, and initial trusted circle recommendations based on real Lucknow field visits. | Anuj (Curator) / W4 | CAFE-106–109 | E9; Pilot | Done |
-| CAFE-111 | **Hostinger Database Migration & Verification:** As operations maintainer, an idempotent SQL migration script (`migration_sprint3_vibes_and_friends.sql`) is provided for Hostinger phpMyAdmin to add the new tables and columns to MariaDB without data loss on live `myfanverse.in`. | Operations / W5 | CAFE-106, 109 | E9; Release | Done |
-| CAFE-112 | **Interactive Leaflet Map Layer (Toggle):** As a visitor, I can toggle an interactive map view showing the cafés with custom coffee-cup markers using their already-stored GPS coordinates, maintaining parity with list filters and gracefully falling back to list mode. | Frontend / W6 | Catalogue coordinates | E4; P9, F01 | Backlog |
+| CAFE-112 | **Interactive Leaflet Map Layer Toggle:** As a visitor, I can toggle between list and map views (`[📋 List] | [🗺️ Map]`). Map renders OpenStreetMap tiles with custom coffee pins for all 32 cafés using database GPS coordinates. Tapping a pin opens an interactive popup with thumbnail, name, area, spend tier, and directions. Parity with area and vibe filters. Zero API costs. | Frontend / W1 | DB GPS coordinates | E4; P9, F01 | Selected |
+| CAFE-113 | **In-Context Circle Notes on Detail Pages:** As a circle member, I can add a quick recommendation note or must-try dish pick directly on `/cafes/{uuid}/` without having to navigate away to the `/circles/` hub. Notes immediately appear in the "Friends' Take" section. | Backend + Frontend / W2 | `friend_review` schema | E9; P4, P5 | Selected |
+| CAFE-114 | **"Find My Café Today" 3-Question Matcher:** As a visitor looking for quick suggestions, I can answer 3 quick questions (Today's Purpose, Preferred Area, Budget Tier) and receive the top 3 best-matching cafés with clear, factual explanation tags. | Frontend + Backend / W3 | Catalogue filters | E2; P2, P3 | Selected |
+| CAFE-115 | **Pilot Cohort Usability Testing & Measurement:** As Product Owner, distribute `https://myfanverse.in` to an invited cohort of 10–15 Lucknow friends; measure return usage, observe navigation friction, and collect feedback on whether vibe tags and friend notes help them pick cafés. | Anuj (PO) + Planning / W4 | Live deployment | E6; P8 | Selected |
 
-## 2.1 Previous Sprint: Sprint 2 (PHP Pivot & Hostinger Deployment)
+## 2.1 Previous Sprint: Sprint 4 (Visual Ambiance & Mobile UX)
+
+**Sprint 4 Goal:** Populate real-world interior and seating photography across all 32 cafés, refine dual-action button ergonomics, and optimize mobile viewport touch experience.
+
+| ID | User outcome | Lead / package | Status | Evidence |
+|---|---|---|---|---|
+| CAFE-116 | Exact real-world photography and hero banners for 32 Lucknow cafés | Backend / Anuj | Done | Commit `057a4e2`, `lucknow_cafes.sql`, `migration_sprint5_cafe_photos.sql` |
+| CAFE-117 | Align card Website button cleanly beside Maps button in address row | Frontend | Done | Commit `45de1b4`, `catalogue.php`, `.mini-btn.website-btn` |
+| CAFE-118 | Mobile UX optimization: 16px form controls (no iOS auto-zoom) & momentum touch scroll | Frontend | Done | Commit `1f692e2`, `site.css?v=sprint5.1`, `header.php` |
+| CAFE-119 | Hostinger production resilience: `config/local.php` loader & LiteSpeed env fallbacks | Ops / Root | Done | Commit `45de1b4`, `config.php`, live HTTP 200 on `myfanverse.in` |
+
+## 2.2 Previous Sprint: Sprint 3 (Friend-Informed Discovery & Private Circles)
+
+**Sprint 3 Goal:** Deliver the user-requested café evaluation factors: Ambiance & Aesthetics ("Vibes"), Food Variety & Quality highlights, Indicative Price Bands, and "Friends' Take" trusted private reviews.
+
+| ID | User outcome | Lead / package | Status | Evidence |
+|---|---|---|---|---|
+| CAFE-106 | Ambiance & Aesthetics Taxonomy ("Vibes") & filter dropdown | Backend + Frontend | Done | Vibe schema, filter dropdown, `.vibe-tag` badges |
+| CAFE-107 | Food Highlights & Menu Variety Badges on cards and details | Backend + Frontend | Done | Food highlights column, `.card-food-line`, detail food bar |
+| CAFE-108 | Price Band & Affordability Indicator (`₹`, `₹₹`, `₹₹₹`) | Backend + Frontend | Done | Spend tier badges (`.price-budget`, `.price-moderate`, `.price-premium`) |
+| CAFE-109 | "Friends' Take" / Private Circle Reviews System & `/circles/` hub | Backend + Frontend | Done | `friend_review` table, WhatsApp invite pill, Google review importer |
+| CAFE-110 | Lucknow Pilot Dataset Enrichment (expanded to 32 verified cafés) | Anuj (Curator) | Done | 32 verified cafés across 9 Lucknow neighbourhoods |
+| CAFE-111 | Hostinger Database Migration & Verification | Ops | Done | `migration_sprint3_vibes_and_friends.sql` executed |
+
+## 2.3 Previous Sprint: Sprint 2 (PHP Pivot & Hostinger Deployment)
 
 **Sprint 2 Goal:** Rebuild the catalogue features in lightweight PHP/MySQL, seed 19 Lucknow cafés, and deploy to Hostinger Shared Hosting (`myfanverse.in`).
 

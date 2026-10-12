@@ -1,12 +1,12 @@
 # Agile Delivery Plan
 
-Last updated: 2026-10-11. Status: Sprint 2 (PHP/MySQL Catalogue) is deployed and verified live on Hostinger (`myfanverse.in`). Active Sprint 3 implements friend-informed discovery (Vibes, Food highlights, Price bands, and Friends' private reviews). [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) records work/status; [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) documents system architecture.
+Last updated: 2026-10-12. Status: Sprint 2 (PHP/MySQL Catalogue), Sprint 3 (Friend-Informed Discovery), and Sprint 4 (Visual Ambiance & Pilot Data) are deployed and verified live on Hostinger (`myfanverse.in`). Active Sprint 5 implements interactive Leaflet map discovery and in-context circle notes. [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) records work/status; [DEVELOPMENT_HANDOFF.md](DEVELOPMENT_HANDOFF.md) documents the live checkpoint.
 
 ## 1. Product Goal
 
-Enable an adult visitor in one pilot area to find a café suited to their drink, budget, food needs, and desired ambiance, understand why it fits, and read trusted reviews from their own circle of friends rather than noisy public star ratings. Validate usefulness with a checked Lucknow pilot catalogue (19 verified cafés) before expanding coverage.
+Enable an adult visitor in one pilot area to find a café suited to their drink, budget, food needs, and desired ambiance, understand why it fits, and read trusted reviews from their own circle of friends rather than noisy public star ratings. Validate usefulness with a checked Lucknow pilot catalogue (32 verified cafés) before expanding coverage.
 
-The pilot targets 19–30 verified Lucknow cafés and an invited cohort of friends/coffee enthusiasts. Synthetic development data has been superseded by real, verified Lucknow pilot records.
+The pilot targets 32 verified Lucknow cafés across 9 neighbourhoods and an invited cohort of friends/coffee enthusiasts.
 
 ## 2. One Team, Multiple Developer Agents
 
@@ -31,31 +31,21 @@ Propose two-week Sprints. Active agent sessions can produce several increments w
 | Phase | Proposed Sprint | Sprint Goal and usable increment | Acceptance gate | Dependencies |
 |---|---|---|---|---|
 | 1. PHP/MySQL Catalogue | Sprint 2 (Done) | Build lightweight PHP/MySQL catalogue, seed 19 Lucknow cafés, and deploy to Hostinger | Site live at `myfanverse.in`, debounced live search, clickable directions, 404s, mobile CSS | Hostinger web hosting, MySQL DB |
-| 2. Friend-Informed Discovery | Sprint 3 (Active) | Deliver user-requested factors: Ambiance/Vibes, Food Highlights, Price Bands, and "Friends' Take" private circle reviews | Vibe filtering, food badges on cards & detail, price indicators, `friend_review` table & UI | Sprint 2 live catalogue; Lucknow field data |
-| 3. Geographic Discovery | Sprint 4 | Interactive map-first toggle with Leaflet.js pins using verified GPS coordinates | Map/list consistency, mobile layout, tile fallback | Sprint 2 coordinates (already in DB) |
-| 4. Personal Records & Saves | Sprint 5 | Private member bookmarks, private visit logging, data export/deletion | Authentication, privacy by design, zero public exposure | Account decisions, email provider |
-| 5. Learn and Iterate | Post-Pilot | Evaluate real friend usage, return visits, and expand to additional neighbourhoods | Usage metrics, feedback interviews, next hypothesis | Active pilot cohort |
+| 2. Friend-Informed Discovery | Sprint 3 (Done) | Deliver user-requested factors: Ambiance/Vibes, Food Highlights, Price Bands, and "Friends' Take" private circle reviews | Vibe filtering, food badges on cards & detail, price indicators, `friend_review` table & UI | Sprint 2 live catalogue; Lucknow field data |
+| 3. Visual Ambiance & Mobile UX | Sprint 4 (Done) | Real-world interior/garden photos for all 32 cafés, card thumbnails, hero banners, Website+Maps buttons, mobile form zoom prevention | Cards display photos, dual action buttons, 16px iOS controls, `site.css?v=sprint5.1` | Photo research, Hostinger DB migration |
+| 4. Geographic Discovery & Quick Notes | Sprint 5 (Active) | Interactive Leaflet.js map-first toggle, in-context circle note submission on café details, 3-step recommendation flow | Map/list consistency, custom pins, detail note form, mobile touch UX | Sprint 2 coordinates (already in DB) |
+| 5. Pilot Cohort & Iterate | Post-Pilot | Evaluate real friend usage, return visits, and expand to additional neighbourhoods | Usage metrics, feedback interviews, next hypothesis | Active pilot cohort |
 
-## 4. Current Sprint Plan: Sprint 3 (Friend-Informed Discovery & Private Circles)
+## 4. Current Sprint Plan: Sprint 5 (Interactive Map & In-Context Notes)
 
-**Sprint 3 Goal:** Deliver the user-requested café evaluation factors identified in primary user research: Ambiance & Aesthetics ("Vibes"), Food Variety & Quality highlights, Indicative Price Bands, and "Friends' Take" trusted private reviews (zero public aggregator spam).
-
-Primary user feedback collected by Anuj from his cohort identified seven decisive criteria before visiting a café:
-1. **Food Quality:** Freshness, artisan standards (in-house baking, specialty ingredients).
-2. **Food Variety:** Type of food offered (bakery, brunch, sourdough sandwiches, desserts, vegan).
-3. **Ambiance:** Work-friendly vs social vs quiet retreat.
-4. **Aesthetics:** Visual appeal, cozy interior, Instagrammable/aesthetic corners.
-5. **Price (sometimes):** Indicative spend tier per person.
-6. **Location:** Clickable directions & neighbourhood clarity (already delivered in Sprint 2).
-7. **Reviews by friends, not public:** Trusted recommendations from friends, explicitly rejecting public/commercial review spam.
+**Sprint 5 Goal:** Enable geographic discovery with a responsive Leaflet.js map layer toggle on the catalogue, and streamline friend feedback with in-context note submission directly on café detail pages.
 
 | Work package | Lead | Focus | Integration dependency |
 |---|---|---|---|
-| W1: Vibe & Aesthetics Taxonomy (CAFE-106) | Backend + Frontend | Vibe tags schema, filtering by atmosphere, card badge rendering | Schema migration |
-| W2: Food Quality & Variety Badges (CAFE-107, 108) | Backend + Frontend | Food highlight badges, menu category previews, price band indicator | W1 schema contract |
-| W3: "Friends' Take" Review Architecture (CAFE-109) | Backend + Frontend | `friend_review` table, private circle notes, must-try items, detail page section | W1/W2 interfaces |
-| W4: Lucknow Pilot Dataset Enrichment (CAFE-110) | Anuj (Curator) | Enrich 19 Lucknow cafés with verified vibe tags, food highlights, and friend notes | W1–W3 models |
-| W5: Hostinger DB Migration & Verification (CAFE-111) | Operations / QA | `migration_sprint3_vibes_and_friends.sql` script, phpMyAdmin execution guide | Hostinger MariaDB |
+| W1: Interactive Leaflet Map Toggle (CAFE-112) | Frontend | Leaflet.js OpenStreetMap layer toggle (`[📋 List] | [🗺️ Map]`), custom pins, popups with thumbnails, area/vibe filter sync | GPS coordinates in DB |
+| W2: In-Context Circle Notes (CAFE-113) | Backend + Frontend | Lightweight `+ Add note` form directly on `/cafes/{uuid}/`, must-try food pick, instant update to Friends' Take | `friend_review` table |
+| W3: "Find My Café Today" Quick Matcher (CAFE-114) | Frontend + Backend | 3-question filter modal/flow (Purpose, Area, Budget) showing top 3 matches with factual match reasons | Catalogue query filters |
+| W4: Pilot Cohort Usability Testing (CAFE-115) | Anuj (PO) + Planning | Cohort distribution (10–15 friends), usability review, friction log | Live `myfanverse.in` |
 
 ## 5. Events and Feedback
 
