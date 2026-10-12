@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS cafe (
     latitude DECIMAL(9,6) NULL,
     longitude DECIMAL(9,6) NULL,
     website VARCHAR(255) NULL,
+    photo_url VARCHAR(512) NULL,
+    hero_image_url VARCHAR(512) NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     is_demo TINYINT(1) NOT NULL DEFAULT 0,
     checked_on DATE NULL,

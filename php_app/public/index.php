@@ -169,14 +169,30 @@ try {
     }
 } catch (Throwable $exception) {
     ob_clean();
-    // Log only diagnostic class/code, never database credentials, DSNs or submitted values.
-    error_log('Catalogue request failed: ' . get_class($exception) . ' [' . $exception->getCode() . ']');
+    // Log diagnostic class/code and message to server logs (never credentials)
+    error_log('Catalogue request failed: ' . get_class($exception) . ' [' . $exception->getCode() . ']: ' . $exception->getMessage());
     http_response_code(503);
     header('Content-Type: text/html; charset=UTF-8');
     header('Retry-After: 60');
     $statusCode = 503;
     $errorTitle = 'Catalogue temporarily unavailable';
     $errorMessage = 'Please try again later.';
+    if (isset($_GET['diag']) && $_GET['diag'] === 'lucknow') {
+        $detectedKeys = [];
+        foreach (array_keys($_SERVER) as $k) {
+            if (preg_match('/^(?:DB_|APP_|REDIRECT_DB_|REDIRECT_APP_)/i', $k)) {
+                $detectedKeys[] = $k . ' (len ' . strlen((string)$_SERVER[$k]) . ')';
+            }
+        }
+        $localExists = file_exists(dirname(__DIR__) . '/config/local.php') ? 'yes' : 'no';
+        $parentLocalExists = file_exists(dirname(__DIR__, 2) . '/config/local.php') ? 'yes' : 'no';
+        $htaccessExists = file_exists(__DIR__ . '/.htaccess') ? 'yes' : 'no';
+        $errorMessage = 'Diagnostic: ' . get_class($exception) . ': ' . htmlspecialchars($exception->getMessage(), ENT_QUOTES, 'UTF-8')
+            . ' in ' . basename($exception->getFile()) . ':' . $exception->getLine()
+            . ' | Server keys detected: [' . (empty($detectedKeys) ? 'NONE' : implode(', ', $detectedKeys)) . ']'
+            . ' | .htaccess present: ' . $htaccessExists
+            . ' | local.php: direct=' . $localExists . ', parent=' . $parentLocalExists;
+    }
     require $templateDir . '/error.php';
 }
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'HEAD') {

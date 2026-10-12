@@ -37,6 +37,15 @@ $priceBandLabels = [
       <?php endif; ?>
     </header>
 
+    <?php
+    $heroUrl = !empty($cafe['hero_image_url']) ? $cafe['hero_image_url'] : (!empty($cafe['photo_url']) ? $cafe['photo_url'] : '');
+    ?>
+    <?php if (!empty($heroUrl)): ?>
+      <div class="detail-hero-banner">
+        <img class="detail-hero-img" src="<?= h($heroUrl) ?>" alt="<?= h($cafe['name']) ?>" loading="eager" width="1200" height="360">
+      </div>
+    <?php endif; ?>
+
     <?php if ($isDemo): ?>
       <p class="notice">This is fictional development data. This café and its offerings do not represent a real business.</p>
     <?php endif; ?>

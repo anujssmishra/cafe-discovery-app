@@ -25,7 +25,7 @@ function schema_apply(PDO $pdo): void
     $engines = $pdo->query("SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('area', 'cafe', 'cafe_offering')")->fetchAll(PDO::FETCH_KEY_PAIR);
     $required = [
         'area' => ['id', 'name', 'slug', 'city', 'is_active', 'display_order'],
-        'cafe' => ['id', 'name', 'area_id', 'address', 'summary', 'latitude', 'longitude', 'website', 'is_active', 'is_demo', 'checked_on', 'source', 'brand_location_count', 'brand_count_scope', 'brand_count_source', 'brand_count_checked_on', 'independence_status', 'independence_source', 'independence_checked_on'],
+        'cafe' => ['id', 'name', 'area_id', 'address', 'summary', 'latitude', 'longitude', 'website', 'photo_url', 'hero_image_url', 'is_active', 'is_demo', 'checked_on', 'source', 'brand_location_count', 'brand_count_scope', 'brand_count_source', 'brand_count_checked_on', 'independence_status', 'independence_source', 'independence_checked_on'],
         'cafe_offering' => ['id', 'cafe_id', 'drink_type', 'brewing_method', 'price', 'currency', 'checked_on', 'source'],
     ];
     $columns = $pdo->prepare('SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?');

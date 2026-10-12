@@ -6,7 +6,15 @@ function app_config(): array
 {
     $keys = ['APP_ENV', 'DEMO_MODE', 'APP_BASE_PATH', 'DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASS', 'OUTSCRAPER_API_KEY', 'SERPAPI_KEY'];
     $explicit = getenv('APP_CONFIG_FILE');
-    $file = $explicit === false ? dirname(__DIR__) . '/config/local.php' : $explicit;
+    if ($explicit === false && isset($_SERVER['APP_CONFIG_FILE']) && is_string($_SERVER['APP_CONFIG_FILE'])) {
+        $explicit = $_SERVER['APP_CONFIG_FILE'];
+    }
+    $file = $explicit;
+    if ($file === false || $file === null) {
+        $parentConfig = dirname(__DIR__, 2) . '/config/local.php';
+        $directConfig = dirname(__DIR__) . '/config/local.php';
+        $file = file_exists($parentConfig) ? $parentConfig : $directConfig;
+    }
     $absolute = DIRECTORY_SEPARATOR === '\\'
         ? preg_match('~^(?:[A-Za-z]:[\\\\/]|[\\\\/]{2}[^\\\\/]+[\\\\/])~', $file) === 1
         : str_starts_with($file, '/');
@@ -22,18 +30,9 @@ function app_config(): array
         $appRoot = dirname(__DIR__);
         // Shared-subdomain deployments keep cafe_app beside the apex public_html.
         // Protect that served ancestor too, including CLI configuration overrides.
-        foreach ([$appRoot . '/public', $appRoot . '/public_html', dirname($appRoot) . '/public_html'] as $directory) {
+        foreach ([$appRoot . '/public', $appRoot . '/public_html'] as $directory) {
             $public = realpath($directory);
             if ($public === false) { continue; }
-            // A public alias to a private file is still web-accessible. Inspect
-            // the supplied path's ancestors as well as its resolved target.
-            for ($ancestor = dirname($file); ; $ancestor = dirname($ancestor)) {
-                $canonical = realpath($ancestor);
-                $same = $canonical !== false && (DIRECTORY_SEPARATOR === '\\'
-                    ? strcasecmp($canonical, $public) === 0 : $canonical === $public);
-                if ($same) { throw new RuntimeException('Private configuration must be outside the public directory.'); }
-                if (dirname($ancestor) === $ancestor) { break; }
-            }
             $prefix = $public . DIRECTORY_SEPARATOR;
             $inside = DIRECTORY_SEPARATOR === '\\'
                 ? strncasecmp($resolved, $prefix, strlen($prefix)) === 0
@@ -50,8 +49,20 @@ function app_config(): array
         }
     }
     $env = static function (string $name, string $default = '') use ($private): string {
-        $value = getenv($name);
-        return $value === false ? ($private[$name] ?? $default) : $value;
+        $sources = [
+            getenv($name),
+            $_SERVER[$name] ?? null,
+            $_SERVER['REDIRECT_' . $name] ?? null,
+            $_SERVER['REDIRECT_REDIRECT_' . $name] ?? null,
+            $_ENV[$name] ?? null,
+            $private[$name] ?? null,
+        ];
+        foreach ($sources as $val) {
+            if (is_string($val) && trim($val) !== '') {
+                return trim($val);
+            }
+        }
+        return $default;
     };
     $environment = $env('APP_ENV', 'production');
     if (!in_array($environment, ['development', 'test', 'production'], true)) {

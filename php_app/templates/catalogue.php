@@ -37,25 +37,35 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter, 'vibe' =>
               && parse_url($itemWebsite, PHP_URL_USER) === null && parse_url($itemWebsite, PHP_URL_PASS) === null;
           ?>
           <article class="cafe-card panel">
-            <div class="card-topline">
-              <p class="eyebrow"><?= h($item['area_name']) ?><?= empty($item['area_city']) ? '' : ' · ' . h($item['area_city']) ?></p>
-              <div class="card-pills">
-                <?php if (!empty($item['friend_review_count']) && (int) $item['friend_review_count'] > 0): ?>
-                  <span class="circle-pill" title="Reviewed by friends">👥 Circle pick</span>
-                <?php endif; ?>
-                <?php if (!empty($item['price_band'])): ?>
-                  <span class="price-band-badge price-<?= h($item['price_band']) ?>" title="Spend tier: <?= h(ucfirst($item['price_band'])) ?>">
-                    <?= $item['price_band'] === 'budget' ? '₹' : ($item['price_band'] === 'premium' ? '₹₹₹' : '₹₹') ?>
-                  </span>
-                <?php endif; ?>
-                <?php if ($item['is_demo'] ?? false): ?><span class="badge">Demo</span><?php endif; ?>
+            <div class="card-header-wrapper">
+              <div class="card-header-content">
+                <div class="card-topline">
+                  <p class="eyebrow"><?= h($item['area_name']) ?><?= empty($item['area_city']) ? '' : ' · ' . h($item['area_city']) ?></p>
+                  <div class="card-pills">
+                    <?php if (!empty($item['friend_review_count']) && (int) $item['friend_review_count'] > 0): ?>
+                      <span class="circle-pill" title="Reviewed by friends">👥 Circle pick</span>
+                    <?php endif; ?>
+                    <?php if (!empty($item['price_band'])): ?>
+                      <span class="price-band-badge price-<?= h($item['price_band']) ?>" title="Spend tier: <?= h(ucfirst($item['price_band'])) ?>">
+                        <?= $item['price_band'] === 'budget' ? '₹' : ($item['price_band'] === 'premium' ? '₹₹₹' : '₹₹') ?>
+                      </span>
+                    <?php endif; ?>
+                    <?php if ($item['is_demo'] ?? false): ?><span class="badge">Demo</span><?php endif; ?>
+                  </div>
+                </div>
+                <div class="card-title-row">
+                  <h3><a href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>"><?= h($item['name']) ?></a></h3>
+                </div>
               </div>
-            </div>
-            <div class="card-title-row">
-              <h3><a href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>"><?= h($item['name']) ?></a></h3>
-              <?php if ($itemWebsiteAllowed): ?>
-                <a class="card-website-btn" href="<?= h($itemWebsite) ?>" target="_blank" rel="noopener noreferrer" title="Official website: <?= h($item['name']) ?>"><span aria-hidden="true">🌐 </span>Website ↗</a>
-              <?php endif; ?>
+              <div class="card-thumb-container">
+                <a href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>" tabindex="-1" aria-hidden="true">
+                  <?php if (!empty($item['photo_url'])): ?>
+                    <img class="card-thumb" src="<?= h($item['photo_url']) ?>" alt="<?= h($item['name']) ?>" loading="lazy" width="84" height="84">
+                  <?php else: ?>
+                    <div class="card-thumb-fallback" aria-hidden="true">☕</div>
+                  <?php endif; ?>
+                </a>
+              </div>
             </div>
             <?php if (trim((string) ($item['summary'] ?? '')) !== '' && $item['summary'] !== 'More details are not recorded yet.'): ?>
               <p class="card-summary"><?= h($item['summary']) ?></p>
@@ -79,7 +89,7 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter, 'vibe' =>
                 ? 'https://www.google.com/maps/dir/?api=1&destination=' . rawurlencode($item['latitude'] . ',' . $item['longitude'])
                 : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($item['name'] . ', ' . ($item['address'] ?? '') . ', ' . ($item['area_name'] ?? ''));
             ?>
-            <p class="address address-container"><?php if (trim((string) ($item['address'] ?? '')) !== ''): ?><a class="address-link" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer"><?= h($item['address']) ?></a><a class="mini-btn" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer" title="Open in Maps"><span aria-hidden="true">📍 </span>Maps ↗</a><?php else: ?>Address not recorded<?php endif; ?></p>
+            <p class="address address-container"><?php if (trim((string) ($item['address'] ?? '')) !== ''): ?><a class="address-link" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer"><?= h($item['address']) ?></a><a class="mini-btn" href="<?= h($itemMapUrl) ?>" target="_blank" rel="noopener noreferrer" title="Open in Maps"><span aria-hidden="true">📍 </span>Maps ↗</a><?php else: ?>Address not recorded<?php endif; ?><?php if ($itemWebsiteAllowed): ?><a class="mini-btn website-btn" href="<?= h($itemWebsite) ?>" target="_blank" rel="noopener noreferrer" title="Official website: <?= h($item['name']) ?>"><span aria-hidden="true">🌐 </span>Website ↗</a><?php endif; ?></p>
             <p class="evidence-line"><span>Ownership:</span> <?= h(catalogue_ownership($item)) ?></p>
             <a class="detail-link" href="<?= h(app_url('/cafes/' . $item['id'] . '/')) ?>">View details<span class="sr-only"> for <?= h($item['name']) ?></span><span aria-hidden="true"> →</span></a>
           </article>
