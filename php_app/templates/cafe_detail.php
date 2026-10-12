@@ -20,15 +20,23 @@ $priceBandLabels = [
     'premium' => '₹₹₹ Premium (typically ₹300+ per person)',
 ];
 ?>
+<?php
+$cleanBrandTitle = catalogue_extract_brand_name($cafe['name']);
+$branchTag = trim(preg_replace('/^.*?\((.*?)\)$/', '$1', $cafe['name']));
+$hasBranchTag = ($branchTag !== $cafe['name']);
+?>
 <main id="main-content" class="page-shell" tabindex="-1">
   <a class="back-link" href="<?= h(app_url('/')) ?>"><span aria-hidden="true">← </span>Back to the catalogue</a>
   <article>
     <header class="detail-heading">
-      <p class="eyebrow"><?= h($cafe['area_name']) ?><?= empty($cafe['area_city']) ? '' : ' · ' . h($cafe['area_city']) ?></p>
+      <p class="eyebrow"><?= h($cafe['area_name']) ?><?= empty($cafe['area_city']) ? '' : ' · ' . h($cafe['area_city']) ?><?= $hasBranchTag ? ' · ' . h($branchTag) . ' Branch' : '' ?></p>
       <div class="detail-title-row">
-        <h1><?= h($cafe['name']) ?></h1>
+        <h1><?= h($cleanBrandTitle) ?></h1>
+        <?php if ($hasBranchTag): ?>
+          <span class="circle-pill" style="font-size:0.82rem; padding:.25rem .6rem; color:#0d47a1; background:#e3f2fd; border-color:#bbdefb;" title="Branch location">📍 <?= h($branchTag) ?> Branch</span>
+        <?php endif; ?>
         <?php if ($websiteAllowed): ?>
-          <a class="header-website-btn" href="<?= h($website) ?>" target="_blank" rel="noopener noreferrer" title="Official website for <?= h($cafe['name']) ?>"><span aria-hidden="true">🌐 </span>Visit Website ↗</a>
+          <a class="header-website-btn" href="<?= h($website) ?>" target="_blank" rel="noopener noreferrer" title="Official website for <?= h($cleanBrandTitle) ?>"><span aria-hidden="true">🌐 </span>Visit Website ↗</a>
         <?php endif; ?>
       </div>
       <?php if ($isDemo): ?><span class="badge">Fictional demo</span><?php endif; ?>
@@ -36,6 +44,33 @@ $priceBandLabels = [
         <p class="intro-copy"><?= h($cafe['summary']) ?></p>
       <?php endif; ?>
     </header>
+
+    <?php if (isset($branches) && is_array($branches) && count($branches) > 1): ?>
+      <!-- Multi-Branch Selector Panel -->
+      <section class="panel branch-selector-box" style="margin-bottom: 1.5rem; background: #edf4eb; border: 1px solid #cadbc6; border-left: 4px solid var(--green);">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.85rem;">
+          <div>
+            <p class="eyebrow" style="margin-bottom:0.2rem; color:var(--green);">Multi-Branch Café (<?= count($branches) ?> Branches in Lucknow)</p>
+            <h3 style="margin:0; font-size:1.1rem; color:var(--ink);"><span aria-hidden="true">📍 </span>Select Branch Location</h3>
+            <p class="muted" style="margin:0; font-size:0.85rem;">Choose a branch to view location address, directions, and menu offerings.</p>
+          </div>
+          <div style="min-width:280px;">
+            <label for="branch-select" class="sr-only">Choose Branch</label>
+            <select id="branch-select" onchange="window.location.href=this.value;" style="font-weight:700; border:2px solid var(--green); background:white; color:var(--ink); font-size:16px; padding:0.6rem 0.8rem; border-radius:0.45rem;">
+              <?php foreach ($branches as $b): ?>
+                <?php
+                $bSubName = trim(preg_replace('/^.*?\((.*?)\)$/', '$1', $b['name']));
+                if ($bSubName === $b['name']) { $bSubName = $b['address']; }
+                ?>
+                <option value="<?= h(app_url('/cafes/' . $b['id'] . '/')) ?>"<?= $b['id'] === $cafe['id'] ? ' selected' : '' ?>>
+                  📍 <?= h($b['area_name']) ?> (<?= h($bSubName) ?>)
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+        </div>
+      </section>
+    <?php endif; ?>
 
     <?php
     $heroUrl = !empty($cafe['hero_image_url']) ? $cafe['hero_image_url'] : (!empty($cafe['photo_url']) ? $cafe['photo_url'] : '');

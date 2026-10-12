@@ -10,6 +10,51 @@ const VIBE_OPTIONS = [
     'date' => ['label' => 'Date Spot', 'search' => 'Date Spot'],
 ];
 
+function catalogue_extract_brand_name(string $fullName): string
+{
+    $clean = trim(preg_replace('/\s*\([^)]*\)\s*/', ' ', $fullName));
+    return $clean !== '' ? $clean : $fullName;
+}
+
+function catalogue_group_cafes_by_brand(array $rawCafes): array
+{
+    $grouped = [];
+    foreach ($rawCafes as $cafe) {
+        $brandName = catalogue_extract_brand_name($cafe['name']);
+        if (!isset($grouped[$brandName])) {
+            $grouped[$brandName] = $cafe;
+            $grouped[$brandName]['brand_name'] = $brandName;
+            $grouped[$brandName]['branches'] = [];
+            $grouped[$brandName]['branch_areas'] = [];
+            $grouped[$brandName]['total_friend_reviews'] = 0;
+        }
+
+        $grouped[$brandName]['branches'][] = $cafe;
+        $grouped[$brandName]['total_friend_reviews'] += (int) ($cafe['friend_review_count'] ?? 0);
+        if (!empty($cafe['area_name']) && !in_array($cafe['area_name'], $grouped[$brandName]['branch_areas'], true)) {
+            $grouped[$brandName]['branch_areas'][] = $cafe['area_name'];
+        }
+    }
+
+    $result = [];
+    foreach ($grouped as $brandItem) {
+        $branchCount = count($brandItem['branches']);
+        $brandItem['branch_count'] = $branchCount;
+        $brandItem['friend_review_count'] = $brandItem['total_friend_reviews'];
+
+        if ($branchCount > 1) {
+            $brandItem['name'] = $brandItem['brand_name'];
+            $brandItem['area_display'] = $branchCount . ' branches in Lucknow (' . implode(', ', array_slice($brandItem['branch_areas'], 0, 4)) . (count($brandItem['branch_areas']) > 4 ? '...' : '') . ')';
+        } else {
+            $brandItem['area_display'] = $brandItem['area_name'] . (!empty($brandItem['area_city']) ? ' · ' . $brandItem['area_city'] : '');
+        }
+
+        $result[] = $brandItem;
+    }
+
+    return $result;
+}
+
 function catalogue_page(PDO $pdo, array $filters, bool $demoMode): array
 {
     $where = 'c.is_active = 1 AND a.is_active = 1';
@@ -30,12 +75,6 @@ function catalogue_page(PDO $pdo, array $filters, bool $demoMode): array
         $params[':vibe'] = '%' . strtr(VIBE_OPTIONS[$filters['vibe']]['search'], ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
     }
     $from = ' FROM cafe c JOIN area a ON c.area_id = a.id WHERE ' . $where;
-    $count = $pdo->prepare('SELECT COUNT(*)' . $from);
-    $count->execute($params);
-    $total = (int) $count->fetchColumn();
-    $pageSize = 12;
-    $pages = max(1, (int) ceil($total / $pageSize));
-    $page = min(max(1, $filters['page']), $pages);
 
     // Defensive check: only subquery friend_review if table exists
     $friendCountExpr = '0 AS friend_review_count';
@@ -49,17 +88,41 @@ function catalogue_page(PDO $pdo, array $filters, bool $demoMode): array
     }
 
     $statement = $pdo->prepare('SELECT c.*, a.name AS area_name, a.city AS area_city, '
-        . $friendCountExpr . $from . ' ORDER BY c.name ASC, c.id ASC LIMIT :limit OFFSET :offset');
-    foreach ($params as $key => $value) {
-        $statement->bindValue($key, $value, PDO::PARAM_STR);
-    }
-    $statement->bindValue(':limit', $pageSize, PDO::PARAM_INT);
-    $statement->bindValue(':offset', ($page - 1) * $pageSize, PDO::PARAM_INT);
-    $statement->execute();
+        . $friendCountExpr . $from . ' ORDER BY c.name ASC, c.id ASC');
+    $statement->execute($params);
+    $rawCafes = $statement->fetchAll();
+
+    $groupedCafes = catalogue_group_cafes_by_brand($rawCafes);
+    $total = count($groupedCafes);
+    $pageSize = 12;
+    $pages = max(1, (int) ceil($total / $pageSize));
+    $page = min(max(1, $filters['page']), $pages);
+
+    $pageCafes = array_slice($groupedCafes, ($page - 1) * $pageSize, $pageSize);
+
     return [
-        'cafes' => $statement->fetchAll(),
+        'cafes' => $pageCafes,
         'pagination' => ['page' => $page, 'pages' => $pages, 'total' => $total, 'page_size' => $pageSize],
     ];
+}
+
+function catalogue_get_branches_for_cafe(PDO $pdo, array $currentCafe, bool $demoMode): array
+{
+    $brandName = catalogue_extract_brand_name($currentCafe['name']);
+    $sql = 'SELECT c.*, a.name AS area_name, a.city AS area_city
+            FROM cafe c JOIN area a ON c.area_id = a.id
+            WHERE c.is_active = 1 AND a.is_active = 1' . ($demoMode ? '' : ' AND c.is_demo = 0') . ' ORDER BY a.name, c.name';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $all = $stmt->fetchAll();
+
+    $branches = [];
+    foreach ($all as $item) {
+        if (catalogue_extract_brand_name($item['name']) === $brandName) {
+            $branches[] = $item;
+        }
+    }
+    return $branches;
 }
 
 function catalogue_all_cafes(PDO $pdo, array $filters, bool $demoMode): array

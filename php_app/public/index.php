@@ -169,6 +169,7 @@ try {
                 $statement->execute([':id' => $cafe['id']]);
                 $offerings = $statement->fetchAll();
                 $friendReviews = catalogue_friend_reviews($pdo, $cafe['id'], $session['circle_id'] ?? null);
+                $branches = catalogue_get_branches_for_cafe($pdo, $cafe, $config['demo_mode']);
                 $message = (string) ($_GET['msg'] ?? '');
                 require $templateDir . '/cafe_detail.php';
             } else {
