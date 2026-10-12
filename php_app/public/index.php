@@ -69,10 +69,30 @@ try {
             $pdo = db_connect($config);
             $session = circle_get_current_session($pdo);
             $matchName = trim((string) ($_GET['match_name'] ?? ''));
-            $matchedReviews = $matchName !== '' ? circle_find_google_matches($pdo, $matchName) : [];
+            $contribUrl = trim((string) ($_GET['contrib_url'] ?? ''));
+            $searchTarget = $contribUrl !== '' ? $contribUrl : $matchName;
+            $matchedReviews = $searchTarget !== '' ? circle_extract_user_reviews($pdo, $searchTarget, $config) : [];
             $circleReviews = circle_get_reviews($pdo, $session['circle_id']);
+            $cafesList = $pdo->query('SELECT id, name FROM cafe WHERE is_active = 1 ORDER BY name')->fetchAll();
             $message = (string) ($_GET['msg'] ?? '');
             require $templateDir . '/circles.php';
+        } elseif ($path === 'circles/add-note' && $method === 'POST') {
+            $pdo = db_connect($config);
+            $session = circle_get_current_session($pdo);
+            $cafeId = trim((string) ($_POST['cafe_id'] ?? ''));
+            $friendName = trim((string) ($_POST['friend_name'] ?? ($session['member_name'] !== 'Guest' ? $session['member_name'] : 'Circle Friend')));
+            $reviewText = trim((string) ($_POST['review_text'] ?? ''));
+            $rating = max(1, min(5, (int) ($_POST['rating'] ?? 5)));
+            $mustTry = trim((string) ($_POST['must_try'] ?? ''));
+            $context = trim((string) ($_POST['visit_context'] ?? ''));
+
+            if ($cafeId !== '' && $reviewText !== '' && valid_cafe_id($cafeId)) {
+                circle_add_direct_review($pdo, $session['circle_id'], $cafeId, $friendName, $reviewText, $rating, $mustTry, $context);
+                header('Location: ' . app_url('/circles/', ['msg' => 'Your café note has been added to ' . $session['circle_name'] . '!']));
+                exit;
+            }
+            header('Location: ' . app_url('/circles/', ['msg' => 'Please provide a valid café and recommendation note.']));
+            exit;
         } elseif ($path === 'circles/create' && $method === 'POST') {
             $pdo = db_connect($config);
             $circleName = trim((string) ($_POST['circle_name'] ?? ''));

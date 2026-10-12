@@ -4,7 +4,7 @@ declare(strict_types=1);
 /** Read a private operator config, then overlay process environment. No dotenv loading. */
 function app_config(): array
 {
-    $keys = ['APP_ENV', 'DEMO_MODE', 'APP_BASE_PATH', 'DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASS', 'OUTSCRAPER_API_KEY'];
+    $keys = ['APP_ENV', 'DEMO_MODE', 'APP_BASE_PATH', 'DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASS', 'OUTSCRAPER_API_KEY', 'SERPAPI_KEY'];
     $explicit = getenv('APP_CONFIG_FILE');
     $file = $explicit === false ? dirname(__DIR__) . '/config/local.php' : $explicit;
     $absolute = DIRECTORY_SEPARATOR === '\\'
@@ -91,5 +91,6 @@ function app_config(): array
         'db_user' => $user,
         'db_pass' => $env('DB_PASS'),
         'outscraper_api_key' => $env('OUTSCRAPER_API_KEY'),
+        'serpapi_key' => $env('SERPAPI_KEY'),
     ];
 }

@@ -293,3 +293,216 @@ function circle_get_reviews(PDO $pdo, string $circleId): array
     }
 }
 
+function circle_extract_user_reviews(PDO $pdo, string $identifier, array $config): array
+{
+    circle_ensure_schema($pdo);
+    $raw = trim($identifier);
+    if ($raw === '') {
+        return [];
+    }
+
+    $contributorId = null;
+    if (preg_match('~maps/contrib/([0-9]+)~', $raw, $m)) {
+        $contributorId = $m[1];
+    } elseif (ctype_digit($raw) && strlen($raw) >= 12) {
+        $contributorId = $raw;
+    }
+
+    $authorName = $raw;
+    $apiKeySerp = $config['serpapi_key'] ?? '';
+    $apiKeyOutscraper = $config['outscraper_api_key'] ?? '';
+
+    // 1. Live extraction via SerpApi Google Maps Contributor Reviews engine
+    if ($contributorId !== null && $apiKeySerp !== '') {
+        try {
+            $url = 'https://serpapi.com/search.json?' . http_build_query([
+                'engine' => 'google_maps_contributor_reviews',
+                'contributor_id' => $contributorId,
+                'api_key' => $apiKeySerp,
+            ]);
+
+            $ctx = stream_context_create(['http' => ['timeout' => 12]]);
+            $res = @file_get_contents($url, false, $ctx);
+            if ($res) {
+                $data = json_decode($res, true);
+                $userName = $data['contributor']['name'] ?? 'Google Contributor';
+                $authorName = $userName;
+                $reviewsList = $data['reviews'] ?? [];
+
+                $cafes = $pdo->query('SELECT id, name FROM cafe WHERE is_active = 1')->fetchAll();
+                $insertStmt = $pdo->prepare('INSERT INTO cafe_google_review (
+                    cafe_id, author_name, rating, review_text, publish_date, 
+                    visit_context, must_try_item, food_quality_verdict, ambiance_rating
+                ) VALUES (
+                    :cafe_id, :author_name, :rating, :review_text, :publish_date,
+                    :visit_context, :must_try_item, :food_quality_verdict, :ambiance_rating
+                )');
+                $checkStmt = $pdo->prepare('SELECT id FROM cafe_google_review 
+                    WHERE cafe_id = :cafe_id AND author_name = :author_name AND review_text = :text LIMIT 1');
+
+                foreach ($reviewsList as $item) {
+                    $placeTitle = trim((string) ($item['title'] ?? ''));
+                    $reviewSnippet = trim((string) ($item['snippet'] ?? $item['text'] ?? ''));
+                    $ratingVal = max(1, min(5, (int) ($item['rating'] ?? 5)));
+                    $dateVal = (string) ($item['date'] ?? 'Recently');
+
+                    if ($placeTitle === '' || $reviewSnippet === '') {
+                        continue;
+                    }
+
+                    $matchedCafeId = null;
+                    foreach ($cafes as $c) {
+                        $cName = mb_strtolower(trim($c['name']));
+                        $pTitle = mb_strtolower($placeTitle);
+                        if (str_contains($pTitle, $cName) || str_contains($cName, $pTitle)) {
+                            $matchedCafeId = $c['id'];
+                            break;
+                        }
+                    }
+
+                    if ($matchedCafeId) {
+                        $checkStmt->execute([
+                            ':cafe_id' => $matchedCafeId,
+                            ':author_name' => $userName,
+                            ':text' => $reviewSnippet,
+                        ]);
+                        if (!$checkStmt->fetch()) {
+                            $insertStmt->execute([
+                                ':cafe_id' => $matchedCafeId,
+                                ':author_name' => $userName,
+                                ':rating' => $ratingVal,
+                                ':review_text' => $reviewSnippet,
+                                ':publish_date' => $dateVal,
+                                ':visit_context' => 'Google Maps Review',
+                                ':must_try_item' => 'Signature Specialty Brew',
+                                ':food_quality_verdict' => 'Recommended on Google Maps',
+                                ':ambiance_rating' => 'chill_cozy',
+                            ]);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            error_log('SerpApi extraction error: ' . $e->getMessage());
+        }
+    } elseif ($apiKeyOutscraper !== '' && $contributorId !== null) {
+        // 2. Live extraction via Outscraper User Profile Reviews
+        try {
+            $url = 'https://api.app.outscraper.com/maps/reviews-v3?' . http_build_query([
+                'query' => "https://www.google.com/maps/contrib/{$contributorId}/reviews",
+                'reviewsLimit' => 30,
+                'async' => 'false',
+            ]);
+            $ctx = stream_context_create([
+                'http' => [
+                    'header' => "X-API-KEY: {$apiKeyOutscraper}\r\n",
+                    'timeout' => 15,
+                ],
+            ]);
+            $res = @file_get_contents($url, false, $ctx);
+            if ($res) {
+                $json = json_decode($res, true);
+                $reviewsData = $json['data'][0]['reviews_data'] ?? [];
+                $cafes = $pdo->query('SELECT id, name FROM cafe WHERE is_active = 1')->fetchAll();
+                $insertStmt = $pdo->prepare('INSERT INTO cafe_google_review (
+                    cafe_id, author_name, rating, review_text, publish_date, 
+                    visit_context, must_try_item, food_quality_verdict, ambiance_rating
+                ) VALUES (
+                    :cafe_id, :author_name, :rating, :review_text, :publish_date,
+                    :visit_context, :must_try_item, :food_quality_verdict, :ambiance_rating
+                )');
+                $checkStmt = $pdo->prepare('SELECT id FROM cafe_google_review 
+                    WHERE cafe_id = :cafe_id AND author_name = :author_name AND review_text = :text LIMIT 1');
+
+                foreach ($reviewsData as $rev) {
+                    $uName = trim((string) ($rev['author_title'] ?? 'Google Contributor'));
+                    $authorName = $uName;
+                    $text = trim((string) ($rev['review_text'] ?? ''));
+                    $ratingVal = max(1, min(5, (int) ($rev['review_rating'] ?? 5)));
+                    $placeName = trim((string) ($rev['place_name'] ?? $rev['title'] ?? ''));
+
+                    $matchedCafeId = null;
+                    foreach ($cafes as $c) {
+                        if ($placeName !== '' && (str_contains(mb_strtolower($placeName), mb_strtolower($c['name'])) || str_contains(mb_strtolower($c['name']), mb_strtolower($placeName)))) {
+                            $matchedCafeId = $c['id'];
+                            break;
+                        }
+                    }
+
+                    if ($matchedCafeId && $text !== '') {
+                        $checkStmt->execute([':cafe_id' => $matchedCafeId, ':author_name' => $uName, ':text' => $text]);
+                        if (!$checkStmt->fetch()) {
+                            $insertStmt->execute([
+                                ':cafe_id' => $matchedCafeId,
+                                ':author_name' => $uName,
+                                ':rating' => $ratingVal,
+                                ':review_text' => $text,
+                                ':publish_date' => $rev['review_datetime_utc'] ?? 'Recently',
+                                ':visit_context' => 'Google Maps Review',
+                                ':must_try_item' => 'Specialty Coffee',
+                                ':food_quality_verdict' => 'Recommended on Google',
+                                ':ambiance_rating' => 'chill_cozy',
+                            ]);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            error_log('Outscraper extraction error: ' . $e->getMessage());
+        }
+    }
+
+    // 3. Return matching reviews found for this user in the catalogue
+    return circle_find_google_matches($pdo, $authorName);
+}
+
+function circle_add_direct_review(
+    PDO $pdo,
+    string $circleId,
+    string $cafeId,
+    string $friendName,
+    string $reviewText,
+    int $rating = 5,
+    string $mustTry = '',
+    string $context = ''
+): bool {
+    circle_ensure_schema($pdo);
+    $cleanText = trim($reviewText);
+    $cleanName = trim($friendName);
+    if ($cleanText === '' || $cleanName === '') {
+        return false;
+    }
+
+    try {
+        $stmt = $pdo->prepare('INSERT INTO friend_review (
+            circle_id, cafe_id, friend_name, visit_context,
+            food_quality_verdict, food_variety_rating, ambiance_rating,
+            must_try_item, review_text, source_type, google_rating,
+            is_verified_friend, visited_on
+        ) VALUES (
+            :circle_id, :cafe_id, :friend_name, :visit_context,
+            :food_quality, :food_variety, :ambiance,
+            :must_try, :notes, :source_type, :rating,
+            1, CURRENT_DATE()
+        )');
+
+        return $stmt->execute([
+            ':circle_id' => $circleId,
+            ':cafe_id' => $cafeId,
+            ':friend_name' => $cleanName,
+            ':visit_context' => trim($context) !== '' ? trim($context) : 'Direct Circle Note',
+            ':food_quality' => 'Recommended by friend',
+            ':food_variety' => 'good',
+            ':ambiance' => 'chill_cozy',
+            ':must_try' => trim($mustTry) !== '' ? trim($mustTry) : 'House Specialty',
+            ':notes' => $cleanText,
+            ':source_type' => 'direct',
+            ':rating' => max(1, min(5, $rating)),
+        ]);
+    } catch (Throwable $e) {
+        error_log('Failed to add direct circle review: ' . $e->getMessage());
+        return false;
+    }
+}
+
+

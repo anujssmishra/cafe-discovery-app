@@ -12,4 +12,6 @@ return [
     'DB_NAME' => 'replace_with_hpanel_database',
     'DB_USER' => 'replace_with_hpanel_user',
     'DB_PASS' => 'replace-with-private-database-password',
+    'OUTSCRAPER_API_KEY' => '', // Optional: outscraper.com API key for cloud Google review crawling
+    'SERPAPI_KEY' => '', // Optional: serpapi.com key for on-demand Google contributor review extraction
 ];

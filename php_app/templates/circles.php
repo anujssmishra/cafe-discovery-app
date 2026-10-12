@@ -268,27 +268,35 @@ $circleReviews = $circleReviews ?? [];
     </div>
   </header>
 
-  <!-- 2. Google Reviews Auto-Match Widget -->
+  <!-- 2. On-Demand Google Reviews Extraction Widget -->
   <section class="google-sync-card">
     <div class="google-sync-header">
       <span style="font-size:1.4rem; line-height:1;" aria-hidden="true">⭐</span>
-      <h2 class="google-sync-title">Auto-Match from Google Reviews</h2>
+      <h2 class="google-sync-title">On-Demand Google Reviews Extractor</h2>
     </div>
-    <p class="google-sync-desc">Written café reviews on Google Maps before? Enter your name below to automatically discover your reviews across Lucknow and bring your recommendations into this circle in 1 tap.</p>
+    <p class="google-sync-desc">Extract reviews you have posted on Google Maps and bring your Lucknow café recommendations into your circle in 1 tap. Enter your Google Maps Contributor Profile link or your Google display name below:</p>
 
     <form method="get" action="<?= h(app_url('/circles/')) ?>">
-      <div class="google-search-row">
-        <input class="google-search-input" name="match_name" type="text" value="<?= h($matchName ?: ($session['member_name'] !== 'Guest' ? $session['member_name'] : 'Anuj Mishra')) ?>" placeholder="Enter your display name on Google Maps" required>
-        <button type="submit" class="google-search-btn">
-          <span aria-hidden="true">🔍 </span>Find My Google Reviews
-        </button>
+      <div style="display:flex; flex-direction:column; gap:.75rem; max-width:620px;">
+        <div class="google-search-row">
+          <input class="google-search-input" name="contrib_url" type="text" value="<?= h($_GET['contrib_url'] ?? '') ?>" placeholder="Google Contributor URL (e.g. google.com/maps/contrib/110382... or Contributor ID)">
+        </div>
+        <div class="google-search-row">
+          <input class="google-search-input" name="match_name" type="text" value="<?= h($matchName ?: ($session['member_name'] !== 'Guest' ? $session['member_name'] : 'Anuj Mishra')) ?>" placeholder="Or enter your Google Maps display name (e.g. Anuj Mishra)">
+          <button type="submit" class="google-search-btn">
+            <span aria-hidden="true">⚡ </span>Extract My Reviews
+          </button>
+        </div>
+      </div>
+      <div style="font-size:.82rem; color:var(--muted); margin-top:.5rem;">
+        💡 <em>How to get your profile link:</em> Open Google Maps → tap your profile icon → Your profile → Share profile link.
       </div>
     </form>
 
     <?php if (!empty($matchedReviews)): ?>
       <div class="matched-results-wrap">
         <div class="matched-banner">
-          🎉 Found <?= count($matchedReviews) ?> Google <?= count($matchedReviews) === 1 ? 'Review' : 'Reviews' ?>! Select the ones you want to import into <?= h($session['circle_name']) ?>:
+          🎉 Found <?= count($matchedReviews) ?> Google <?= count($matchedReviews) === 1 ? 'Review' : 'Reviews' ?> for Lucknow cafés! Select the ones you want to import into <?= h($session['circle_name']) ?>:
         </div>
 
         <form method="post" action="<?= h(app_url('/circles/import/')) ?>">
@@ -318,14 +326,62 @@ $circleReviews = $circleReviews ?? [];
           </button>
         </form>
       </div>
-    <?php elseif ($matchName !== ''): ?>
+    <?php elseif ($matchName !== '' || !empty($_GET['contrib_url'])): ?>
       <div class="matched-results-wrap">
         <div style="background:#fef7e0; color:#8c5a00; border:1px solid #f9e2a8; padding:1rem 1.2rem; border-radius:.6rem;">
-          <strong style="display:block; margin-bottom:.25rem;">No reviews found for "<?= h($matchName) ?>" yet.</strong>
-          <span style="font-size:.9rem;">Tip: Make sure you enter your exact display name from Google Maps (e.g. "Anuj Mishra").</span>
+          <strong style="display:block; margin-bottom:.25rem;">No reviews extracted yet for this profile.</strong>
+          <span style="font-size:.9rem;">Ensure your Google Maps contributor profile or display name matches your public Google reviews. You can also share a café note directly below!</span>
         </div>
       </div>
     <?php endif; ?>
+  </section>
+
+  <!-- 2b. Direct Circle Café Recommendation Form -->
+  <section class="panel" style="background:#fff; border:1px solid #d8e2d4; border-radius:.85rem; padding:1.4rem 1.6rem; margin-bottom:2rem; box-shadow:0 3px 12px rgba(36,83,57,0.04);">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; margin-bottom:.8rem;">
+      <h2 style="font-size:1.25rem; margin:0; color:var(--ink); font-weight:750;">✍️ Share a Café Note Directly</h2>
+      <span style="font-size:.82rem; color:var(--muted);">Post a personal recommendation to <?= h($session['circle_name']) ?></span>
+    </div>
+    <form method="post" action="<?= h(app_url('/circles/add-note/')) ?>">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:.8rem; margin-bottom:.8rem;">
+        <div>
+          <label style="display:block; font-size:.82rem; font-weight:700; color:var(--ink); margin-bottom:.3rem;">Select Lucknow Café *</label>
+          <select name="cafe_id" class="form-input-clean" required style="width:100%;">
+            <option value="">-- Choose a Café --</option>
+            <?php if (!empty($cafesList)): ?>
+              <?php foreach ($cafesList as $c): ?>
+                <option value="<?= h($c['id']) ?>"><?= h($c['name']) ?></option>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </select>
+        </div>
+        <div>
+          <label style="display:block; font-size:.82rem; font-weight:700; color:var(--ink); margin-bottom:.3rem;">Your Display Name *</label>
+          <input name="friend_name" type="text" class="form-input-clean" value="<?= h($session['member_name'] !== 'Guest' ? $session['member_name'] : 'Anuj Mishra') ?>" required style="width:100%;">
+        </div>
+        <div>
+          <label style="display:block; font-size:.82rem; font-weight:700; color:var(--ink); margin-bottom:.3rem;">Rating (1 - 5 Stars) *</label>
+          <select name="rating" class="form-input-clean" style="width:100%;">
+            <option value="5" selected>⭐⭐⭐⭐⭐ 5 - Exceptional</option>
+            <option value="4">⭐⭐⭐⭐ 4 - Very Good</option>
+            <option value="3">⭐⭐⭐ 3 - Decent / Average</option>
+            <option value="2">⭐⭐ 2 - Below Expectations</option>
+            <option value="1">⭐ 1 - Not Recommended</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block; font-size:.82rem; font-weight:700; color:var(--ink); margin-bottom:.3rem;">Must-Try Item / Drink</label>
+          <input name="must_try" type="text" class="form-input-clean" placeholder="e.g. V60 Pour-over, Classic Bagel" style="width:100%;">
+        </div>
+      </div>
+      <div style="margin-bottom:.8rem;">
+        <label style="display:block; font-size:.82rem; font-weight:700; color:var(--ink); margin-bottom:.3rem;">Your Honest Review / Notes *</label>
+        <textarea name="review_text" rows="3" class="form-input-clean" placeholder="How is the coffee, seating for laptop work, noise level, or service?" required style="width:100%; resize:vertical;"></textarea>
+      </div>
+      <button type="submit" class="button" style="font-weight:700; padding:.6rem 1.4rem;">
+        <span aria-hidden="true">💬 </span>Post Note to <?= h($session['circle_name']) ?>
+      </button>
+    </form>
   </section>
 
   <!-- 3. Notes & Recommendations in this Circle -->

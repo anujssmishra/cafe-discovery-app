@@ -56,6 +56,7 @@ try {
         'config/local.example.php' => 'config/local.example.php',
         'schema/schema.sql' => 'schema/schema.sql',
         'schema/README.md' => 'schema/README.md',
+        'schema/migration_sprint4_circles_and_google_match.sql' => 'schema/migration_sprint4_circles_and_google_match.sql',
         'scripts/schema.php' => 'scripts/schema.php',
         'scripts/schema_helpers.php' => 'scripts/schema_helpers.php',
         'scripts/sync_google_reviews.php' => 'scripts/sync_google_reviews.php',
