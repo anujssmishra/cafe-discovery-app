@@ -27,38 +27,38 @@ Updated: 2026-10-12. Transfer context through source and evidence, not credentia
 
 ## 2. Active Increment: Sprint 5 (Interactive Map & In-Context Notes)
 
-**Sprint 5 Goal:** Enable geographic exploration via an interactive Leaflet map layer, and allow circle friends to contribute quick recommendations directly from café detail pages.
+**Sprint 5 Goal:** Enable geographic exploration via an interactive Leaflet map layer, allow circle friends to contribute quick recommendations directly from café detail pages, and consolidate multi-branch chains into single brand cards.
 
-### Selected User Stories:
+### Delivered User Stories:
 1. **CAFE-112: Interactive Leaflet Map Toggle (`[📋 List] | [🗺️ Map]`):**
-   - Toggle view on the main catalogue between the existing card grid and a responsive Leaflet.js OpenStreetMap layer.
-   - Plot all 32 cafés using their already-stored GPS coordinates.
-   - Tapping a pin opens a popup with café thumbnail, name, area, spend tier, and directions link.
-   - Parity with area and vibe filters. Zero API billing (OpenStreetMap + Leaflet CDN).
+   - Toggle view on the main catalogue between card grid and responsive Leaflet.js OpenStreetMap layer.
+   - Plots all 32 cafés using database GPS coordinates with interactive popups and directions links.
 2. **CAFE-113: In-Context Circle Notes on Detail Pages:**
-   - Add a lightweight `+ Add your note / Must-try recommendation` form directly on `/cafes/{uuid}/`.
-   - Allows circle members to leave a quick 2-line note or dish pick without navigating away to `/circles/`.
+   - Lightweight `+ Add your note / Must-try recommendation` inline form on `/cafes/{uuid}/` inserting directly into Friends' Take.
 3. **CAFE-114: "Find My Café Today" Quick Recommendation Flow:**
-   - 3-step quick matcher (Purpose: Work / Social / Date; Area; Budget) surfacing top 3 best-fit cafés with explanation reasons.
-4. **CAFE-115: Live Pilot Cohort Testing & Measurement:**
-   - Distribute `https://myfanverse.in` to a cohort of 10–15 Lucknow friends and capture real usage observations.
+   - 3-step quick matcher (Purpose, Area, Budget) surfacing top 3 best-fit cafés with factual explanation tags.
+4. **CAFE-121: 1 Card Per Café Brand & Branch Selector Dropdown:**
+   - Multi-branch chains grouped into 1 brand card in the catalogue, with branch selection dropdown on `/cafes/{uuid}/`.
+5. **CAFE-115: Live Pilot Cohort Testing & Measurement:**
+   - Deployment bundle packaged; cohort distribution ready.
 
 ---
 
 ## 3. Work Packages and Ownership
 
-| Work package | Lead | Files Owned |
-|---|---|---|
-| **W1: Interactive Leaflet Map Layer** | Frontend | `php_app/templates/catalogue.php`, `php_app/public/static/site.css` |
-| **W2: In-Context Circle Note Submission** | Backend + Frontend | `php_app/includes/circles.php`, `php_app/templates/cafe_detail.php` |
-| **W3: Quick Recommendation Matcher** | Frontend + Backend | `php_app/templates/catalogue.php`, `php_app/includes/catalogue.php` |
-| **W4: Hostinger Deployment & Verification** | Operations / Root | `C:\Users\anujs\Downloads\hostinger_update.zip`, Hostinger File Manager |
-| **W5: Delivery Plan & Backlog Sync** | Planning | `AGILE_DELIVERY.md`, `PRODUCT_BACKLOG.md`, `RELEASE_CHECKLIST.md` |
+| Work package | Lead | Files Owned / Artifact | Status |
+|---|---|---|---|
+| **W1: Interactive Leaflet Map Layer (CAFE-112)** | Frontend | `php_app/templates/catalogue.php`, `site.css` | Done |
+| **W2: In-Context Circle Note Submission (CAFE-113)** | Backend + Frontend | `php_app/includes/circles.php`, `cafe_detail.php` | Done |
+| **W3: Quick Recommendation Matcher (CAFE-114)** | Frontend + Backend | `php_app/templates/catalogue.php`, `catalogue.php` | Done |
+| **W4: Multi-Branch Consolidation (CAFE-121)** | Backend + Frontend | `php_app/public/index.php`, `catalogue.php` | Done |
+| **W5: Hostinger Release Packaging** | Ops / Root | `~/Downloads/hostinger_update.zip` & `localdata/releases/` | Packaged |
+| **W6: Pilot Usability Testing (CAFE-115)** | Anuj (PO) + Planning | `PILOT_MEASUREMENT.md`, `myfanverse.in` | Ready |
 
 ---
 
 ## 4. Next Implementation Actions
 
-1. Implement Leaflet.js map layer toggle in `php_app/templates/catalogue.php` using stored GPS coordinates.
-2. Add in-context note submission form to `php_app/templates/cafe_detail.php`.
-3. Package and verify updates for Hostinger deployment.
+1. In Hostinger File Manager for `myfanverse.in`: Upload and extract `hostinger_update.zip` (available in `~/Downloads/`).
+2. Verify live site functionality at `https://myfanverse.in` (map toggle, branch dropdown selector, and note submissions).
+3. Distribute pilot invite link to the 10–15 friend cohort to measure engagement and collect feedback.

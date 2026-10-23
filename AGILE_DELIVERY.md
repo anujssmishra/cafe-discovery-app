@@ -45,7 +45,8 @@ Propose two-week Sprints. Active agent sessions can produce several increments w
 | W1: Interactive Leaflet Map Toggle (CAFE-112) | Frontend | Leaflet.js OpenStreetMap layer toggle (`[📋 List] | [🗺️ Map]`), custom pins, popups with thumbnails, area/vibe filter sync | GPS coordinates in DB |
 | W2: In-Context Circle Notes (CAFE-113) | Backend + Frontend | Lightweight `+ Add note` form directly on `/cafes/{uuid}/`, must-try food pick, instant update to Friends' Take | `friend_review` table |
 | W3: "Find My Café Today" Quick Matcher (CAFE-114) | Frontend + Backend | 3-question filter modal/flow (Purpose, Area, Budget) showing top 3 matches with factual match reasons | Catalogue query filters |
-| W4: Pilot Cohort Usability Testing (CAFE-115) | Anuj (PO) + Planning | Cohort distribution (10–15 friends), usability review, friction log | Live `myfanverse.in` |
+| W4: Multi-Branch Consolidation (CAFE-121) | Backend + Frontend | 1 brand card per chain on catalogue, branch dropdown selector on detail | `catalogue.php`, `cafe_detail.php` |
+| W5: Pilot Cohort Usability Testing (CAFE-115) | Anuj (PO) + Planning | Cohort distribution (10–15 friends), usability review, friction log | Live `myfanverse.in` |
 
 ## 5. Events and Feedback
 
