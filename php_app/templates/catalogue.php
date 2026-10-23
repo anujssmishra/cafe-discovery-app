@@ -112,8 +112,11 @@ $pageQuery = array_filter(['q' => $searchQuery, 'area' => $areaFilter, 'vibe' =>
               <div class="card-header-wrapper">
                 <div class="card-header-content">
                   <div class="card-topline">
-                    <p class="eyebrow"><?= h($item['area_name']) ?><?= empty($item['area_city']) ? '' : ' · ' . h($item['area_city']) ?></p>
+                    <p class="eyebrow"><?= h($item['area_display'] ?? $item['area_name']) ?></p>
                     <div class="card-pills">
+                      <?php if (!empty($item['branch_count']) && (int) $item['branch_count'] > 1): ?>
+                        <span class="circle-pill" style="color:#0d47a1; background:#e3f2fd; border-color:#bbdefb;" title="Multiple locations available">📍 <?= (int) $item['branch_count'] ?> Branches</span>
+                      <?php endif; ?>
                       <?php if (!empty($item['friend_review_count']) && (int) $item['friend_review_count'] > 0): ?>
                         <span class="circle-pill" title="Reviewed by friends">👥 Circle pick</span>
                       <?php endif; ?>
