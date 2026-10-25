@@ -1,7 +1,12 @@
 .venv/
+*/.venv/
 __pycache__/
+*/__pycache__/
 *.py[cod]
 *.sqlite3
+*.db
+.pytest_cache/
+*/.pytest_cache/
 .env
 .env.*
 !.env.example
@@ -14,3 +19,17 @@ staticfiles/
 htmlcov/
 .DS_Store
 *.zip
+.vscode/
+
+# Flutter & Android Build Artifacts
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+*.apk
+*.aab
+**/android/.gradle/
+**/android/local.properties
+

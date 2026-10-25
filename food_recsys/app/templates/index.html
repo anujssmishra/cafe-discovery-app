@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food RecSys — UPI Taste Intelligence</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --primary: #3b82f6;
+      --tag-bg: #0369a1;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
+    .badge {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .persona-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      align-items: center;
+    }
+    .persona-btn {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .persona-btn:hover, .persona-btn.active {
+      background: var(--accent);
+      color: #000;
+      font-weight: 600;
+      border-color: var(--accent);
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 860px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card h2 { font-size: 1.15rem; margin-bottom: 16px; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
+    .stat-label { color: var(--text-muted); }
+    .stat-val { font-weight: 600; }
+    .progress-bar-bg {
+      background: #0f172a;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .progress-bar-fill {
+      background: var(--accent);
+      height: 100%;
+      border-radius: 4px;
+    }
+    .recs-container { display: flex; flex-direction: column; gap: 16px; }
+    .rec-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 16px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .rec-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .rank-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .rec-main h3 { font-size: 1.1rem; color: #fff; margin-bottom: 4px; }
+    .rec-meta {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .tag {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    .tag-price {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .reasons-list {
+      list-style: none;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .reasons-list li {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .reasons-list li::before {
+      content: "✓";
+      color: var(--accent);
+      font-weight: bold;
+    }
+    .score-box {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .score-num { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+    .score-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    select, button {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .docs-link { color: #60a5fa; text-decoration: none; font-size: 0.875rem; }
+    .docs-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <span style="font-size: 1.75rem;">🍽️</span>
+        <div>
+          <h1>Food RecSys</h1>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">UPI Spending-Based Taste Intelligence</div>
+        </div>
+        <span class="badge">MVP v0.1</span>
+      </div>
+      <div>
+        <a href="/docs" target="_blank" class="docs-link">Interactive OpenAPI Docs (Swagger) ↗</a>
+      </div>
+    </header>
+
+    <div class="persona-bar" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Active Dining Profile:</span>
+        <span class="persona-btn active" style="border-color: #3b82f6; color: #60a5fa; cursor: default;">👤 My Dining Ledger</span>
+        <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 4px 10px; border-radius: 9999px; border: 1px solid rgba(16, 185, 129, 0.3);">🇮🇳 DPDP Act 2023 Compliant</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 7px 12px; font-size: 0.8rem; font-weight: 600;" onclick="clearCurrentProfile()" title="Exercise DPDP Act 2023 Section 12 Right to Erasure">🗑️ Right to Erasure (Reset Data)</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Left Column: Taste Profile & Real Ingestion -->
+      <div>
+        <!-- Ingestion Box -->
+        <div class="card" style="border-color: rgba(59, 130, 246, 0.4); background: #131f37;">
+          <h2><span>📥</span> Import Real UPI Data</h2>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+            Parse transactional SMS alerts or upload a bank statement CSV to update this profile with real transactions.
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <button id="tab-sms-btn" class="persona-btn active" style="padding: 4px 10px; font-size: 0.8rem;" onclick="switchIngestTab('sms')">SMS Alert</button>
+            <button id="tab-csv-btn" class="persona-btn" style="padding: 4px 10px; font-size: 0.8rem;" onclick="switchIngestTab('csv')">CSV Statement</button>
+          </div>
+
+          <!-- SMS Tab -->
+          <div id="ingest-sms-panel">
+            <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+              <button style="font-size: 0.7rem; padding: 2px 6px;" onclick="fillSampleSms('hdfc')">+ HDFC Sample</button>
+              <button style="font-size: 0.7rem; padding: 2px 6px;" onclick="fillSampleSms('sbi')">+ SBI Sample</button>
+              <button style="font-size: 0.7rem; padding: 2px 6px;" onclick="fillSampleSms('icici')">+ ICICI Sample</button>
+            </div>
+            <textarea id="sms-input" rows="3" style="width: 100%; background: #0f172a; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; font-size: 0.8rem; font-family: monospace;" placeholder="Paste transactional SMS here..."></textarea>
+            <button style="width: 100%; margin-top: 8px; background: var(--primary); color: #fff; font-weight: 600; border: none; padding: 8px;" onclick="submitSms()">Parse & Ingest SMS</button>
+          </div>
+
+          <!-- CSV Tab -->
+          <div id="ingest-csv-panel" style="display: none;">
+            <input type="file" id="csv-file-input" accept=".csv,.txt" style="width: 100%; font-size: 0.8rem; margin-bottom: 8px; color: var(--text-muted);" />
+            <button style="width: 100%; background: var(--primary); color: #fff; font-weight: 600; border: none; padding: 8px;" onclick="submitStatement()">Upload & Ingest Statement</button>
+          </div>
+
+          <div id="ingest-status" style="margin-top: 8px; font-size: 0.8rem; display: none;"></div>
+        </div>
+
+        <div class="card">
+          <h2><span>📊</span> Spending Intelligence <span id="active-user-badge" style="font-size: 0.75rem; background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; margin-left: auto; font-family: monospace;">user_south_indian</span></h2>
+          <div id="clean-profile-banner" style="display: none; background: rgba(59, 130, 246, 0.12); border: 1px dashed rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 10px; font-size: 0.8rem; color: #93c5fd; margin-bottom: 12px;">
+            ✨ <strong>Clean Profile (0 transactions):</strong> Ingest a bank SMS or upload a CSV statement above to generate recommendations from your real spending!
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Total UPI Food Orders:</span>
+            <span class="stat-val" id="prof-total-tx">-</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Average Spend / Meal:</span>
+            <span class="stat-val" id="prof-avg-spend">-</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Profile Version:</span>
+            <span class="stat-val" id="prof-version">-</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2><span>🥘</span> Top Cuisine Affinities</h2>
+          <div id="cuisine-bars">Loading...</div>
+        </div>
+
+        <div class="card">
+          <h2><span>💰</span> Price Band Distribution</h2>
+          <div id="price-bars">Loading...</div>
+        </div>
+
+        <div class="card">
+          <h2><span>📍</span> Frequent Neighbourhoods</h2>
+          <div id="area-bars">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Right Column: Recommendations -->
+      <div>
+        <div class="filter-bar">
+          <span style="font-size: 0.875rem; color: var(--text-muted);">Filter by Meal:</span>
+          <select id="meal-filter" onchange="fetchRecommendations()">
+            <option value="">Any Time</option>
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="snack">Evening Snack</option>
+            <option value="dinner">Dinner</option>
+          </select>
+
+          <span style="font-size: 0.875rem; color: var(--text-muted); margin-left: 12px;">Area:</span>
+          <select id="area-filter" onchange="fetchRecommendations()">
+            <option value="">All Areas</option>
+            <option value="Hazratganj">Hazratganj</option>
+            <option value="Gomti Nagar">Gomti Nagar</option>
+            <option value="Sushant Golf City">Sushant Golf City</option>
+            <option value="Aliganj">Aliganj</option>
+            <option value="Indira Nagar">Indira Nagar</option>
+            <option value="Aminabad">Aminabad</option>
+            <option value="Chowk">Chowk</option>
+          </select>
+        </div>
+
+        <div id="recs-list" class="recs-container">
+          <div style="color: var(--text-muted); padding: 40px; text-align: center;">Loading recommendations...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    let activeUserId = 'user_my_real_data';
+    let currentProfileTxCount = 0;
+
+    function loadPersona(userId) {
+      activeUserId = userId;
+      document.querySelectorAll('.persona-btn').forEach(btn => {
+        const onclickAttr = btn.getAttribute('onclick') || '';
+        btn.classList.toggle('active', btn.id === `btn-${userId}` || onclickAttr.includes(`'${userId}'`));
+      });
+      const badge = document.getElementById('active-user-badge');
+      if (badge) badge.textContent = userId;
+      fetchProfile();
+      fetchRecommendations();
+    }
+
+    function loadCustomUser() {
+      const input = document.getElementById('custom-user-input');
+      const val = input.value.trim();
+      if (!val) return;
+      const cleanId = val.replace(/[^A-Za-z0-9_.-]/g, '_');
+      input.value = cleanId;
+      loadPersona(cleanId);
+    }
+
+    async function clearCurrentProfile() {
+      if (!confirm(`Are you sure you want to clear all transactions and reset data for "${activeUserId}"?`)) return;
+      try {
+        const res = await fetch(`/api/v1/profile/${encodeURIComponent(activeUserId)}`, { method: 'DELETE' });
+        if (res.ok) {
+          await fetchProfile();
+          await fetchRecommendations();
+          alert(`Cleared all data for "${activeUserId}". Profile is now completely clean (0 transactions).`);
+        } else {
+          alert('Failed to reset profile.');
+        }
+      } catch (err) {
+        alert('Network error while resetting profile.');
+      }
+    }
+
+    async function fetchProfile() {
+      try {
+        const res = await fetch(`/api/v1/profile/${encodeURIComponent(activeUserId)}`);
+        const data = await res.json();
+        
+        currentProfileTxCount = data.total_food_transactions || 0;
+        const banner = document.getElementById('clean-profile-banner');
+        if (banner) {
+          banner.style.display = currentProfileTxCount === 0 ? 'block' : 'none';
+        }
+
+        document.getElementById('prof-total-tx').textContent = `${data.total_food_transactions} transactions`;
+        document.getElementById('prof-avg-spend').textContent = `₹${data.avg_spend.toFixed(0)}`;
+        document.getElementById('prof-version').textContent = `v${data.version}`;
+
+        // Render cuisine bars
+        const cContainer = document.getElementById('cuisine-bars');
+        cContainer.innerHTML = '';
+        const cuisines = Object.entries(data.cuisine_affinities).slice(0, 5);
+        if (cuisines.length === 0) {
+          cContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">No transactions yet</div>';
+        } else {
+          cuisines.forEach(([c, score]) => {
+            const pct = Math.round(score * 100);
+            cContainer.innerHTML += `
+              <div class="stat-row">
+                <span class="stat-label">${escapeHtml(formatCuisine(c))}</span>
+                <span class="stat-val">${pct}%</span>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%"></div></div>
+            `;
+          });
+        }
+
+        // Render price bars
+        const pContainer = document.getElementById('price-bars');
+        pContainer.innerHTML = '';
+        Object.entries(data.price_distribution).forEach(([band, score]) => {
+          const pct = Math.round(score * 100);
+          pContainer.innerHTML += `
+            <div class="stat-row">
+              <span class="stat-label" style="text-transform: capitalize;">${escapeHtml(band)}</span>
+              <span class="stat-val">${pct}%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%; background: #fbbf24;"></div></div>
+          `;
+        });
+
+        // Render areas
+        const aContainer = document.getElementById('area-bars');
+        aContainer.innerHTML = '';
+        const areas = Object.entries(data.frequent_areas).slice(0, 4);
+        if (areas.length === 0) {
+          aContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">All areas</div>';
+        } else {
+          areas.forEach(([area, count]) => {
+            const countNum = parseInt(count, 10) || 0;
+            aContainer.innerHTML += `
+              <div class="stat-row">
+                <span class="stat-label">${escapeHtml(area)}</span>
+                <span class="stat-val">${countNum} visits</span>
+              </div>
+            `;
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function fetchRecommendations() {
+      const meal = document.getElementById('meal-filter').value;
+      const area = document.getElementById('area-filter').value;
+      let url = `/api/v1/recommend/${encodeURIComponent(activeUserId)}?n=8`;
+      if (meal) url += `&meal=${encodeURIComponent(meal)}`;
+      if (area) url += `&area=${encodeURIComponent(area)}`;
+
+      const container = document.getElementById('recs-list');
+      container.innerHTML = '<div style="color: var(--text-muted); padding: 40px; text-align: center;">Scoring restaurants based on UPI habits...</div>';
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        container.innerHTML = '';
+        if (!data.recommendations || data.recommendations.length === 0) {
+          container.innerHTML = '<div style="color: var(--text-muted); padding: 40px; text-align: center;">No matching restaurants found</div>';
+          return;
+        }
+
+        let recsHtml = '';
+        if (currentProfileTxCount === 0) {
+          recsHtml += `
+            <div style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.85rem; color: #93c5fd;">
+              ℹ️ <strong>Cold-Start Baseline:</strong> Showing popular spots across Lucknow. Ingest a transactional SMS alert or bank statement on the left to personalize based on your real dining habits!
+            </div>
+          `;
+        }
+
+        data.recommendations.forEach(item => {
+          const r = item.restaurant;
+          const pctScore = Math.round(item.score * 100);
+          const cuisineTags = r.cuisines.map(c => `<span class="tag">${escapeHtml(formatCuisine(c))}</span>`).join('');
+          const reasonsHtml = item.reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('');
+
+          recsHtml += `
+            <div class="rec-card">
+              <div class="rank-badge">#${parseInt(item.rank, 10)}</div>
+              <div class="rec-main">
+                <h3>${escapeHtml(r.name)}</h3>
+                <div class="rec-meta">
+                  <span>📍 ${escapeHtml(r.area)}, ${escapeHtml(r.city)}</span>
+                  <span class="tag tag-price">${escapeHtml(r.price_band)} tier</span>
+                  ${cuisineTags}
+                  ${r.source === 'cafe_app' ? '<span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">verified cafe</span>' : ''}
+                </div>
+                <ul class="reasons-list">${reasonsHtml}</ul>
+              </div>
+              <div class="score-box">
+                <div class="score-num">${pctScore}%</div>
+                <div class="score-label">Affinity Match</div>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = recsHtml;
+      } catch (err) {
+        container.innerHTML = '<div style="color: #ef4444; padding: 20px;">Failed to load recommendations</div>';
+      }
+    }
+
+    async function regenerateData() {
+      let personaKey = 'south_indian_regular';
+      if (activeUserId === 'user_cafe_hopper') personaKey = 'cafe_hopper';
+      if (activeUserId === 'user_budget_student') personaKey = 'budget_student';
+
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.textContent = 'Generating...';
+      btn.disabled = true;
+
+      try {
+        await fetch(`/api/v1/ingest/mock/generate?persona=${personaKey}&days=90`, { method: 'POST' });
+        await fetchProfile();
+        await fetchRecommendations();
+      } catch (e) {
+        alert('Failed to generate mock data');
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    function formatCuisine(c) {
+      const map = {
+        'south_indian': 'South Indian',
+        'biryani': 'Biryani',
+        'mughlai': 'Mughlai',
+        'cafe_western': 'Café',
+        'bakery': 'Bakery',
+        'street_food': 'Street Food',
+        'pizza': 'Pizza',
+        'burger': 'Burgers',
+        'chinese_indo': 'Chinese',
+        'north_indian_curry': 'North Indian',
+        'tea_coffee': 'Chai / Coffee',
+        'dessert': 'Desserts',
+        'healthy': 'Healthy'
+      };
+      return map[c] || c.replace('_', ' ');
+    }
+
+    function switchIngestTab(tab) {
+      document.getElementById('ingest-sms-panel').style.display = tab === 'sms' ? 'block' : 'none';
+      document.getElementById('ingest-csv-panel').style.display = tab === 'csv' ? 'block' : 'none';
+      document.getElementById('tab-sms-btn').classList.toggle('active', tab === 'sms');
+      document.getElementById('tab-csv-btn').classList.toggle('active', tab === 'csv');
+    }
+
+    function fillSampleSms(bank) {
+      const samples = {
+        'hdfc': 'Sent Rs.340.00 from HDFC Bank A/C **1234 to ROASTERY COFFEE HOUSE on 24-OCT-26 via UPI Ref 429812456789. Not you? Call 1800...',
+        'sbi': 'Dear SBI UPI User, your A/c ending with 5678 debited by Rs.120.00 on 24Oct26 by SAGAR RATNA (UPI Ref no 429812112233)',
+        'icici': 'ICICI Bank Acct XX789 debited with Rs 450.00 on 24-Oct-26. UPI:THE HAZELNUT FACTORY@okhdfcbank. Ref:429899001122.'
+      };
+      document.getElementById('sms-input').value = samples[bank] || '';
+    }
+
+    async function submitSms() {
+      const text = document.getElementById('sms-input').value.trim();
+      const statusDiv = document.getElementById('ingest-status');
+      if (!text) {
+        alert('Please paste an SMS alert text first');
+        return;
+      }
+      statusDiv.style.display = 'block';
+      statusDiv.style.color = '#94a3b8';
+      statusDiv.textContent = 'Parsing SMS...';
+
+      try {
+        const res = await fetch('/api/v1/ingest/sms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: activeUserId, sms_text: text })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          statusDiv.style.color = '#34d399';
+          statusDiv.textContent = `✓ Ingested 1 transaction! Profile updated to v${data.taste_profile.version}.`;
+          document.getElementById('sms-input').value = '';
+          await fetchProfile();
+          await fetchRecommendations();
+        } else {
+          statusDiv.style.color = '#ef4444';
+          statusDiv.textContent = data.message || 'No payment detected in SMS.';
+        }
+      } catch (err) {
+        statusDiv.style.color = '#ef4444';
+        statusDiv.textContent = 'Failed to ingest SMS.';
+      }
+    }
+
+    async function submitStatement() {
+      const fileInput = document.getElementById('csv-file-input');
+      const statusDiv = document.getElementById('ingest-status');
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select a CSV statement file');
+        return;
+      }
+      statusDiv.style.display = 'block';
+      statusDiv.style.color = '#94a3b8';
+      statusDiv.textContent = 'Uploading & parsing statement CSV...';
+
+      const formData = new FormData();
+      formData.append('user_id', activeUserId);
+      formData.append('file', fileInput.files[0]);
+
+      try {
+        const res = await fetch('/api/v1/ingest/statement', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          statusDiv.style.color = '#34d399';
+          statusDiv.textContent = `✓ Ingested ${data.parsed_transactions_count} transactions from statement!`;
+          fileInput.value = '';
+          await fetchProfile();
+          await fetchRecommendations();
+        } else {
+          statusDiv.style.color = '#ef4444';
+          statusDiv.textContent = data.message || 'Could not parse transactions.';
+        }
+      } catch (err) {
+        statusDiv.style.color = '#ef4444';
+        statusDiv.textContent = 'Failed to upload statement.';
+      }
+    }
+
+    // Initial load
+    fetchProfile();
+    fetchRecommendations();
+  </script>
+</body>
+</html>
