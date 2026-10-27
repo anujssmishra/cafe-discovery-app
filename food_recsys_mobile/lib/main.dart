@@ -24,8 +24,9 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        Provider<ApiService>.value(value: apiService),
-        Provider<SmsListenerService>.value(value: smsListenerService),
+        ChangeNotifierProvider<ApiService>.value(value: apiService),
+        ChangeNotifierProvider<SmsListenerService>.value(
+            value: smsListenerService),
         ChangeNotifierProvider<TasteProvider>.value(value: tasteProvider),
         ChangeNotifierProvider<RecsProvider>.value(value: recsProvider),
       ],
@@ -34,8 +35,53 @@ void main() async {
   );
 }
 
-class FoodRecSysApp extends StatelessWidget {
+class FoodRecSysApp extends StatefulWidget {
   const FoodRecSysApp({super.key});
+
+  @override
+  State<FoodRecSysApp> createState() => _FoodRecSysAppState();
+}
+
+class _FoodRecSysAppState extends State<FoodRecSysApp>
+    with WidgetsBindingObserver {
+  bool _resumingImports = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _resumeImports());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _resumeImports();
+  }
+
+  Future<void> _resumeImports() async {
+    if (_resumingImports || !mounted) return;
+    _resumingImports = true;
+    final taste = context.read<TasteProvider>();
+    final recs = context.read<RecsProvider>();
+    try {
+      await context.read<SmsListenerService>().resumePendingImports(
+        onNewIngestion: () async {
+          await taste.fetchProfile();
+          await recs.fetchRecommendations(taste.activeUserId);
+        },
+      );
+    } catch (_) {
+      // Captures remain on disk and can be retried from the import screen.
+    } finally {
+      _resumingImports = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

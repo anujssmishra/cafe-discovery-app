@@ -1,0 +1,1330 @@
+{
+  "schema_version": 1,
+  "source_sha256": "7bdabf6f74106de366c78c0a78b649ff84d23933a8e50436afb4700b645445b7",
+  "restaurants": [
+    {
+      "id": "c1010001-0000-0000-0000-000000000001",
+      "name": "Roastery Coffee House",
+      "address": "Plot No. 4, Ground Floor, Vibhuti Khand, Gomti Nagar",
+      "price_band": "premium",
+      "photo_url": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://media.assettype.com/knocksense/2024-08-10/xovz6ft6/Roastery_Lucknow_3_scaled.webp",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.864,
+      "longitude": 80.9995,
+      "cuisines": [
+        "cafe_western",
+        "burger",
+        "breakfast",
+        "dessert"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Garden & Outdoor",
+        "Date Spot",
+        "Lively & Social"
+      ],
+      "food_highlights": [
+        "All-Day Breakfast",
+        "Cheesecakes",
+        "Gourmet Burgers"
+      ],
+      "website": "https://roasterycoffee.co.in/",
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 195.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000002",
+      "name": "Overflow Coffee",
+      "address": "G-14, Ground Floor, Phoenix Palassio Mall, Amar Shaheed Path, Sushant Golf City",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Sushant Golf City",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.809,
+      "longitude": 81.0062,
+      "cuisines": [
+        "cafe_western",
+        "bakery"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Work & Study",
+        "Minimalist & Quiet"
+      ],
+      "food_highlights": [
+        "Artisan Sourdough",
+        "Cinnamon Rolls",
+        "Specialty Sandwiches"
+      ],
+      "website": "https://overflowcoffee.in/",
+      "offerings": [
+        {
+          "drink_type": "filter",
+          "brewing_method": "Filter coffee",
+          "price": 180.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000003",
+      "name": "The Hazelnut Factory (Hazratganj)",
+      "address": "Raza Plaza, Near Sahu Cinema, Hazratganj",
+      "price_band": "moderate",
+      "photo_url": "https://media.assettype.com/knocksense/2025-02-22/8rg332ol/THF2.jpg",
+      "hero_image_url": "https://media.assettype.com/knocksense/2025-02-22/wvmhxdwk/THF11.jpg",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Hazratganj",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.8505,
+      "longitude": 80.9427,
+      "cuisines": [
+        "cafe_western",
+        "bakery",
+        "dessert"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Lively & Social"
+      ],
+      "food_highlights": [
+        "Specialty Desserts",
+        "French Cruffins",
+        "Luxury Pastries"
+      ],
+      "website": "https://thehazelnutfactory.com/",
+      "offerings": [
+        {
+          "drink_type": "milk",
+          "brewing_method": "Milk coffee",
+          "price": 220.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000004",
+      "name": "The Fresh Factory",
+      "address": "Shop 31, First Floor, DLF MyPad, Vibhuti Khand, Gomti Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1525610553991-2bede1a236e2?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1525610553991-2bede1a236e2?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.8643,
+      "longitude": 81.0001,
+      "cuisines": [
+        "healthy",
+        "cafe_western"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Work & Study",
+        "Aesthetic & Cozy"
+      ],
+      "food_highlights": [
+        "Healthy Bowls",
+        "Avocado Toast",
+        "Vegan Options"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "cold_brew",
+          "brewing_method": "Cold brew",
+          "price": 200.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000005",
+      "name": "The Cherry Tree Bakery & Cafe (Hazratganj)",
+      "address": "11, Habibullah Estate, Hazratganj",
+      "price_band": "moderate",
+      "photo_url": "https://media.assettype.com/knocksense/2024-08-10/djygvi1s/IMG_5390.jpg",
+      "hero_image_url": "https://media.assettype.com/knocksense/2024-08-10/djygvi1s/IMG_5390.jpg",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Hazratganj",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.852,
+      "longitude": 80.9445,
+      "cuisines": [
+        "bakery",
+        "cafe_western",
+        "dessert"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Date Spot",
+        "Lively & Social"
+      ],
+      "food_highlights": [
+        "Artisan Bakery",
+        "Fresh Sourdough",
+        "Custom Desserts"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 180.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000006",
+      "name": "Chacoco Cafe",
+      "address": "4/14, Vishal Khand 4, Gomti Nagar",
+      "price_band": "budget",
+      "photo_url": "https://media.assettype.com/knocksense/2025-01-18/qz3rswbm/MMK02541.jpg",
+      "hero_image_url": "https://media.assettype.com/knocksense/2025-01-17/2oxvy5nh/MMK02537.jpg",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.854,
+      "longitude": 80.985,
+      "cuisines": [
+        "dessert",
+        "cafe_western"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Minimalist & Quiet"
+      ],
+      "food_highlights": [
+        "Single-Origin Hot Chocolates",
+        "Artisan Truffles",
+        "Croissants"
+      ],
+      "website": "https://chaicoffeecommunity.com/",
+      "offerings": [
+        {
+          "drink_type": "milk",
+          "brewing_method": "Milk coffee",
+          "price": 150.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000007",
+      "name": "Let's Bake Stories",
+      "address": "Rudraksh Complex, 17/17A Havelock Road, Near Mall Avenue",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Mall Avenue",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.8373,
+      "longitude": 80.9472,
+      "cuisines": [
+        "bakery",
+        "dessert",
+        "cafe_western"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Date Spot"
+      ],
+      "food_highlights": [
+        "Artisan Bakery",
+        "Fresh Sourdough",
+        "Custom Desserts"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 180.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000008",
+      "name": "HoNS (House of No Sugar) (Kisan Bazar)",
+      "address": "Shop A-9, Kisan Bazar, Vibhuti Khand, Gomti Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1497636577773-f1231844b336?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1497636577773-f1231844b336?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.853,
+      "longitude": 80.9985,
+      "cuisines": [
+        "healthy",
+        "bakery",
+        "dessert"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Work & Study",
+        "Minimalist & Quiet"
+      ],
+      "food_highlights": [
+        "Sugar-Free Bakery",
+        "Keto Cheesecakes",
+        "Gluten-Free Snacks"
+      ],
+      "website": "https://www.cafehons.com/",
+      "offerings": [
+        {
+          "drink_type": "filter",
+          "brewing_method": "Filter coffee",
+          "price": 160.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000009",
+      "name": "Cappuccino Blast",
+      "address": "12 Mall Avenue Rd, The Mall Avenue, Hazratganj",
+      "price_band": "moderate",
+      "photo_url": "https://media.assettype.com/knocksense/2025-04-21/yc86dclk/MMK06118.jpg",
+      "hero_image_url": "https://media.assettype.com/knocksense/2025-04-15/0v3vi0vp/IMG9595.jpg",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Hazratganj",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.8376,
+      "longitude": 80.9469,
+      "cuisines": [
+        "cafe_western",
+        "pizza",
+        "italian"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Garden & Outdoor",
+        "Lively & Social",
+        "Date Spot"
+      ],
+      "food_highlights": [
+        "Thin Crust Pizza",
+        "Italian Pasta",
+        "Multi-Cuisine Platters"
+      ],
+      "website": "https://www.cappuccinoblast.in/",
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 150.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000010",
+      "name": "Mocha Cafe & Bar",
+      "address": "CP-1, 2nd Floor, Anand Plaza, Viram Khand 1, Gomti Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://media.assettype.com/knocksense/2022-04/f134d420-b04a-4cfb-8e0c-5cdb6f3abec5/mc1.webp",
+      "hero_image_url": "https://media.assettype.com/knocksense/2022-04/399543a8-b25d-477d-bc2e-41e4aed657f9/mc2.webp",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.8488,
+      "longitude": 80.9997,
+      "cuisines": [
+        "cafe_western",
+        "burger",
+        "street_food"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Lively & Social",
+        "Date Spot"
+      ],
+      "food_highlights": [
+        "Sizzlers",
+        "Loaded Nachos",
+        "Shakes",
+        "Finger Food"
+      ],
+      "website": "https://mocha.co.in/",
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 175.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000011",
+      "name": "Sidewalk Bakehouse & Cafe",
+      "address": "4/492, Vivek Khand 2, Near Patrakarpuram, Gomti Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.845,
+      "longitude": 81.01,
+      "cuisines": [
+        "bakery",
+        "cafe_western"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Minimalist & Quiet"
+      ],
+      "food_highlights": [
+        "Specialty Breads",
+        "Macarons",
+        "Custom Cold Brews"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 200.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000012",
+      "name": "Melting Point (Dayal Paradise)",
+      "address": "Hotel Dayal Paradise, Vipul Khand 5, Gomti Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.8458,
+      "longitude": 80.9998,
+      "cuisines": [
+        "bakery",
+        "dessert",
+        "cafe_western"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Minimalist & Quiet",
+        "Aesthetic & Cozy"
+      ],
+      "food_highlights": [
+        "Signature Chocolates",
+        "Dry Cakes",
+        "Espresso"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "milk",
+          "brewing_method": "Milk coffee",
+          "price": 200.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000013",
+      "name": "Sassy Canteen",
+      "address": "Sapphire Building, Metro City Centre, Badshahnagar",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Badshahnagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.87,
+      "longitude": 80.96,
+      "cuisines": [
+        "cafe_western",
+        "burger",
+        "street_food"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Lively & Social",
+        "Aesthetic & Cozy"
+      ],
+      "food_highlights": [
+        "Fusion Comfort Food",
+        "Loaded Fries",
+        "Sliders"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 180.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000014",
+      "name": "Chihiro",
+      "address": "3, MG Marg, Sadar Bazaar, Cantonment",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Cantonment",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.817,
+      "longitude": 80.94,
+      "cuisines": [
+        "bakery",
+        "dessert",
+        "cafe_western"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Minimalist & Quiet"
+      ],
+      "food_highlights": [
+        "Japanese Mille Crepes",
+        "Matcha Cakes",
+        "Savory Sandwiches"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "matcha",
+          "brewing_method": "Matcha",
+          "price": 190.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000015",
+      "name": "Talllk",
+      "address": "Shop 26, B-1, DLF MyPad, Vibhuti Khand, Gomti Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.8639,
+      "longitude": 80.9999,
+      "cuisines": [
+        "cafe_western",
+        "bakery"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Work & Study",
+        "Minimalist & Quiet"
+      ],
+      "food_highlights": [
+        "Specialty Pour-Overs",
+        "Sourdough Bakes",
+        "Quick Coffee"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 160.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000016",
+      "name": "The Comma",
+      "address": "Le Press, 29 Nawal Kishore Road, Hazratganj",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Hazratganj",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.853,
+      "longitude": 80.945,
+      "cuisines": [
+        "cafe_western",
+        "tea_coffee"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Date Spot"
+      ],
+      "food_highlights": [
+        "Gourmet Sandwiches",
+        "Artisan Tea & Coffee Blends"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "cold_brew",
+          "brewing_method": "Cold brew",
+          "price": 200.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000017",
+      "name": "Criolo",
+      "address": "Le Press, 29 Nawal Kishore Road, Hazratganj",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Hazratganj",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.853,
+      "longitude": 80.945,
+      "cuisines": [
+        "cafe_western",
+        "bakery"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Work & Study",
+        "Aesthetic & Cozy"
+      ],
+      "food_highlights": [
+        "Artisan Coffee Roasts",
+        "Specialty Pastries"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 150.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000018",
+      "name": "NBC (Nothing Before Coffee) (Experion)",
+      "address": "Shop 4, Experio at Experion Capital, Vibhuti Khand, Gomti Nagar",
+      "price_band": "budget",
+      "photo_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.865,
+      "longitude": 81.002,
+      "cuisines": [
+        "tea_coffee",
+        "burger",
+        "street_food"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Work & Study",
+        "Lively & Social"
+      ],
+      "food_highlights": [
+        "Pocket Bites",
+        "Hot Brews",
+        "Frappes",
+        "Loaded Shakes"
+      ],
+      "website": "https://nothingbeforecoffee.com/",
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 90.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000019",
+      "name": "Third Wave Coffee (Gomti Nagar)",
+      "address": "Vivek Khand, Gomti Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-09",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.8515,
+      "longitude": 80.998,
+      "cuisines": [
+        "cafe_western",
+        "bakery",
+        "breakfast"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Work & Study",
+        "Minimalist & Quiet"
+      ],
+      "food_highlights": [
+        "Bagels",
+        "Sourdough Toasts",
+        "Specialty Espresso"
+      ],
+      "website": "https://thirdwavecoffee.in/",
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 180.0,
+          "currency": "INR",
+          "checked_on": "2026-10-09",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000020",
+      "name": "The Hazelnut Factory (Rohtas Summit)",
+      "address": "Ground Floor, Rohtas Summit, Vibhuti Khand, Gomti Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://media.assettype.com/knocksense/2025-02-22/8rg332ol/THF2.jpg",
+      "hero_image_url": "https://media.assettype.com/knocksense/2025-02-22/wvmhxdwk/THF11.jpg",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.8625,
+      "longitude": 80.999,
+      "cuisines": [
+        "cafe_western",
+        "bakery",
+        "dessert"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Lively & Social"
+      ],
+      "food_highlights": [
+        "Specialty Desserts",
+        "French Cruffins",
+        "Luxury Pastries",
+        "Savory Platters"
+      ],
+      "website": "https://thehazelnutfactory.com/",
+      "offerings": [
+        {
+          "drink_type": "milk",
+          "brewing_method": "Milk coffee",
+          "price": 220.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000021",
+      "name": "The Hazelnut Factory (Phoenix Palassio)",
+      "address": "1st Floor, Phoenix Palassio Mall, Amar Shaheed Path, Sushant Golf City",
+      "price_band": "moderate",
+      "photo_url": "https://media.assettype.com/knocksense/2025-02-22/8rg332ol/THF2.jpg",
+      "hero_image_url": "https://media.assettype.com/knocksense/2025-02-22/wvmhxdwk/THF11.jpg",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Sushant Golf City",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.809,
+      "longitude": 81.0062,
+      "cuisines": [
+        "cafe_western",
+        "bakery",
+        "dessert"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Lively & Social"
+      ],
+      "food_highlights": [
+        "Specialty Desserts",
+        "French Cruffins",
+        "Artisanal Coffees",
+        "Macarons"
+      ],
+      "website": "https://thehazelnutfactory.com/",
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 190.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000022",
+      "name": "The Hazelnut Factory (Nirala Nagar)",
+      "address": "B-192, Aliganj Main Rd, Opposite Ram Krishna Math, Nirala Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://media.assettype.com/knocksense/2025-02-22/8rg332ol/THF2.jpg",
+      "hero_image_url": "https://media.assettype.com/knocksense/2025-02-22/wvmhxdwk/THF11.jpg",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Nirala Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.878,
+      "longitude": 80.942,
+      "cuisines": [
+        "cafe_western",
+        "bakery",
+        "dessert"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Date Spot"
+      ],
+      "food_highlights": [
+        "Specialty Desserts",
+        "French Cruffins",
+        "Gourmet Shakes",
+        "Tarts"
+      ],
+      "website": "https://thehazelnutfactory.com/",
+      "offerings": [
+        {
+          "drink_type": "milk",
+          "brewing_method": "Milk coffee",
+          "price": 220.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000023",
+      "name": "The Hazelnut Factory (Manoj Pandey Chauraha)",
+      "address": "2/140, Next to Gomti Nagar Police Station, Vijay Khand, Gomti Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://media.assettype.com/knocksense/2025-02-22/8rg332ol/THF2.jpg",
+      "hero_image_url": "https://media.assettype.com/knocksense/2025-02-22/wvmhxdwk/THF11.jpg",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.852,
+      "longitude": 80.991,
+      "cuisines": [
+        "cafe_western",
+        "bakery",
+        "dessert"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Work & Study"
+      ],
+      "food_highlights": [
+        "Specialty Desserts",
+        "French Cruffins",
+        "Croissants",
+        "Breakfast Bakes"
+      ],
+      "website": "https://thehazelnutfactory.com/",
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 190.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000024",
+      "name": "The Hazelnut Factory (Aliganj)",
+      "address": "Ram Ram Bank Chauraha, Sector B, Aliganj",
+      "price_band": "moderate",
+      "photo_url": "https://media.assettype.com/knocksense/2025-02-22/8rg332ol/THF2.jpg",
+      "hero_image_url": "https://media.assettype.com/knocksense/2025-02-22/wvmhxdwk/THF11.jpg",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Aliganj",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.891,
+      "longitude": 80.944,
+      "cuisines": [
+        "cafe_western",
+        "bakery",
+        "dessert"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Lively & Social"
+      ],
+      "food_highlights": [
+        "Specialty Desserts",
+        "French Cruffins",
+        "Artisanal Bakery",
+        "Pastries"
+      ],
+      "website": "https://thehazelnutfactory.com/",
+      "offerings": [
+        {
+          "drink_type": "milk",
+          "brewing_method": "Milk coffee",
+          "price": 220.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000025",
+      "name": "The Cherry Tree Bakery & Cafe (Nirala Nagar)",
+      "address": "B-11, Near 8 Number Chauraha, Nirala Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://media.assettype.com/knocksense/2024-08-10/djygvi1s/IMG_5390.jpg",
+      "hero_image_url": "https://media.assettype.com/knocksense/2024-08-10/djygvi1s/IMG_5390.jpg",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Nirala Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.877,
+      "longitude": 80.941,
+      "cuisines": [
+        "bakery",
+        "pizza",
+        "cafe_western"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Minimalist & Quiet"
+      ],
+      "food_highlights": [
+        "Fresh Bakes",
+        "Cheesecakes",
+        "Thin Crust Pizza",
+        "Signature Shakes"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 180.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000026",
+      "name": "Third Wave Coffee (Hazratganj)",
+      "address": "Le Press, 29 Nawal Kishore Road, Hazratganj",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Hazratganj",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.853,
+      "longitude": 80.945,
+      "cuisines": [
+        "cafe_western",
+        "bakery",
+        "breakfast"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Work & Study",
+        "Minimalist & Quiet"
+      ],
+      "food_highlights": [
+        "Bagels",
+        "Sourdough Toasts",
+        "Croissants",
+        "Cookies",
+        "Specialty Espresso"
+      ],
+      "website": "https://thirdwavecoffee.in/",
+      "offerings": [
+        {
+          "drink_type": "cold_brew",
+          "brewing_method": "Cold brew",
+          "price": 210.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000027",
+      "name": "NBC (Nothing Before Coffee) (Vivek Khand)",
+      "address": "4/260, Vivek Khand 4, Gomti Nagar",
+      "price_band": "budget",
+      "photo_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.851,
+      "longitude": 81.002,
+      "cuisines": [
+        "tea_coffee",
+        "burger",
+        "street_food"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Work & Study",
+        "Lively & Social"
+      ],
+      "food_highlights": [
+        "Quick Bites",
+        "Loaded Nachos",
+        "Brownies",
+        "Frappes",
+        "Shaka Laka Shake"
+      ],
+      "website": "https://nothingbeforecoffee.com/",
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 90.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000028",
+      "name": "NBC (Nothing Before Coffee) (Indira Nagar)",
+      "address": "Near Indira Nagar Metro Station, Indira Nagar",
+      "price_band": "budget",
+      "photo_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Indira Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.879,
+      "longitude": 80.985,
+      "cuisines": [
+        "tea_coffee",
+        "pizza",
+        "street_food"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Work & Study",
+        "Lively & Social"
+      ],
+      "food_highlights": [
+        "Pocket Pizzas",
+        "Brownies",
+        "Specialty Cold Brews",
+        "Iced Lattes"
+      ],
+      "website": "https://nothingbeforecoffee.com/",
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 90.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000029",
+      "name": "NBC (Nothing Before Coffee) (Aliganj)",
+      "address": "Sector B, Kapoorthala Chauraha, Aliganj",
+      "price_band": "budget",
+      "photo_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Aliganj",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.887,
+      "longitude": 80.945,
+      "cuisines": [
+        "tea_coffee",
+        "bakery",
+        "dessert"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Lively & Social",
+        "Work & Study"
+      ],
+      "food_highlights": [
+        "Cookies",
+        "Pastries",
+        "Handcrafted Coffees",
+        "Affogato",
+        "Shakes"
+      ],
+      "website": "https://nothingbeforecoffee.com/",
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 90.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000030",
+      "name": "Melting Point (Dayal Gateway)",
+      "address": "Kisan Bazar, Vibhuti Khand, Gomti Nagar",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Gomti Nagar",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.864,
+      "longitude": 80.999,
+      "cuisines": [
+        "bakery",
+        "cafe_western"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Minimalist & Quiet"
+      ],
+      "food_highlights": [
+        "French Pastries",
+        "Custom Cakes",
+        "Continental Breakfast",
+        "Hot Brews"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "milk",
+          "brewing_method": "Milk coffee",
+          "price": 200.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000031",
+      "name": "Melting Point (Sushant Golf City)",
+      "address": "IT/3, Dayal Bagh, Amar Shaheed Path, Sushant Golf City",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Sushant Golf City",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.805,
+      "longitude": 81.01,
+      "cuisines": [
+        "bakery",
+        "italian",
+        "cafe_western"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Garden & Outdoor",
+        "Aesthetic & Cozy"
+      ],
+      "food_highlights": [
+        "Artisanal Pastries",
+        "Italian Pastas",
+        "Gourmet Coffee",
+        "High Tea"
+      ],
+      "website": null,
+      "offerings": [
+        {
+          "drink_type": "espresso",
+          "brewing_method": "Espresso machine",
+          "price": 180.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    },
+    {
+      "id": "c1010001-0000-0000-0000-000000000032",
+      "name": "HoNS (House of No Sugar) (Hazratganj)",
+      "address": "Near Mayfair Cinema, Hazratganj",
+      "price_band": "moderate",
+      "photo_url": "https://images.unsplash.com/photo-1497636577773-f1231844b336?auto=format&fit=crop&w=600&q=80",
+      "hero_image_url": "https://images.unsplash.com/photo-1497636577773-f1231844b336?auto=format&fit=crop&w=1200&q=80",
+      "checked_on": "2026-10-11",
+      "city": "Lucknow",
+      "area": "Hazratganj",
+      "source": "cafe_app",
+      "is_active": true,
+      "latitude": 26.851,
+      "longitude": 80.943,
+      "cuisines": [
+        "healthy",
+        "bakery",
+        "dessert"
+      ],
+      "avg_rating": null,
+      "vibe_tags": [
+        "Aesthetic & Cozy",
+        "Minimalist & Quiet"
+      ],
+      "food_highlights": [
+        "Sugar-Free Bakery",
+        "Keto Cheesecakes",
+        "Gluten-Free Waffles",
+        "Healthy Smoothies"
+      ],
+      "website": "https://www.cafehons.com/",
+      "offerings": [
+        {
+          "drink_type": "filter",
+          "brewing_method": "Filter coffee",
+          "price": 160.0,
+          "currency": "INR",
+          "checked_on": "2026-10-11",
+          "source": "Menu"
+        }
+      ]
+    }
+  ]
+}

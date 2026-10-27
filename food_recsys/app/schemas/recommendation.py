@@ -26,3 +26,4 @@ class RecommendationResponse(BaseModel):
     algorithm: str
     count: int
     recommendations: list[RecommendationItem]
+    context_message: str | None = None

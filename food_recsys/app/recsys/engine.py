@@ -7,7 +7,7 @@ from app.models.restaurant import Restaurant
 from app.models.recommendation import RecommendationLog
 from app.schemas.restaurant import RestaurantOut
 from app.schemas.recommendation import RecommendationItem, RecommendationResponse
-from app.profile.builder import build_taste_profile
+from app.profile.builder import build_taste_profile, meal_scoring_profile
 from app.recsys.scoring import score_restaurant
 from app.recsys.explainer import explain_recommendation
 
@@ -25,6 +25,15 @@ async def get_recommendations(
     
     # 1. Fetch or build taste profile
     profile = await build_taste_profile(session, user_id)
+    scoring_profile = profile
+    context_message = None
+    if meal_context and meal_context != "any":
+        scoring_profile, applied = await meal_scoring_profile(session, profile, meal_context)
+        context_message = (
+            f"Ranked using your recorded {meal_context.replace('_', ' ')} preferences."
+            if applied else
+            f"No recorded {meal_context.replace('_', ' ')} history yet; showing your overall matches."
+        )
 
     # 2. Candidate retrieval from active restaurants
     stmt = select(Restaurant).where(Restaurant.is_active == True)
@@ -42,8 +51,8 @@ async def get_recommendations(
         if cuisine and cuisine not in r.cuisines:
             continue
             
-        breakdown = score_restaurant(profile, r, requested_area=area)
-        reasons = explain_recommendation(profile, r, breakdown, meal_context=meal_context)
+        breakdown = score_restaurant(scoring_profile, r, requested_area=area)
+        reasons = explain_recommendation(scoring_profile, r, breakdown, meal_context=meal_context)
         scored_candidates.append((r, breakdown, reasons))
 
     # 4. Rank candidates: primary key = total_score desc, secondary key = avg_rating desc
@@ -89,4 +98,5 @@ async def get_recommendations(
         algorithm="cpng_v1_content_affinity",
         count=len(recommendation_items),
         recommendations=recommendation_items,
+        context_message=context_message,
     )

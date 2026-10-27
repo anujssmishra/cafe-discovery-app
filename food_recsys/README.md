@@ -1,5 +1,9 @@
 # Food RecSys — UPI Payment-Based Food Recommendation Engine
 
+**26 October 2026 mapping update:** mobile imports now use the versioned structured payment
+endpoint, with duplicate-safe identities and explicit per-record outcomes. See
+[verification and upgrade notes](../MOBILE_MAPPING_VERIFICATION.md).
+
 > **"Spotify for Food"** — A personalized recommendation engine that learns what you actually eat from UPI payment history and recommends restaurants you'll love with transparent reasoning.
 
 ---
@@ -212,4 +216,44 @@ POST /api/v1/ingest/mock/generate?persona=cafe_hopper&days=90
 cd food_recsys
 pytest -v
 ```
-All 13 tests covering ingestion, profile aggregation, recommendation scoring, and API endpoints pass automatically.
+The suite covers ingestion, profile aggregation, recommendation scoring, API contracts,
+concurrent imports, ledger pagination, and catalogue synchronization. Record actual results
+from the command rather than assuming an earlier test count still applies.
+
+## 7. Structured mobile imports and public catalogue sync
+
+`POST /api/v1/ingest/payments` accepts `schema_version: 1`, `user_id`, and `payments`.
+Each payment contains a stable `source_id`, `merchant_name`, `amount`, and optional
+`transaction_time`, `timezone`, `upi_ref`, `payment_app`, `cuisine`, and `dish_names`.
+Raw SMS fields are rejected. The response includes `ingested_count`, `duplicate_count`,
+`rejected_count`, `unresolved_count`, and an `outcomes` list echoing each `source_id`.
+Unresolved is a subset of inserted payments without a specific restaurant branch.
+The legacy SMS, statement, and direct-order endpoints remain available.
+
+`GET /api/v1/profile/{user_id}/transactions?limit=100&cursor=...` returns whole-ledger
+`total_count`/`total_spent`, the current page, `has_more`, and `next_cursor`. Unknown purchase
+times remain unknown. Repeated legacy UPI references are reconciled in ledger/profile views
+without deleting the underlying records. Records without a shared reliable identifier are
+not speculatively merged.
+
+The bundled 32-café public snapshot is generated from `php_app/schema/lucknow_cafes.sql`:
+
+```bash
+python scripts/export_seed_catalogue.py
+python scripts/export_seed_catalogue.py --check
+```
+
+To transfer current catalogue edits/closures from an existing PHP database, run its read-only
+public-field exporter in the PHP environment, then import the resulting JSON in Food RecSys:
+
+```bash
+php php_app/scripts/export_catalogue.php > public-catalogue.json
+# From food_recsys/:
+python -m app.catalogue.sync ../public-catalogue.json
+```
+
+Exports include explicit inactive flags and exclude circle notes and personal histories.
+Imports preserve stable UUIDs, cuisine enrichment when omitted by PHP, and unrelated manual
+records. A live export takes precedence over the bundled snapshot on restart. This is an
+explicit synchronization step; changing the hosted database does not automatically contact
+this separate backend. The mobile metadata endpoint supplies current areas/cuisines/meal options.

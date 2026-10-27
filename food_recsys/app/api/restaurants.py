@@ -13,35 +13,38 @@ def _escape_like(val: str) -> str:
     return val.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+@router.get("/metadata")
+async def catalogue_metadata(session: AsyncSession = Depends(get_db)):
+    restaurants = (await session.execute(select(Restaurant).where(Restaurant.is_active == True))).scalars().all()
+    return {
+        "areas": sorted({r.area for r in restaurants}),
+        "cuisines": sorted({c for r in restaurants for c in r.cuisines}),
+        "meal_options": ["any", "breakfast", "lunch", "snack", "dinner", "late_night"],
+    }
+
+
 @router.get("", response_model=list[RestaurantOut])
 async def list_restaurants(
-    city: str | None = Query(None, max_length=100, description="Filter by city (e.g. Lucknow)"),
-    area: str | None = Query(None, max_length=100, description="Filter by neighbourhood (e.g. Gomti Nagar)"),
-    cuisine: str | None = Query(None, max_length=50, description="Filter by cuisine tag"),
-    price_band: str | None = Query(None, pattern="^(budget|moderate|premium|luxury)$", description="budget | moderate | premium | luxury"),
+    city: str | None = Query(None, max_length=100),
+    area: str | None = Query(None, max_length=100),
+    cuisine: str | None = Query(None, max_length=50),
+    price_band: str | None = Query(None, pattern="^(budget|moderate|premium|luxury)$"),
     limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
     session: AsyncSession = Depends(get_db),
 ):
-    """Browse and filter active restaurants in the catalogue."""
-    stmt = select(Restaurant).where(Restaurant.is_active == True)
-    
+    """Filter active catalogue entries before applying the requested page size."""
+    statement = select(Restaurant).where(Restaurant.is_active == True)
     if city:
-        clean_city = _escape_like(city.strip())
-        stmt = stmt.where(Restaurant.city.ilike(f"%{clean_city}%"))
+        statement = statement.where(Restaurant.city.ilike(f"%{_escape_like(city.strip())}%", escape="\\"))
     if area:
-        clean_area = _escape_like(area.strip())
-        stmt = stmt.where(Restaurant.area.ilike(f"%{clean_area}%"))
+        statement = statement.where(Restaurant.area.ilike(f"%{_escape_like(area.strip())}%", escape="\\"))
     if price_band:
-        stmt = stmt.where(Restaurant.price_band == price_band)
-        
-    stmt = stmt.order_by(Restaurant.name.asc()).limit(limit)
-    res = await session.execute(stmt)
-    restaurants = res.scalars().all()
-    
+        statement = statement.where(Restaurant.price_band == price_band)
+    restaurants = (await session.execute(statement.order_by(Restaurant.name, Restaurant.id))).scalars().all()
     if cuisine:
         restaurants = [r for r in restaurants if cuisine in r.cuisines]
-        
-    return [RestaurantOut.model_validate(r) for r in restaurants]
+    return [RestaurantOut.model_validate(r) for r in restaurants[offset:offset + limit]]
 
 
 @router.get("/{restaurant_id}", response_model=RestaurantOut)
@@ -50,7 +53,7 @@ async def get_restaurant(
     session: AsyncSession = Depends(get_db),
 ):
     """Retrieve details for a specific restaurant by UUID."""
-    stmt = select(Restaurant).where(Restaurant.id == restaurant_id)
+    stmt = select(Restaurant).where(Restaurant.id == restaurant_id, Restaurant.is_active == True)
     res = await session.execute(stmt)
     restaurant = res.scalar_one_or_none()
     if not restaurant:

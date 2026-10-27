@@ -2,6 +2,16 @@
 
 Updated: 2026-10-12. Transfer context through source and evidence, not credentials or live agent sessions.
 
+## Mobile data mapping checkpoint — 2026-10-26
+
+Local work on `codex/mobile-data-mapping-fixes`, based on fetched GitHub `main` at `9226db1`.
+The Flutter/FastAPI subsystem now uses structured payment imports with per-record outcomes,
+idempotent identities, local-zone classification, cautious branch matching, persistent retries,
+complete ledger pagination, and public catalogue synchronization. Profile failures retain valid
+data and selected servers have separate queues/checkpoints. See
+[MOBILE_MAPPING_VERIFICATION.md](MOBILE_MAPPING_VERIFICATION.md) for exact checks, upgrade steps,
+and limitations. This checkpoint does not update or verify the hosted PHP site described below.
+
 ## 1. Verified Live Checkpoint
 
 - **Live Production URL:** `https://myfanverse.in` (Hostinger Single Web Hosting, account `u493193058`, PHP 8.3 + LiteSpeed + MariaDB).

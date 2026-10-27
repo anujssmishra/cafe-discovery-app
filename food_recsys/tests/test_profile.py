@@ -1,5 +1,6 @@
 import pytest
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from app.ingestion.pipeline import ingest_transactions
 from app.profile.builder import build_taste_profile
 from app.schemas.transaction import TransactionIn
@@ -10,21 +11,21 @@ async def test_build_taste_profile(db_session):
     txs = [
         TransactionIn(
             user_id="profile_tester",
-            transaction_time=datetime(2026, 10, 15, 8, 30, tzinfo=timezone.utc),
+            transaction_time=datetime(2026, 10, 15, 8, 30, tzinfo=ZoneInfo("Asia/Kolkata")),
             amount=140.0,
             merchant_name="SAGAR RATNA HAZRATGANJ",
             mcc_code="5812",
         ),
         TransactionIn(
             user_id="profile_tester",
-            transaction_time=datetime(2026, 10, 16, 9, 0, tzinfo=timezone.utc),
+            transaction_time=datetime(2026, 10, 16, 9, 0, tzinfo=ZoneInfo("Asia/Kolkata")),
             amount=120.0,
             merchant_name="CURRY LEAF SOUTH INDIAN",
             mcc_code="5812",
         ),
         TransactionIn(
             user_id="profile_tester",
-            transaction_time=datetime(2026, 10, 17, 20, 30, tzinfo=timezone.utc),
+            transaction_time=datetime(2026, 10, 17, 20, 30, tzinfo=ZoneInfo("Asia/Kolkata")),
             amount=250.0,
             merchant_name="IDRIS BIRYANI CHOWK",
             mcc_code="5812",

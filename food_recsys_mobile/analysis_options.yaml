@@ -5,3 +5,6 @@ analyzer:
     - build/**
     - macos/**
     - android/**
+    # The vendored plugin's example and tests have their own pubspec/dev dependencies.
+    - packages/telephony/example/**
+    - packages/telephony/test/**

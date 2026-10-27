@@ -175,3 +175,23 @@ def test_ignore_p2p_person_transfers():
     assert parse_sms(sms_friend) is None
 
 
+
+
+def test_explicit_sms_clock_is_local_and_receipt_is_only_fallback():
+    from zoneinfo import ZoneInfo
+    from app.ingestion.sms_parser import sms_to_transaction_in
+    from app.ingestion.pipeline import transaction_local_time
+    receipt = datetime(2026, 10, 24, 18, 45, tzinfo=timezone.utc)
+    parsed = parse_sms("Paid Rs 250 to Synthetic Cafe on 23-10-2026 at 08:30 AM via UPI Ref 900000000011.", receipt)
+    assert parsed is not None
+    assert parsed.transaction_time == datetime(2026, 10, 23, 8, 30, tzinfo=ZoneInfo("Asia/Kolkata"))
+    assert transaction_local_time(sms_to_transaction_in(parsed, "synthetic_clock")).hour == 8
+    date_only = parse_sms("Paid Rs 250 to Synthetic Cafe on 23-10-2026 via UPI Ref 900000000011.")
+    assert date_only.time_precision == "date"
+
+
+def test_food_keywords_are_words_and_payment_amount_is_not_balance():
+    assert parse_sms("Paid Rs 299 to Steam Games via UPI Ref 900000000011.") is None
+    parsed = parse_sms("Available bal Rs 5000. Paid Rs 250 to Synthetic Cafe via UPI Ref 900000000011.")
+    assert parsed is not None
+    assert parsed.amount == 250

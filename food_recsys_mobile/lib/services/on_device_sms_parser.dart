@@ -1,11 +1,33 @@
 class ParsedPayment {
+  static const supportedCuisines = {
+    'south_indian',
+    'biryani',
+    'mughlai',
+    'cafe_western',
+    'bakery',
+    'street_food',
+    'pizza',
+    'burger',
+    'chinese_indo',
+    'north_indian_curry',
+    'tea_coffee',
+    'dessert',
+    'healthy',
+    'italian',
+    'unspecified',
+  };
   final double amount;
   final String rawMerchant;
   final String normalizedMerchant;
   final String? bank;
   final String? upiRef;
+  // Available only for a local preview. Never included in an upload or queue.
   final String redactedText;
   final DateTime? timestamp;
+  final String? transactionTime;
+  final String timezone;
+  final String? cuisine;
+  final List<String> dishNames;
 
   ParsedPayment({
     required this.amount,
@@ -15,238 +37,465 @@ class ParsedPayment {
     this.upiRef,
     required this.redactedText,
     this.timestamp,
+    this.transactionTime,
+    this.timezone = 'Asia/Kolkata',
+    this.cuisine,
+    this.dishNames = const [],
   });
+
+  /// Only extracted payment evidence crosses the device boundary.
+  Map<String, dynamic> toPaymentPayload({String? sourceId}) {
+    final time = transactionTime ?? timestamp?.toUtc().toIso8601String();
+    return {
+      'source_id': sourceId ??
+          stablePaymentSourceId(
+            '$upiRef|$normalizedMerchant|${amount.toStringAsFixed(2)}|$time',
+          ),
+      'merchant_name': normalizedMerchant,
+      'amount': amount,
+      'timezone': timezone,
+      if (time != null) 'transaction_time': time,
+      if (upiRef != null) 'upi_ref': upiRef,
+      if (bank != null) 'payment_app': bank,
+      if (supportedCuisines.contains(cuisine)) 'cuisine': cuisine,
+      if (dishNames.isNotEmpty)
+        'dish_names': dishNames
+            .where((dish) => dish.trim().isNotEmpty)
+            .take(20)
+            .map((dish) => dish.length > 120 ? dish.substring(0, 120) : dish)
+            .toList(),
+    };
+  }
+}
+
+// Stable non-identifying key; the backend separately enforces payment identity.
+String stablePaymentSourceId(String value) {
+  var hash = 0x811c9dc5;
+  var secondHash = 5381;
+  for (final unit in value.codeUnits) {
+    hash = ((hash ^ unit) * 0x01000193) & 0xffffffff;
+    secondHash = ((secondHash * 33) ^ unit) & 0xffffffff;
+  }
+  return 'sms-${hash.toRadixString(16).padLeft(8, '0')}${secondHash.toRadixString(16).padLeft(8, '0')}';
 }
 
 class OnDeviceSmsParser {
   static const double maxFoodAmount = 15000.0;
   static const double minFoodAmount = 10.0;
-
   static const Set<String> foodPlatforms = {
-    'swiggy', 'zomato', 'zepto', 'blinkit', 'eatsure', 'domino', 'kfc',
-    'pizza hut', 'mcdonald', 'burger king', 'subway', 'starbucks', 'chai point',
-    'chaayos', 'haldiram', 'bikanervala', 'theobroma', 'hazelnut', 'blue tokai',
-    'third wave', 'thirdwave', 'chelvies', 'cafe coffee day', 'roastery', 'dastarkhwan',
-    'royal cafe', 'sagar ratna', 'belgian waffle', 'coffeeangel', 'naico', 'terracotta',
-    'magicpin', 'costa coffee', 'barista', 'gossip n bite', 'mio marito', 'vendiman',
-    'dunkin', 'moti mahal', 'canteen'
+    'swiggy',
+    'zomato',
+    'zepto',
+    'blinkit',
+    'eatsure',
+    'domino',
+    'dominos',
+    'kfc',
+    'pizza hut',
+    'mcdonald',
+    'mcdonalds',
+    'burger king',
+    'subway',
+    'starbucks',
+    'chai point',
+    'chaayos',
+    'haldiram',
+    'bikanervala',
+    'theobroma',
+    'hazelnut',
+    'blue tokai',
+    'third wave',
+    'thirdwave',
+    'chelvies',
+    'cafe coffee day',
+    'roastery',
+    'dastarkhwan',
+    'royal cafe',
+    'sagar ratna',
+    'belgian waffle',
+    'coffeeangel',
+    'naico',
+    'terracotta',
+    'magicpin',
+    'costa coffee',
+    'barista',
+    'gossip n bite',
+    'mio marito',
+    'vendiman',
+    'dunkin',
+    'moti mahal',
+    'canteen',
   };
-
   static const Set<String> foodKeywords = {
-    'cafe', 'café', 'coffee', 'roaster', 'roastery', 'restaurant', 'dhaba', 'bakery',
-    'bakes', 'patisserie', 'sweets', 'sweetshop', 'sweet shop', 'chaat', 'bistro', 'kitchen',
-    'dining', 'pizzeria', 'pizza', 'burger', 'tea', 'chai', 'brewery', 'gelato',
-    'waffle', 'dosa', 'biryani', 'kebab', 'tandoor', 'foodworks',
-    'shawarma', 'barbeque', 'bbq', 'eatery', 'food', 'rolls', 'thali', 'curry', 'diner',
-    'mahal', 'rasoi', 'bhojanalaya', 'mithai', 'canteen', 'snack', 'snacks', 'bite', 'bites',
-    'vendiman', 'belgian', 'cream', 'icecream', 'chole', 'kulche', 'pav', 'paratha'
+    'cafe',
+    'café',
+    'coffee',
+    'roaster',
+    'roastery',
+    'restaurant',
+    'dhaba',
+    'bakery',
+    'bakes',
+    'patisserie',
+    'sweets',
+    'sweetshop',
+    'sweet shop',
+    'chaat',
+    'bistro',
+    'kitchen',
+    'dining',
+    'pizzeria',
+    'pizza',
+    'burger',
+    'tea',
+    'chai',
+    'brewery',
+    'gelato',
+    'waffle',
+    'dosa',
+    'biryani',
+    'kebab',
+    'tandoor',
+    'foodworks',
+    'shawarma',
+    'barbeque',
+    'bbq',
+    'eatery',
+    'food',
+    'rolls',
+    'thali',
+    'curry',
+    'diner',
+    'mahal',
+    'rasoi',
+    'bhojanalaya',
+    'mithai',
+    'canteen',
+    'snack',
+    'snacks',
+    'bite',
+    'bites',
+    'vendiman',
+    'belgian',
+    'cream',
+    'icecream',
+    'chole',
+    'kulche',
+    'pav',
+    'paratha',
   };
-
   static const Set<String> smsBodyExclusions = {
-    'failed', 'declined', 'insufficient balance', 'unsuccessful', 'reversed',
-    'credit card', 'sbi card', 'fastag', 'toll plaza', 'mutual fund', 'mandate for',
-    'auto debit mandate', 'statement generated'
+    'failed',
+    'declined',
+    'insufficient balance',
+    'unsuccessful',
+    'reversed',
+    'credit card',
+    'sbi card',
+    'fastag',
+    'toll plaza',
+    'mutual fund',
+    'mandate for',
+    'auto debit mandate',
+    'statement generated',
   };
-
   static const Set<String> merchantExclusions = {
-    'cred', 'cred club', 'billdesk', 'cheq', 'onecard', 'sbi card', 'hdfc card', 'axis card',
-    'amazon', 'amaz', 'flipkart', 'myntra', 'meesho', 'nykaa', 'uber', 'ola', 'rapido',
-    'irctc', 'makemytrip', 'goibibo', 'indigo', 'airtel', 'jio', 'vodafone', 'vi', 'bsnl',
-    'fastag', 'toll', 'hpcl', 'bpcl', 'iocl', 'petrol', 'fuel', 'dispute', 'insufficient balance',
-    'food merchant', 'upi food merchant', 'process the auto debit', 'pack benefits', 'gift card',
-    'giftcard', 'lic', 'policybazaar', 'zerodha', 'groww', 'investment', 'grofers'
+    'cred',
+    'cred club',
+    'billdesk',
+    'cheq',
+    'onecard',
+    'sbi card',
+    'hdfc card',
+    'axis card',
+    'amazon',
+    'amaz',
+    'flipkart',
+    'myntra',
+    'meesho',
+    'nykaa',
+    'uber',
+    'ola',
+    'rapido',
+    'irctc',
+    'makemytrip',
+    'goibibo',
+    'indigo',
+    'airtel',
+    'jio',
+    'vodafone',
+    'vi',
+    'bsnl',
+    'fastag',
+    'toll',
+    'hpcl',
+    'bpcl',
+    'iocl',
+    'petrol',
+    'fuel',
+    'dispute',
+    'food merchant',
+    'upi food merchant',
+    'process the auto debit',
+    'pack benefits',
+    'gift card',
+    'giftcard',
+    'lic',
+    'policybazaar',
+    'zerodha',
+    'groww',
+    'investment',
+    'grofers',
+  };
+  static const _dishNames = {
+    'dosa',
+    'idli',
+    'vada',
+    'uttapam',
+    'biryani',
+    'kebab',
+    'pizza',
+    'burger',
+    'pasta',
+    'noodles',
+    'momos',
+    'sandwich',
+    'waffle',
+    'pancake',
+    'salad',
+    'paratha',
+    'thali',
+    'chole',
+    'kulche',
+    'chai',
+    'coffee',
+    'tea',
+    'gelato',
+    'ice cream',
+    'cake',
+    'croissant',
+    'shawarma',
+    'rolls',
+    'chaat',
   };
 
-  /// Redact PII (account digits, balances, phone numbers) before sending or storing
-  static String redactPii(String rawText) {
-    var sanitized = rawText;
-    sanitized = sanitized.replaceAll(RegExp(r'\*+\d{3,4}'), '[REDACTED]');
-    sanitized = sanitized.replaceAll(RegExp(r'(?:A/[cC]|Acct)(?:\s*(?:no\.?|ending|with))*[\s*Xx]*\d{3,4}', caseSensitive: false), 'A/C [REDACTED]');
-    sanitized = sanitized.replaceAll(RegExp(r'ending\s+with\s+\d{3,4}', caseSensitive: false), 'ending with [REDACTED]');
-    sanitized = sanitized.replaceAll(RegExp(r'\b(?:bal|avl\s*bal|balance|clear\s*bal)[^\w\d]*([0-9,]+(?:\.\d{1,2})?)', caseSensitive: false), 'Bal: [REDACTED]');
-    sanitized = sanitized.replaceAll(RegExp(r'\b[6-9]\d{9}\b'), '[PHONE REDACTED]');
-    return sanitized;
-  }
+  static bool _contains(String text, String term) => RegExp(
+        r'(?<![a-z0-9])' +
+            RegExp.escape(term).replaceAll(' ', r'[\s_.-]+') +
+            r'(?![a-z0-9])',
+        caseSensitive: false,
+      ).hasMatch(text);
 
-  /// Parse an SMS alert into a structured payment object strictly for food/dining expenses
-  static ParsedPayment? parse(String smsText, {String? sender, DateTime? timestamp}) {
+  static String redactPii(String rawText) => rawText
+      .replaceAll(RegExp(r'\*+\d{3,4}'), '[REDACTED]')
+      .replaceAll(
+          RegExp(r'(?:A/[cC]|Acct)(?:\s*(?:no\.?|ending|with))*[\s*Xx]*\d{3,4}',
+              caseSensitive: false),
+          'A/C [REDACTED]')
+      .replaceAll(RegExp(r'ending\s+with\s+\d{3,4}', caseSensitive: false),
+          'ending with [REDACTED]')
+      .replaceAll(
+          RegExp(
+              r'\b(?:bal|avl\s*bal|balance|clear\s*bal)[^\w\d]*([0-9,]+(?:\.\d{1,2})?)',
+              caseSensitive: false),
+          'Bal: [REDACTED]')
+      .replaceAll(RegExp(r'\b[6-9]\d{9}\b'), '[PHONE REDACTED]');
+
+  static ParsedPayment? parse(String smsText,
+      {String? sender, DateTime? timestamp}) {
     final lower = smsText.toLowerCase();
     final senderLower = sender?.toLowerCase() ?? '';
-
-    // Reject credits, salary, or non-debit alerts
-    if (lower.contains('credited') ||
-        lower.contains('credit with') ||
-        lower.contains('salary') ||
-        lower.contains('refund') ||
-        lower.contains('received')) {
+    if ({
+      'credited',
+      'credit with',
+      'salary',
+      'refund',
+      'received',
+      ...smsBodyExclusions
+    }.any((term) => _contains(lower, term))) {
       return null;
     }
-
-    // Reject failure/banking notification patterns
-    for (final ex in smsBodyExclusions) {
-      if (RegExp(r'\b' + RegExp.escape(ex) + r'\b').hasMatch(lower)) {
-        return null;
-      }
-    }
-
-    final isFoodApp = foodPlatforms.any((p) => lower.contains(p) || senderLower.contains(p));
-
-    final isDebit = lower.contains('debited') ||
-        lower.contains('sent') ||
-        lower.contains('paid') ||
-        lower.contains('txn') ||
-        lower.contains('spent') ||
-        (isFoodApp && (lower.contains('order') || lower.contains('meal') || lower.contains('worth') || lower.contains('placed') || lower.contains('confirmed') || lower.contains('delivered')));
-
+    final platform = foodPlatforms
+        .where((p) => _contains(lower, p) || _contains(senderLower, p))
+        .firstOrNull;
+    final isDebit =
+        RegExp(r'\b(?:debited|sent|paid|txn|spent)\b', caseSensitive: false)
+                .hasMatch(smsText) ||
+            RegExp(r'\bpayment\b.*\b(?:successful|completed)\b',
+                    caseSensitive: false)
+                .hasMatch(smsText) ||
+            (platform != null &&
+                RegExp(r'\b(?:order|meal|worth|placed|confirmed|delivered)\b',
+                        caseSensitive: false)
+                    .hasMatch(smsText));
     if (!isDebit) return null;
-
-    // 1. Extract Amount
-    double? detectedAmount;
-    final amountMatch = RegExp(r'(?:Rs\.?|INR|\u20B9)\s*([0-9,]+(?:\.\d{1,2})?)', caseSensitive: false).firstMatch(smsText);
-    if (amountMatch != null && amountMatch.group(1) != null) {
-      detectedAmount = double.tryParse(amountMatch.group(1)!.replaceAll(',', ''));
-    }
-
-    if (detectedAmount == null) {
-      final debMatch = RegExp(r'debited\s*(?:by|for|with)?\s*(?:Rs\.?|INR|\u20B9)?\s*([0-9,]+(?:\.\d{1,2})?)', caseSensitive: false).firstMatch(smsText);
-      if (debMatch != null && debMatch.group(1) != null) {
-        detectedAmount = double.tryParse(debMatch.group(1)!.replaceAll(',', ''));
-      }
-    }
-
-    // Strict Amount Bounds Check: Must be between Rs 10 and Rs 15,000 (rejects 1.4L / 1.5L bank transfers)
-    if (detectedAmount == null || detectedAmount < minFoodAmount || detectedAmount > maxFoodAmount) {
+    final amountMatch = RegExp(r'(?:Rs\.?|INR|₹)\s*([0-9,]+(?:\.\d{1,2})?)',
+                caseSensitive: false)
+            .firstMatch(smsText) ??
+        RegExp(r'debited\s*(?:by|for|with)?\s*([0-9,]+(?:\.\d{1,2})?)',
+                caseSensitive: false)
+            .firstMatch(smsText);
+    final amount =
+        double.tryParse(amountMatch?.group(1)?.replaceAll(',', '') ?? '');
+    if (amount == null || amount < minFoodAmount || amount > maxFoodAmount) {
       return null;
     }
 
-    // 2. Extract Merchant
-    String? extractedMerchant;
-
-    // 2A. Check food app specific restaurant syntax e.g. "order from <Restaurant>", "meal from <Restaurant>"
-    final foodRestMatch = RegExp(r'(?:order\s+(?:from|at)|meal\s+(?:from|at)|confirmed\s+at)\s+([A-Za-z0-9\s&_.-]{2,40}?)(?:\s+(?:of|worth|for|is|placed|confirmed|\(Rs|\(INR|Rs\.?|INR|\u20B9|\!|\.|\,)|$)', caseSensitive: false).firstMatch(smsText);
-    if (foodRestMatch != null) {
-      final cand = foodRestMatch.group(1)!.trim();
-      final candLower = cand.toLowerCase();
-      if (!candLower.startsWith('rs') && !candLower.startsWith('inr') && cand.length > 2) {
-        extractedMerchant = cand;
-      }
-    }
-
-    // 2B. Check VPA: UPI:MERCHANT@handle
-    if (extractedMerchant == null) {
-      final vpaMatch = RegExp(r'\bUPI:([A-Za-z0-9\s_.-]+@[A-Za-z0-9.-]+)\b', caseSensitive: false).firstMatch(smsText);
-      if (vpaMatch != null) {
-        final fullVpa = vpaMatch.group(1)!.trim();
-        extractedMerchant = fullVpa.split('@')[0].trim();
-      }
-    }
-
-    // 2C. Check "to <MERCHANT>" or "by <MERCHANT>" or "at <MERCHANT>" stopping at "via"
-    if (extractedMerchant == null) {
-      final iter = RegExp(r'\b(?:to|by|paid to|sent to|\bat)\s+([A-Za-z0-9\s&_.-]{2,40}?)\s*(?:\(UPI|\bvia\b|\bon\b|\bref\b|\.|\,|$)', caseSensitive: false).allMatches(smsText);
-      for (final m in iter) {
-        final cand = m.group(1)!.trim();
-        final candLower = cand.toLowerCase();
-        if (!candLower.startsWith('rs') &&
-            !candLower.startsWith('inr') &&
-            !candLower.startsWith('a/c') &&
-            !candLower.startsWith('vpa') &&
-            cand.length > 2) {
-          extractedMerchant = cand;
+    String? merchant;
+    for (final pattern in [
+      r'(?:order\s+(?:from|at)|meal\s+(?:from|at)|confirmed\s+at)\s+(.+?)(?=\s+(?:of|worth|for|is|placed|confirmed|Rs\.?|INR)\b|[!,]|$)',
+      r'\bUPI\s*[:/]\s*([^@;:]+)@[a-z0-9.-]+',
+      r'\b(?:to|by|at)\s+(.+?)(?=\s+(?:via|on|ref|successful|completed|using|UPI|for)\b|\s*\(UPI|[;,]|\.(?:\s|$)|$)',
+    ]) {
+      for (final match
+          in RegExp(pattern, caseSensitive: false).allMatches(smsText)) {
+        var candidate = match.group(1)!.trim();
+        if (RegExp(r'^(?:Rs\.?|INR|A/C|VPA|\d)', caseSensitive: false)
+            .hasMatch(candidate)) {
+          continue;
+        }
+        candidate = candidate.replaceAll(
+            RegExp(r'@[a-z0-9.-]+', caseSensitive: false), '');
+        if (candidate.length >= 2 && candidate.length <= 100) {
+          merchant = candidate;
           break;
         }
       }
+      if (merchant != null) break;
     }
-
-    // Fallback for food delivery apps when no specific restaurant name found in body
-    if (extractedMerchant == null) {
-      if (lower.contains('swiggy') || senderLower.contains('swiggy')) {
-        extractedMerchant = 'Swiggy';
-      } else if (lower.contains('zomato') || senderLower.contains('zomato')) {
-        extractedMerchant = 'Zomato';
-      } else if (lower.contains('zepto') || senderLower.contains('zepto')) {
-        extractedMerchant = 'Zepto';
-      } else if (lower.contains('blinkit') || senderLower.contains('blinkit')) {
-        extractedMerchant = 'Blinkit';
-      } else if (lower.contains('eatsure')) {
-        extractedMerchant = 'EatSure';
-      } else if (lower.contains('domino')) {
-        extractedMerchant = "Domino's";
-      }
-    }
-
-    if (extractedMerchant == null) {
+    merchant ??= platform;
+    if (merchant == null ||
+        merchantExclusions.any((e) => _contains(merchant!, e))) {
       return null;
     }
-
-    final merchantLower = extractedMerchant.toLowerCase().trim();
-
-    // Reject non-food merchants (CRED, Amazon, Fastag, etc.)
-    for (final ex in merchantExclusions) {
-      if (RegExp(r'\b' + RegExp.escape(ex) + r'\b').hasMatch(merchantLower) || merchantLower == ex) {
-        return null;
-      }
-    }
-
-    // Positive food verification
-    final combined = '$lower $merchantLower';
-    final hasPlatform = foodPlatforms.any((p) => combined.contains(p));
-    final hasKeyword = foodKeywords.any((k) => combined.contains(k));
-
-    if (!hasPlatform && !hasKeyword) {
+    // Food evidence must identify the merchant/platform, not a substring such as "tea" in Steam.
+    if (platform == null &&
+        !foodKeywords.any((k) => _contains(merchant!, k)) &&
+        !foodPlatforms.any((p) => _contains(merchant!, p))) {
       return null;
     }
-
-    // 3. Detect Bank or Platform
-    String? bank;
-    if (lower.contains('icici') || senderLower.contains('icici')) {
-      bank = 'ICICI Bank';
-    } else if (lower.contains('hdfc') || senderLower.contains('hdfc')) {
-      bank = 'HDFC Bank';
-    } else if (lower.contains('sbi') || senderLower.contains('sbi')) {
-      bank = 'SBI';
-    } else if (lower.contains('axis') || senderLower.contains('axis')) {
-      bank = 'Axis Bank';
-    } else if (lower.contains('kotak') || senderLower.contains('kotak')) {
-      bank = 'Kotak Bank';
-    } else if (lower.contains('indus') || senderLower.contains('indus')) {
-      bank = 'IndusInd Bank';
-    } else if (lower.contains('canara') || senderLower.contains('canara')) {
-      bank = 'Canara Bank';
-    } else if (lower.contains('pnb') || senderLower.contains('pnb')) {
-      bank = 'PNB';
-    } else if (lower.contains('swiggy') || senderLower.contains('swiggy')) {
-      bank = 'Swiggy';
-    } else if (lower.contains('zomato') || senderLower.contains('zomato')) {
-      bank = 'Zomato';
-    } else if (lower.contains('zepto') || senderLower.contains('zepto')) {
-      bank = 'Zepto';
-    } else if (lower.contains('gpay') || lower.contains('google pay')) {
-      bank = 'Google Pay';
-    } else if (lower.contains('phonepe')) {
-      bank = 'PhonePe';
-    } else if (lower.contains('paytm')) {
-      bank = 'Paytm';
-    }
-
-    // 4. Extract UPI reference if present
-    final refMatch = RegExp(r'(?:ref(?:\s*no\.?)?|rrn)\s*[:#]?\s*(\d{6,14})', caseSensitive: false).firstMatch(smsText);
-    final upiRef = refMatch?.group(1);
-
-    final cleanMerchant = extractedMerchant
-        .replaceAll(RegExp(r'@\w+'), '')
-        .replaceAll(RegExp(r'[^\w\s]'), ' ')
+    final cleanMerchant = merchant
+        .replaceAll(RegExp(r'[^a-zA-Z0-9éÉ\s&\x27.-]'), ' ')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
-
+    if (cleanMerchant.length < 2) return null;
+    String? bank;
+    for (final entry in {
+      'icici': 'ICICI Bank',
+      'hdfc': 'HDFC Bank',
+      'sbi': 'SBI',
+      'axis': 'Axis Bank',
+      'kotak': 'Kotak Bank',
+      'indus': 'IndusInd Bank',
+      'canara': 'Canara Bank',
+      'pnb': 'PNB',
+      'swiggy': 'Swiggy',
+      'zomato': 'Zomato',
+      'zepto': 'Zepto',
+      'blinkit': 'Blinkit',
+      'google pay': 'Google Pay',
+      'gpay': 'Google Pay',
+      'phonepe': 'PhonePe',
+      'paytm': 'Paytm',
+    }.entries) {
+      if (lower.contains(entry.key) || senderLower.contains(entry.key)) {
+        bank = entry.value;
+        break;
+      }
+    }
+    final ref = RegExp(r'(?:ref(?:\s*no\.?)?|rrn)\s*[:#]?\s*(\d{6,14})',
+            caseSensitive: false)
+        .firstMatch(smsText)
+        ?.group(1);
+    final extractedTime = _extractTransactionTime(smsText);
+    final cuisineMatch = RegExp(r'cuisine\s*[:=]\s*([a-z]+(?:[_ -][a-z]+)*)',
+            caseSensitive: false)
+        .firstMatch(smsText);
     return ParsedPayment(
-      amount: detectedAmount,
-      rawMerchant: extractedMerchant,
-      normalizedMerchant: cleanMerchant.isEmpty ? extractedMerchant : cleanMerchant,
+      amount: amount,
+      rawMerchant: merchant,
+      normalizedMerchant: cleanMerchant,
       bank: bank,
-      upiRef: upiRef,
+      upiRef: ref,
       redactedText: redactPii(smsText),
-      timestamp: timestamp,
+      timestamp:
+          extractedTime == null ? timestamp : DateTime.tryParse(extractedTime),
+      transactionTime: extractedTime,
+      cuisine: cuisineMatch
+          ?.group(1)
+          ?.toLowerCase()
+          .replaceAll(RegExp(r'[ -]'), '_'),
+      dishNames: _dishNames.where((dish) => _contains(lower, dish)).toList(),
     );
   }
+
+  static String? _extractTransactionTime(String text) {
+    final iso = RegExp(
+            r'\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?',
+            caseSensitive: false)
+        .firstMatch(text)
+        ?.group(0);
+    if (iso != null) {
+      final normalized = iso.replaceFirst(' ', 'T');
+      final zoned = RegExp(r'(?:Z|[+-]\d{2}:?\d{2})$', caseSensitive: false)
+              .hasMatch(normalized)
+          ? normalized
+          : '$normalized+05:30';
+      return DateTime.tryParse(zoned) == null ? null : zoned;
+    }
+    final match = RegExp(
+            r'\b(\d{1,2})[-/ ]?([A-Za-z]{3}|\d{1,2})[-/ ]?(\d{4}|\d{2})(?:\s+at|[, T])?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?\s*(Z|UTC|IST|[+-]\d{2}:?\d{2})?',
+            caseSensitive: false)
+        .firstMatch(text);
+    // Date-only alerts do not establish a meal hour.
+    if (match == null) {
+      return null;
+    }
+    final monthText = match.group(2)!.toLowerCase();
+    final month = int.tryParse(monthText) ??
+        const [
+              'jan',
+              'feb',
+              'mar',
+              'apr',
+              'may',
+              'jun',
+              'jul',
+              'aug',
+              'sep',
+              'oct',
+              'nov',
+              'dec'
+            ].indexOf(monthText) +
+            1;
+    var year = int.parse(match.group(3)!);
+    if (year < 100) year += 2000;
+    var hour = int.parse(match.group(4)!);
+    final meridiem = match.group(7)?.toUpperCase();
+    if (meridiem != null) hour = hour % 12 + (meridiem == 'PM' ? 12 : 0);
+    final day = int.parse(match.group(1)!);
+    final minute = int.parse(match.group(5)!);
+    final second = int.tryParse(match.group(6) ?? '') ?? 0;
+    if (month < 1 ||
+        month > 12 ||
+        day < 1 ||
+        day > DateTime.utc(year, month + 1, 0).day ||
+        hour > 23 ||
+        minute > 59 ||
+        second > 59) {
+      return null;
+    }
+    final sourceZone = match.group(8)?.toUpperCase();
+    final zone = sourceZone == 'UTC' || sourceZone == 'Z'
+        ? 'Z'
+        : sourceZone == null || sourceZone == 'IST'
+            ? '+05:30'
+            : sourceZone;
+    String pad(int n) => n.toString().padLeft(2, '0');
+    return '$year-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:${pad(second)}$zone';
+  }
+}
+
+extension _FirstOrNull<T> on Iterable<T> {
+  T? get firstOrNull => isEmpty ? null : first;
 }

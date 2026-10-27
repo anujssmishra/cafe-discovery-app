@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query, Path
+from typing import Literal
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.schemas.recommendation import RecommendationResponse
@@ -11,7 +12,7 @@ router = APIRouter(prefix="/recommend", tags=["Recommendations"])
 async def recommend(
     user_id: str = Path(..., min_length=1, max_length=64, pattern=r"^[A-Za-z0-9_.-]+$"),
     n: int = Query(10, ge=1, le=50, description="Number of recommendations to return"),
-    meal: str | None = Query(None, description="Meal context: breakfast | lunch | snack | dinner | late_night"),
+    meal: Literal["any", "breakfast", "lunch", "snack", "dinner", "late_night"] | None = Query(None),
     area: str | None = Query(None, description="Filter by neighbourhood (e.g. Gomti Nagar, Hazratganj)"),
     city: str | None = Query(None, description="Filter by city (e.g. Lucknow)"),
     cuisine: str | None = Query(None, description="Optional specific cuisine filter"),

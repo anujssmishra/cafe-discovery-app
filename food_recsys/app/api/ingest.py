@@ -1,4 +1,7 @@
 from datetime import datetime, timezone
+from hashlib import sha256
+from pydantic import ValidationError
+from sqlalchemy import func, select
 from fastapi import APIRouter, Depends, Query, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
@@ -8,12 +11,16 @@ from app.schemas.transaction import (
     IngestResponse, 
     SmsIngestRequest,
     FoodOrdersBatchIn,
+    PaymentsBatchIn,
+    IngestOutcome,
 )
 from app.ingestion.pipeline import ingest_transactions
-from app.ingestion.sms_parser import parse_sms_batch
+from app.ingestion.sms_parser import parse_sms, sms_to_transaction_in
 from app.ingestion.statement_parser import parse_statement_csv
 from app.profile.builder import build_taste_profile
 from app.mock.transactions import generate_mock_transactions_for_persona, PERSONA_PROFILES
+from app.models.profile import TasteProfile
+from app.models.transaction import FoodPurchase
 
 router = APIRouter(prefix="/ingest", tags=["Ingestion"])
 
@@ -37,46 +44,15 @@ async def ingest_batch(
     return res
 
 
-@router.post("/sms")
-async def ingest_sms_messages(
-    payload: SmsIngestRequest,
-    rebuild_profile: bool = Query(True, description="Automatically recompute user taste profile"),
-    session: AsyncSession = Depends(get_db),
-):
-    """Parse real-world bank/UPI transaction SMS alerts and ingest them into user's taste profile."""
-    input_items: list[str | tuple[str, datetime | None]] = []
-    if payload.sms_text:
-        input_items.append(payload.sms_text)
-    if payload.messages:
-        input_items.extend(payload.messages)
-    if payload.timestamped_messages:
-        for t_msg in payload.timestamped_messages:
-            input_items.append((t_msg.text, t_msg.received_at))
-
-    if not input_items:
-        raise HTTPException(status_code=400, detail="Must provide either sms_text, messages list, or timestamped_messages")
-
-    parsed_transactions = parse_sms_batch(input_items, payload.user_id)
-    if not parsed_transactions:
-        return {
-            "status": "no_transactions_found",
-            "message": "Could not identify any valid debit payment alerts from the provided SMS text",
-            "parsed_count": 0,
-            "classified_food_count": 0,
-        }
-
-    ingest_res = await ingest_transactions(session, parsed_transactions)
-
-    profile = None
-    if rebuild_profile:
-        profile = await build_taste_profile(session, payload.user_id)
-
+def _import_payload(result: IngestResponse, profile: TasteProfile | None = None) -> dict:
     return {
         "status": "success",
-        "user_id": payload.user_id,
-        "sms_count": len(input_items),
-        "parsed_transactions_count": len(parsed_transactions),
-        "ingest_summary": ingest_res.model_dump(),
+        "submitted_count": result.submitted_count,
+        "ingested_count": result.ingested_count,
+        "duplicate_count": result.duplicate_count,
+        "rejected_count": result.rejected_count,
+        "unresolved_count": result.unresolved_count,
+        "outcomes": [outcome.model_dump() for outcome in result.outcomes],
         "taste_profile": {
             "version": profile.version,
             "total_food_transactions": profile.total_food_transactions,
@@ -84,6 +60,104 @@ async def ingest_sms_messages(
             "top_cuisines": profile.cuisine_affinities,
         } if profile else None,
     }
+
+
+async def _profile_after_import(session: AsyncSession, user_id: str, result: IngestResponse, rebuild: bool):
+    if not rebuild:
+        return None
+    if result.ingested_count:
+        return await build_taste_profile(session, user_id)
+    # Repair an interrupted post-commit profile build on retry, while leaving a current profile alone.
+    profile = (await session.execute(select(TasteProfile).where(TasteProfile.user_id == user_id))).scalar_one_or_none()
+    if result.duplicate_count:
+        count = await session.scalar(select(func.count()).select_from(FoodPurchase).where(FoodPurchase.user_id == user_id))
+        if profile is None or profile.total_food_transactions != count:
+            return await build_taste_profile(session, user_id)
+    return profile
+
+
+@router.post("/payments")
+async def ingest_structured_payments(
+    payload: PaymentsBatchIn,
+    rebuild_profile: bool = Query(True),
+    session: AsyncSession = Depends(get_db),
+):
+    """Ingest the safe, versioned on-device payment contract without raw SMS text."""
+    now = datetime.now(timezone.utc)
+    transactions = [
+        TransactionIn(
+            user_id=payload.user_id,
+            transaction_time=payment.transaction_time or now,
+            time_precision="exact" if payment.transaction_time is not None else "unknown",
+            timezone=payment.timezone,
+            merchant_name=payment.merchant_name,
+            amount=payment.amount,
+            upi_ref=payment.upi_ref,
+            payment_app=payment.payment_app,
+            source_id=payment.source_id,
+            cuisine=payment.cuisine,
+            dish_names=payment.dish_names,
+            mcc_code="5812",
+            raw_description=f"Payment: Paid Rs {payment.amount:.2f} to {payment.merchant_name}",
+        )
+        for payment in payload.payments
+    ]
+    result = await ingest_transactions(session, transactions)
+    profile = await _profile_after_import(session, payload.user_id, result, rebuild_profile)
+    return _import_payload(result, profile)
+
+
+@router.post("/sms")
+async def ingest_sms_messages(
+    payload: SmsIngestRequest,
+    rebuild_profile: bool = Query(True, description="Automatically recompute user taste profile"),
+    session: AsyncSession = Depends(get_db),
+):
+    """Legacy SMS input; returns honest per-message parse/import outcomes."""
+    input_items: list[tuple[str, datetime | None]] = []
+    if payload.sms_text:
+        input_items.append((payload.sms_text, None))
+    input_items.extend((text, None) for text in payload.messages or [])
+    input_items.extend((message.text, message.received_at) for message in payload.timestamped_messages or [])
+    if not input_items:
+        raise HTTPException(status_code=400, detail="Must provide either sms_text, messages list, or timestamped_messages")
+
+    transactions = []
+    source_order = []
+    rejected = []
+    for text, received_at in input_items:
+        source_id = "sms:" + sha256((text.strip() + (received_at.isoformat() if received_at else "")).encode()).hexdigest()
+        source_order.append(source_id)
+        try:
+            parsed = parse_sms(text, received_at)
+            transaction = sms_to_transaction_in(parsed, payload.user_id) if parsed else None
+        except (ValidationError, ValueError):
+            transaction = None
+        if transaction is None:
+            rejected.append(IngestOutcome(source_id=source_id, status="rejected", reason="not_a_supported_food_payment"))
+        else:
+            transactions.append(transaction)
+
+    result = await ingest_transactions(session, transactions)
+    # Restore original order, including repeated source IDs within this request.
+    by_source: dict[str | None, list[IngestOutcome]] = {}
+    for outcome in [*result.outcomes, *rejected]:
+        by_source.setdefault(outcome.source_id, []).append(outcome)
+    result.outcomes = [by_source[source_id].pop(0) for source_id in source_order]
+    result.submitted_count = len(input_items)
+    result.rejected_count += len(rejected)
+    result.skipped_count += len(rejected)
+    profile = await _profile_after_import(session, payload.user_id, result, rebuild_profile)
+    response = _import_payload(result, profile)
+    response.update({
+        "user_id": payload.user_id, "sms_count": len(input_items),
+        "parsed_count": len(transactions), "parsed_transactions_count": len(transactions),
+        "classified_food_count": result.classified_food_count,
+        "ingest_summary": result.model_dump(),
+    })
+    if not transactions:
+        response.update(status="no_transactions_found", message="Could not identify any valid food payment alerts")
+    return response
 
 
 @router.post("/food-orders")
@@ -92,48 +166,28 @@ async def ingest_food_orders(
     rebuild_profile: bool = Query(True, description="Automatically recompute user taste profile"),
     session: AsyncSession = Depends(get_db),
 ):
-    """Ingest direct order history from Swiggy, Zomato, or food delivery apps."""
-    if not payload.orders:
-        raise HTTPException(status_code=400, detail="Order list cannot be empty")
-
+    """Preserve explicit cuisine and every supplied dish during order classification."""
     now = datetime.now(timezone.utc)
-    transactions: list[TransactionIn] = []
+    transactions = []
     for order in payload.orders:
-        tx_time = order.order_time or now
-        platform_name = order.platform or "Food App"
-        dish_desc = f" ({', '.join(order.dish_names[:3])})" if order.dish_names else ""
-        desc = f"{platform_name}: Ordered from {order.restaurant_name}{dish_desc}"
-
-        transactions.append(
-            TransactionIn(
-                user_id=payload.user_id,
-                transaction_time=tx_time,
-                amount=order.amount,
-                merchant_name=order.restaurant_name,
-                mcc_code="5812",
-                payment_app=platform_name,
-                raw_description=desc,
-            )
-        )
-
-    ingest_res = await ingest_transactions(session, transactions)
-
-    profile = None
-    if rebuild_profile:
-        profile = await build_taste_profile(session, payload.user_id)
-
-    return {
-        "status": "success",
-        "user_id": payload.user_id,
-        "orders_count": len(payload.orders),
-        "ingest_summary": ingest_res.model_dump(),
-        "taste_profile": {
-            "version": profile.version,
-            "total_food_transactions": profile.total_food_transactions,
-            "avg_spend": profile.avg_spend,
-            "top_cuisines": profile.cuisine_affinities,
-        } if profile else None,
-    }
+        platform = order.platform or "Food App"
+        dish_description = f" ({', '.join(order.dish_names or [])})" if order.dish_names else ""
+        transactions.append(TransactionIn(
+            user_id=payload.user_id,
+            transaction_time=order.order_time or now,
+            time_precision="exact" if order.order_time else "unknown",
+            timezone=order.timezone,
+            amount=order.amount, merchant_name=order.restaurant_name,
+            mcc_code="5812", payment_app=platform,
+            source_id=order.source_id, upi_ref=order.upi_ref,
+            cuisine=order.cuisine, dish_names=order.dish_names or [],
+            raw_description=f"{platform}: Ordered from {order.restaurant_name}{dish_description}"[:500],
+        ))
+    result = await ingest_transactions(session, transactions)
+    profile = await _profile_after_import(session, payload.user_id, result, rebuild_profile)
+    response = _import_payload(result, profile)
+    response.update(user_id=payload.user_id, orders_count=len(payload.orders), ingest_summary=result.model_dump())
+    return response
 
 
 import re
@@ -168,34 +222,25 @@ async def ingest_bank_statement(
     except UnicodeDecodeError:
         content = raw_bytes.decode("latin-1", errors="replace")
 
-    parsed_transactions = parse_statement_csv(content, user_id)
-    if not parsed_transactions:
-        return {
-            "status": "no_transactions_found",
-            "message": "No debit transactions could be extracted from this statement",
-            "parsed_count": 0,
-            "classified_food_count": 0,
-        }
-
-    ingest_res = await ingest_transactions(session, parsed_transactions)
-
-    profile = None
-    if rebuild_profile:
-        profile = await build_taste_profile(session, user_id)
-
-    return {
-        "status": "success",
-        "user_id": user_id,
-        "filename": file.filename,
+    rejected: list[IngestOutcome] = []
+    parsed_transactions = parse_statement_csv(content, user_id, rejections=rejected)
+    result = await ingest_transactions(session, parsed_transactions)
+    result.submitted_count += len(rejected)
+    result.rejected_count += len(rejected)
+    result.skipped_count += len(rejected)
+    result.outcomes.extend(rejected)
+    profile = await _profile_after_import(session, user_id, result, rebuild_profile)
+    response = _import_payload(result, profile)
+    response.update({
+        "user_id": user_id, "filename": file.filename,
+        "parsed_count": len(parsed_transactions),
         "parsed_transactions_count": len(parsed_transactions),
-        "ingest_summary": ingest_res.model_dump(),
-        "taste_profile": {
-            "version": profile.version,
-            "total_food_transactions": profile.total_food_transactions,
-            "avg_spend": profile.avg_spend,
-            "top_cuisines": profile.cuisine_affinities,
-        } if profile else None,
-    }
+        "classified_food_count": result.classified_food_count,
+        "ingest_summary": result.model_dump(),
+    })
+    if not parsed_transactions:
+        response.update(status="no_transactions_found", message="No food debits could be extracted from this statement")
+    return response
 
 
 @router.post("/mock/generate")

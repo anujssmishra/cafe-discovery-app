@@ -1,6 +1,6 @@
 import uuid
-from sqlalchemy import String, Float, Boolean, JSON
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Float, Boolean, JSON, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
 
@@ -26,3 +26,18 @@ class Restaurant(Base):
     
     avg_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+
+    catalogue_metadata: Mapped["RestaurantMetadata | None"] = relationship(
+        lazy="selectin", uselist=False, cascade="all, delete-orphan"
+    )
+
+
+class RestaurantMetadata(Base):
+    """Public detail data; a new table keeps existing installations upgradeable."""
+
+    __tablename__ = "restaurant_metadata"
+
+    restaurant_id: Mapped[str] = mapped_column(
+        ForeignKey("restaurants.id", ondelete="CASCADE"), primary_key=True
+    )
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)

@@ -2,11 +2,13 @@
 Filters out non-food bank debits (credit cards, loans, failed txs, e-commerce, investments, travel).
 """
 
+import hashlib
 import re
 from datetime import datetime, timezone
 from dataclasses import dataclass
+from zoneinfo import ZoneInfo
 from app.schemas.transaction import TransactionIn
-from app.ingestion.merchant_resolver import normalize_merchant_name
+from app.ingestion.merchant_resolver import normalize_merchant_name, detect_cuisine
 
 @dataclass
 class ParsedSms:
@@ -17,6 +19,9 @@ class ParsedSms:
     upi_ref: str | None
     bank_app: str
     raw_text: str
+    time_precision: str = "exact"
+    cuisine: str = "unspecified"
+    source_id: str | None = None
 
 
 MAX_FOOD_AMOUNT_INR = 15000.0  # Cap on personal food/dining: orders > Rs 15,000 are not everyday meals
@@ -92,13 +97,20 @@ MONTH_MAP = {
 
 def _extract_amount(text: str) -> float | None:
     """Extract payment amount in INR from text."""
-    # Matches: Rs. 340.00, Rs 340, INR 340.00, Rs.340, debited by 340.00
-    m = re.search(r"(?:Rs\.?|INR|\u20B9)\s*([0-9,]+(?:\.[0-9]{1,2})?)", text, re.IGNORECASE)
-    if m:
-        try:
-            return float(m.group(1).replace(",", ""))
-        except ValueError:
-            pass
+    currency = r"(?:Rs\.?|INR|\u20B9)\s*([0-9,]+(?:\.[0-9]{1,2})?)"
+    # Prefer the amount next to payment/debit wording, not the available balance or a discount.
+    patterns = [
+        r"(?:sent|paid|spent|payment(?:\s+of)?|debited\s*(?:by|for|with)?)\s*" + currency,
+        currency + r"\s+(?:has\s+been\s+)?(?:was\s+)?(?:debited|paid|spent)",
+        currency,
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            try:
+                return float(match.group(1).replace(",", ""))
+            except ValueError:
+                continue
 
     # Alternative: "debited for/by 340.00"
     m2 = re.search(r"debited (?:by|for|with)\s*(?:Rs\.?|INR|\u20B9)?\s*([0-9,]+(?:\.[0-9]{1,2})?)", text, re.IGNORECASE)
@@ -128,48 +140,55 @@ def _extract_bank_app(text: str) -> str:
 
 
 def _extract_date(text: str, fallback_time: datetime | None = None) -> datetime:
-    """Extract transaction date from SMS, or fallback to provided/current time."""
-    now = fallback_time or datetime.now(timezone.utc)
-    
-    # 1. Match dd-mmm-yy or dd-mmm-yyyy (e.g., 24-OCT-26, 24-Oct-2026)
-    m = re.search(r"\b(\d{1,2})[-/]([A-Za-z]{3})[-/](\d{2,4})\b", text)
-    if m:
-        day = int(m.group(1))
-        mon_str = m.group(2).lower()
-        mon = MONTH_MAP.get(mon_str, now.month)
-        year_str = m.group(3)
-        year = int(year_str) if len(year_str) == 4 else 2000 + int(year_str)
+    """Read local bank date/time; retain a provided SMS receipt instant as fallback."""
+    zone = ZoneInfo("Asia/Kolkata")
+    now = fallback_time or datetime.now(zone)
+    now = now.replace(tzinfo=zone) if now.tzinfo is None else now.astimezone(zone)
+    dt = now
+    date_patterns = [
+        r"\b(\d{1,2})[-/]([A-Za-z]{3})[-/](\d{2,4})\b",
+        r"\b(\d{1,2})([A-Za-z]{3})(\d{2,4})\b",
+        r"\b(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})\b",
+    ]
+    for pattern in date_patterns:
+        match = re.search(pattern, text)
+        if not match:
+            continue
+        day, month, year = match.groups()
+        month_number = MONTH_MAP.get(month.lower()) if month.isalpha() else int(month)
+        if month_number is None:
+            continue
         try:
-            return now.replace(year=year, month=mon, day=day)
+            dt = now.replace(year=int(year) + (2000 if len(year) == 2 else 0), month=month_number, day=int(day))
+            break
+        except ValueError:
+            continue
+    clock = re.search(r"\b(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?\b", text, re.IGNORECASE)
+    if clock:
+        hour, minute, second, period = clock.groups()
+        hour = int(hour)
+        if period:
+            if not 1 <= hour <= 12:
+                return dt
+            hour = hour % 12 + (12 if period.upper() == "PM" else 0)
+        try:
+            dt = dt.replace(hour=hour, minute=int(minute), second=int(second or 0), microsecond=0)
         except ValueError:
             pass
+    return dt
 
-    # 2. Match 24Oct26 (e.g. SBI format)
-    m2 = re.search(r"\b(\d{1,2})([A-Za-z]{3})(\d{2,4})\b", text)
-    if m2:
-        day = int(m2.group(1))
-        mon_str = m2.group(2).lower()
-        mon = MONTH_MAP.get(mon_str, now.month)
-        year_str = m2.group(3)
-        year = int(year_str) if len(year_str) == 4 else 2000 + int(year_str)
-        try:
-            return now.replace(year=year, month=mon, day=day)
-        except ValueError:
-            pass
 
-    # 3. Match dd/mm/yy or dd-mm-yyyy (e.g., 24/10/26)
-    m3 = re.search(r"\b(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})\b", text)
-    if m3:
-        day = int(m3.group(1))
-        mon = int(m3.group(2))
-        year_str = m3.group(3)
-        year = int(year_str) if len(year_str) == 4 else 2000 + int(year_str)
-        try:
-            return now.replace(year=year, month=mon, day=day)
-        except ValueError:
-            pass
+def _time_precision(text: str, fallback: datetime | None) -> str:
+    if fallback is not None or re.search(r"\b\d{1,2}:\d{2}(?::\d{2})?\b", text):
+        return "exact"
+    if re.search(r"\b\d{1,2}(?:[-/]?[A-Za-z]{3}[-/]?|[-/]\d{1,2}[-/])\d{2,4}\b", text):
+        return "date"
+    return "unknown"
 
-    return now
+
+def _has_keyword(text: str, keyword: str) -> bool:
+    # Word boundaries prevent tea/roll/cream from matching Steam/Controller/Screaming.
+    return re.search(r"(?<!\w)" + re.escape(keyword) + r"(?:s|'s)?(?!\w)", text, re.IGNORECASE) is not None
 
 
 def _extract_merchant_and_vpa(text: str) -> tuple[str | None, str | None]:
@@ -256,8 +275,8 @@ def is_genuine_food_transaction(text: str, merchant: str | None, amount: float) 
 
     # 4. Positive Food Verification: Must match food platform or dining keyword
     combined = f"{lower_text} {merchant_lower}"
-    has_platform = any(re.search(r'\b' + re.escape(p) + r'\b', combined) or p in combined for p in FOOD_PLATFORMS)
-    has_food_keyword = any(re.search(r'\b' + re.escape(k) + r'\b', combined) or k in combined for k in FOOD_KEYWORDS)
+    has_platform = any(_has_keyword(combined, p) for p in FOOD_PLATFORMS)
+    has_food_keyword = any(_has_keyword(combined, k) for k in FOOD_KEYWORDS)
 
     if has_platform or has_food_keyword:
         return True
@@ -278,7 +297,7 @@ def parse_sms(sms_text: str, default_date: datetime | None = None) -> ParsedSms 
         return None
 
     # Must be debit or food app order confirmation
-    is_food_app = any(app in lower for app in FOOD_PLATFORMS)
+    is_food_app = any(_has_keyword(lower, app) for app in FOOD_PLATFORMS)
     is_debit = any(kw in lower for kw in ["sent", "debited", "paid", "payment", "spent", "txn"]) or (
         is_food_app and any(kw in lower for kw in ["order", "worth", "placed", "delivered", "confirmed", "meal"])
     )
@@ -294,7 +313,7 @@ def parse_sms(sms_text: str, default_date: datetime | None = None) -> ParsedSms 
     # If food app alert with no restaurant specified, default to the platform name
     if not merchant_name and is_food_app:
         for app in ["swiggy", "zomato", "zepto", "blinkit", "eatsure", "domino", "kfc", "mcdonald", "burger king"]:
-            if app in lower:
+            if _has_keyword(lower, app):
                 merchant_name = app.title()
                 break
 
@@ -318,6 +337,9 @@ def parse_sms(sms_text: str, default_date: datetime | None = None) -> ParsedSms 
         upi_ref=upi_ref,
         bank_app=bank_app,
         raw_text=clean_text,
+        time_precision=_time_precision(clean_text, default_date),
+        cuisine=detect_cuisine(clean_name, clean_text),
+        source_id="sms:" + hashlib.sha256((clean_text + (default_date.isoformat() if default_date else "")).encode()).hexdigest(),
     )
 
 
@@ -333,7 +355,10 @@ def sms_to_transaction_in(parsed: ParsedSms, user_id: str) -> TransactionIn:
         mcc_code="5812",
         upi_ref=parsed.upi_ref,
         payment_app=parsed.bank_app,
-        raw_description=safe_desc,
+        raw_description=safe_desc[:500],
+        source_id=parsed.source_id,
+        time_precision=parsed.time_precision,
+        cuisine=parsed.cuisine,
     )
 
 

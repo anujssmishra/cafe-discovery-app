@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/recommendation.dart';
 import '../config/constants.dart';
 import '../config/theme.dart';
+import '../services/api_service.dart';
+import '../screens/restaurant_detail_screen.dart';
 
 class RecCard extends StatelessWidget {
   final RecommendationItem item;
@@ -31,7 +34,8 @@ class RecCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppTheme.primary.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+                    border:
+                        Border.all(color: AppTheme.primary.withOpacity(0.3)),
                   ),
                   alignment: Alignment.center,
                   child: Text(
@@ -54,7 +58,7 @@ class RecCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              r.name,
+                              r.name.isEmpty ? 'Name unavailable' : r.name,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -66,13 +70,24 @@ class RecCard extends StatelessWidget {
                           ),
                           if (r.source == 'cafe_app') ...[
                             const SizedBox(width: 4),
-                            const Icon(Icons.verified, size: 16, color: AppTheme.primary),
+                            const Tooltip(
+                                message: 'From the café catalogue',
+                                child: Icon(Icons.local_cafe,
+                                    size: 16, color: AppTheme.primary)),
                           ],
                         ],
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '📍 ${r.area}, ${r.city}',
+                        [r.area, r.city]
+                                .where((part) => part.isNotEmpty)
+                                .join(', ')
+                                .isEmpty
+                            ? 'Location not recorded'
+                            : '📍 ${[
+                                r.area,
+                                r.city
+                              ].where((part) => part.isNotEmpty).join(', ')}',
                         style: const TextStyle(
                           fontSize: 13,
                           color: AppTheme.textSecondary,
@@ -85,11 +100,13 @@ class RecCard extends StatelessWidget {
 
                 // Match %
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppTheme.primary.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppTheme.primary.withOpacity(0.4)),
+                    border:
+                        Border.all(color: AppTheme.primary.withOpacity(0.4)),
                   ),
                   child: Column(
                     children: [
@@ -102,7 +119,7 @@ class RecCard extends StatelessWidget {
                         ),
                       ),
                       const Text(
-                        'Match',
+                        'Fit score',
                         style: TextStyle(
                           color: AppTheme.textMuted,
                           fontSize: 10,
@@ -122,13 +139,28 @@ class RecCard extends StatelessWidget {
               spacing: 6,
               runSpacing: 6,
               children: [
-                _buildTag('${r.priceBand.toUpperCase()} TIER', AppTheme.warning),
+                _buildTag(
+                    r.priceBand == 'unknown'
+                        ? 'PRICE UNKNOWN'
+                        : '${r.priceBand.toUpperCase()} TIER',
+                    AppTheme.warning),
                 ...r.cuisines.map((c) {
-                  final disp = AppConstants.cuisineNames[c] ?? c.replaceAll('_', ' ');
+                  final disp =
+                      AppConstants.cuisineNames[c] ?? c.replaceAll('_', ' ');
                   return _buildTag(disp, AppTheme.secondary);
                 }),
               ],
             ),
+            if (r.foodHighlights.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Text(r.foodHighlights.join(' • '),
+                  style: const TextStyle(color: AppTheme.textSecondary)),
+            ],
+            if (r.avgRating != null) ...[
+              const SizedBox(height: 8),
+              Text('Recorded rating: ${r.avgRating!.toStringAsFixed(1)}',
+                  style: const TextStyle(color: AppTheme.textSecondary)),
+            ],
 
             const SizedBox(height: 12),
             const Divider(height: 1, color: AppTheme.border),
@@ -165,6 +197,19 @@ class RecCard extends StatelessWidget {
                   ),
                 );
               }).toList(),
+            ),
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: () =>
+                  Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => RestaurantDetailScreen(
+                  apiService: context.read<ApiService>(),
+                  restaurantId: r.id,
+                  initialRestaurant: r,
+                ),
+              )),
+              icon: const Icon(Icons.arrow_forward, size: 18),
+              label: const Text('View restaurant details'),
             ),
           ],
         ),

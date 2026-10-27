@@ -1,13 +1,17 @@
+import base64
+import json
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Path
-from sqlalchemy import select, delete
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from sqlalchemy import select, delete, func, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
+from app.models.restaurant import Restaurant
 from app.models.profile import TasteProfile, UserConsent
-from app.models.transaction import FoodPurchase, UpiTransaction
+from app.models.transaction import FoodPurchase, UpiTransaction, PaymentIdentity
 from app.models.recommendation import RecommendationLog
 from app.schemas.profile import TasteProfileOut, ConsentUpdateRequest, ConsentResponse
 from app.profile.builder import build_taste_profile
+from app.profile.records import canonical_dining_ids
 
 router = APIRouter(prefix="/profile", tags=["Taste Profiles"])
 
@@ -18,14 +22,7 @@ async def get_profile(
     session: AsyncSession = Depends(get_db),
 ):
     """Get the current taste intelligence profile for a user."""
-    stmt = select(TasteProfile).where(TasteProfile.user_id == user_id)
-    res = await session.execute(stmt)
-    profile = res.scalar_one_or_none()
-    
-    if not profile:
-        # Build if not already computed
-        profile = await build_taste_profile(session, user_id)
-        
+    profile = await build_taste_profile(session, user_id)
     return TasteProfileOut.model_validate(profile)
 
 
@@ -50,6 +47,7 @@ async def clear_profile(
     # Delete dependent food purchases
     await session.execute(delete(FoodPurchase).where(FoodPurchase.user_id == user_id))
     # Delete raw upi transactions
+    await session.execute(delete(PaymentIdentity).where(PaymentIdentity.user_id == user_id))
     await session.execute(delete(UpiTransaction).where(UpiTransaction.user_id == user_id))
     # Delete recommendation logs
     await session.execute(delete(RecommendationLog).where(RecommendationLog.user_id == user_id))
@@ -133,41 +131,61 @@ async def update_user_consent(
 @router.get("/{user_id}/transactions")
 async def get_user_transactions(
     user_id: str = Path(..., min_length=1, max_length=64, pattern=r"^[A-Za-z0-9_.-]+$"),
-    limit: int = 250,
+    limit: int = Query(100, ge=1, le=250),
+    cursor: str | None = Query(None, max_length=512),
     session: AsyncSession = Depends(get_db),
 ):
-    """Retrieve full chronological dining & payment ledger for a user."""
-    stmt = (
-        select(UpiTransaction, FoodPurchase)
-        .outerjoin(FoodPurchase, UpiTransaction.id == FoodPurchase.transaction_id)
-        .where(UpiTransaction.user_id == user_id)
-        .order_by(UpiTransaction.transaction_time.desc())
-        .limit(limit)
+    """Page classified dining records with independent whole-ledger totals."""
+    where_user = and_(UpiTransaction.user_id == user_id,
+                      UpiTransaction.id.in_(canonical_dining_ids(user_id)))
+    totals = (await session.execute(
+        select(func.count(UpiTransaction.id), func.coalesce(func.sum(UpiTransaction.amount), 0))
+        .join(FoodPurchase, FoodPurchase.transaction_id == UpiTransaction.id)
+        .where(where_user)
+    )).one()
+    statement = (
+        select(UpiTransaction, FoodPurchase, Restaurant.name)
+        .join(FoodPurchase, FoodPurchase.transaction_id == UpiTransaction.id)
+        .outerjoin(Restaurant, Restaurant.id == FoodPurchase.restaurant_id)
+        .where(where_user)
     )
-    res = await session.execute(stmt)
-    records = res.all()
-
-    tx_list = []
-    total_spent = 0.0
-    for upi_tx, food_p in records:
-        total_spent += upi_tx.amount
-        tx_list.append({
-            "id": upi_tx.id,
-            "transaction_time": upi_tx.transaction_time.isoformat(),
-            "merchant_name": upi_tx.merchant_name,
-            "amount": upi_tx.amount,
-            "payment_app": upi_tx.payment_app,
-            "cuisine": food_p.cuisine_detected if food_p else "general_food",
-            "meal_type": food_p.meal_type if food_p else "snack",
-            "price_band": food_p.price_band if food_p else "moderate",
-            "description": upi_tx.raw_description,
+    if cursor:
+        try:
+            time_text, last_id = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
+            if not isinstance(last_id, str) or len(last_id) > 64:
+                raise ValueError("Invalid ID")
+            last_time = datetime.fromisoformat(time_text)
+            if last_time.tzinfo:
+                last_time = last_time.astimezone(timezone.utc).replace(tzinfo=None)
+        except (ValueError, TypeError, json.JSONDecodeError, UnicodeDecodeError):
+            raise HTTPException(status_code=400, detail="Invalid ledger cursor")
+        statement = statement.where(or_(
+            UpiTransaction.transaction_time < last_time,
+            and_(UpiTransaction.transaction_time == last_time, UpiTransaction.id < last_id),
+        ))
+    records = (await session.execute(statement.order_by(
+        UpiTransaction.transaction_time.desc(), UpiTransaction.id.desc()).limit(limit + 1))).all()
+    has_more = len(records) > limit
+    records = records[:limit]
+    transactions = []
+    for tx, purchase, name in records:
+        instant = tx.transaction_time.replace(tzinfo=timezone.utc) if tx.transaction_time.tzinfo is None else tx.transaction_time
+        precision = "exact" if purchase.hour_of_day >= 0 else "date" if purchase.day_of_week >= 0 else "unknown"
+        transactions.append({
+            "id": tx.id, "transaction_time": instant.isoformat() if precision != "unknown" else None,
+            "time_precision": precision, "merchant_name": tx.merchant_name,
+            "amount": tx.amount, "payment_app": tx.payment_app,
+            "cuisine": purchase.cuisine_detected, "meal_type": purchase.meal_type,
+            "price_band": purchase.price_band, "restaurant_id": purchase.restaurant_id,
+            "restaurant_name": name,
+            "classification_status": "matched" if purchase.restaurant_id else "unresolved",
         })
-
+    next_cursor = None
+    if has_more and records:
+        last = records[-1][0]
+        next_cursor = base64.urlsafe_b64encode(json.dumps(
+            [last.transaction_time.isoformat(), last.id]).encode()).decode().rstrip("=")
     return {
-        "user_id": user_id,
-        "total_count": len(tx_list),
-        "total_spent": round(total_spent, 2),
-        "transactions": tx_list,
+        "user_id": user_id, "total_count": totals[0], "total_spent": round(float(totals[1]), 2),
+        "transactions": transactions, "has_more": has_more, "next_cursor": next_cursor,
     }
-
-

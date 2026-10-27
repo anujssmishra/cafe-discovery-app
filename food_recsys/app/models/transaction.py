@@ -44,3 +44,15 @@ class FoodPurchase(Base):
     purchased_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
 
     transaction: Mapped["UpiTransaction"] = relationship("UpiTransaction", back_populates="food_purchase")
+
+
+class PaymentIdentity(Base):
+    """Stable user-scoped import aliases; a new table avoids changing existing payments."""
+
+    __tablename__ = "payment_identities"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    transaction_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("upi_transactions.id", ondelete="CASCADE"), nullable=False, index=True,
+    )

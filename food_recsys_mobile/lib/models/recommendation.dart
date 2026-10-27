@@ -44,10 +44,15 @@ class RecommendationItem {
   factory RecommendationItem.fromJson(Map<String, dynamic> json) {
     return RecommendationItem(
       rank: (json['rank'] as num?)?.toInt() ?? 1,
-      restaurant: Restaurant.fromJson(json['restaurant'] as Map<String, dynamic>),
+      restaurant:
+          Restaurant.fromJson(json['restaurant'] as Map<String, dynamic>),
       score: (json['score'] as num?)?.toDouble() ?? 0.0,
-      reasons: (json['reasons'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      scoreBreakdown: ScoreBreakdown.fromJson(json['score_breakdown'] as Map<String, dynamic>? ?? {}),
+      reasons: (json['reasons'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      scoreBreakdown: ScoreBreakdown.fromJson(
+          json['score_breakdown'] as Map<String, dynamic>? ?? {}),
     );
   }
 }
@@ -57,12 +62,18 @@ class RecommendationResponse {
   final String mealContext;
   final int count;
   final List<RecommendationItem> recommendations;
+  final DateTime? generatedAt;
+  final String? algorithm;
+  final String? contextMessage;
 
   RecommendationResponse({
     required this.userId,
     required this.mealContext,
     required this.count,
     required this.recommendations,
+    this.generatedAt,
+    this.algorithm,
+    this.contextMessage,
   });
 
   factory RecommendationResponse.fromJson(Map<String, dynamic> json) {
@@ -71,7 +82,12 @@ class RecommendationResponse {
       userId: json['user_id'] ?? '',
       mealContext: json['meal_context'] ?? 'any',
       count: (json['count'] as num?)?.toInt() ?? list.length,
-      recommendations: list.map((e) => RecommendationItem.fromJson(e as Map<String, dynamic>)).toList(),
+      recommendations: list
+          .map((e) => RecommendationItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      generatedAt: DateTime.tryParse(json['generated_at']?.toString() ?? ''),
+      algorithm: json['algorithm'] as String?,
+      contextMessage: json['context_message'] as String?,
     );
   }
 }

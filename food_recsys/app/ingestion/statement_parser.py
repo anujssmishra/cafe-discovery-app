@@ -1,10 +1,14 @@
 """Bank Statement CSV Parser: extracts UPI food transactions from bank statement CSV files."""
 
 import csv
+import hashlib
+import json
 import io
 import re
-from datetime import datetime, timezone
-from app.schemas.transaction import TransactionIn
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from app.schemas.transaction import TransactionIn, IngestOutcome
+from app.ingestion.sms_parser import is_genuine_food_transaction
 
 # Common non-food financial narrations to exclude
 EXCLUDED_NARRATIONS = [
@@ -32,20 +36,24 @@ def _parse_amount(val: str | None) -> float | None:
         return None
 
 
-def _parse_date(date_str: str | None) -> datetime:
-    """Parse date from various Indian bank statement date strings."""
+def _parse_date(date_str: str | None) -> datetime | None:
+    """Parse Indian local dates; an invalid date must never become today's purchase."""
     if not date_str:
-        return datetime.now(timezone.utc)
-
-    clean_str = date_str.strip().split(" ")[0]  # strip time if present
+        return None
+    clean = date_str.strip()
+    zone = ZoneInfo("Asia/Kolkata")
+    try:
+        dt = datetime.fromisoformat(clean.replace("Z", "+00:00"))
+        return dt.replace(tzinfo=zone) if dt.tzinfo is None else dt.astimezone(zone)
+    except ValueError:
+        pass
     for fmt in DATE_FORMATS:
-        try:
-            dt = datetime.strptime(clean_str, fmt)
-            return dt.replace(tzinfo=timezone.utc)
-        except ValueError:
-            pass
-
-    return datetime.now(timezone.utc)
+        for suffix in (" %H:%M:%S", " %H:%M", " %I:%M %p", ""):
+            try:
+                return datetime.strptime(clean, fmt + suffix).replace(tzinfo=zone)
+            except ValueError:
+                continue
+    return None
 
 
 def _extract_merchant_from_narration(narration: str) -> tuple[str, str | None, str | None]:
@@ -91,7 +99,9 @@ def _extract_merchant_from_narration(narration: str) -> tuple[str, str | None, s
     return merchant.title() if merchant else "Food Merchant", vpa, upi_ref
 
 
-def parse_statement_csv(csv_content: str, user_id: str) -> list[TransactionIn]:
+def parse_statement_csv(
+    csv_content: str, user_id: str, rejections: list[IngestOutcome] | None = None,
+) -> list[TransactionIn]:
     """Parse bank statement CSV and extract debit food transactions."""
     transactions: list[TransactionIn] = []
     
@@ -132,30 +142,46 @@ def parse_statement_csv(csv_content: str, user_id: str) -> list[TransactionIn]:
 
     # 2. Parse data rows
     for row in rows[header_idx + 1:]:
+        source_id = "statement:" + hashlib.sha256(json.dumps(row, separators=(",", ":")).encode()).hexdigest()
+
+        def reject(reason: str) -> None:
+            if rejections is not None:
+                rejections.append(IngestOutcome(source_id=source_id, status="rejected", reason=reason))
+
         if len(row) <= max(date_col, narration_col, debit_col):
+            reject("invalid_row")
             continue
 
         narration = row[narration_col].strip()
         if not narration:
+            reject("missing_merchant")
             continue
 
         # Check for non-food exclusions
         narr_lower = narration.lower()
-        if any(exc in narr_lower for exc in EXCLUDED_NARRATIONS):
+        if any(re.search(r"\b" + re.escape(exc) + r"\b", narr_lower) for exc in EXCLUDED_NARRATIONS):
+            reject("not_food")
             continue
 
         # Extract amount
         debit_val = row[debit_col].strip()
         amount = _parse_amount(debit_val)
         if not amount or amount <= 0:
+            reject("not_debit")
             continue
 
         # Extract date
         date_val = row[date_col].strip()
         tx_time = _parse_date(date_val)
+        if tx_time is None:
+            reject("invalid_timestamp")
+            continue
 
         # Extract merchant
         merchant, vpa, upi_ref = _extract_merchant_from_narration(narration)
+        if not is_genuine_food_transaction(narration, merchant, amount):
+            reject("not_food")
+            continue
 
         tx = TransactionIn(
             user_id=user_id,
@@ -166,7 +192,9 @@ def parse_statement_csv(csv_content: str, user_id: str) -> list[TransactionIn]:
             mcc_code="5812",
             upi_ref=upi_ref,
             payment_app="Statement Upload",
-            raw_description=f"Statement: Paid Rs {amount:.2f} to {merchant}",
+            raw_description=f"Statement: Paid Rs {amount:.2f} to {merchant}"[:500],
+            source_id=source_id,
+            time_precision="exact" if re.search(r"\b\d{1,2}:\d{2}", date_val) else "date",
         )
         transactions.append(tx)
 

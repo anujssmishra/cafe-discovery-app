@@ -13,13 +13,35 @@ class TasteProvider with ChangeNotifier {
   TasteProfile? _profile;
   bool _isLoading = false;
   String? _errorMessage;
+  int _profileRequest = 0;
+  int _consentRequest = 0;
 
   // DPDP Act 2023 Consent State
   bool _hasDpdpConsent = false;
   String _consentStatus = 'pending';
   DateTime? _consentGrantedAt;
 
-  TasteProvider(this._apiService, this._smsListenerService);
+  TasteProvider(this._apiService, this._smsListenerService) {
+    _apiService.addListener(_dataSourceChanged);
+  }
+
+  void _dataSourceChanged() {
+    ++_profileRequest;
+    ++_consentRequest;
+    _profile = null;
+    _isLoading = false;
+    _errorMessage = 'Load your profile from the selected server.';
+    _hasDpdpConsent = false;
+    _consentStatus = 'pending';
+    _consentGrantedAt = null;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _apiService.removeListener(_dataSourceChanged);
+    super.dispose();
+  }
 
   String get activeUserId => _activeUserId;
   TasteProfile? get profile => _profile;
@@ -31,7 +53,7 @@ class TasteProvider with ChangeNotifier {
   DateTime? get consentGrantedAt => _consentGrantedAt;
 
   int get totalTransactions => _profile?.totalFoodTransactions ?? 0;
-  bool get isCleanProfile => totalTransactions == 0;
+  bool get isCleanProfile => _profile != null && totalTransactions == 0;
 
   Future<void> init() async {
     _smsListenerService.setActiveUserId(_activeUserId);
@@ -40,6 +62,7 @@ class TasteProvider with ChangeNotifier {
   }
 
   Future<void> checkConsent() async {
+    final request = ++_consentRequest;
     final prefs = await SharedPreferences.getInstance();
     _hasDpdpConsent = prefs.getBool('dpdp_consent_granted') ?? false;
     final grantedStr = prefs.getString('dpdp_consent_granted_at');
@@ -51,20 +74,26 @@ class TasteProvider with ChangeNotifier {
     // Verify / sync with backend if online
     try {
       final consentData = await _apiService.getUserConsent(_activeUserId);
+      if (request != _consentRequest) return;
       final backendStatus = consentData['status'] as String?;
-      if (backendStatus == 'granted') {
+      if (backendStatus == 'granted' &&
+          consentData['sms_processing_consent'] == true) {
         _hasDpdpConsent = true;
         _consentStatus = 'granted';
         final dt = consentData['granted_at']?.toString();
         if (dt != null) _consentGrantedAt = DateTime.tryParse(dt);
         await prefs.setBool('dpdp_consent_granted', true);
         if (_consentGrantedAt != null) {
-          await prefs.setString('dpdp_consent_granted_at', _consentGrantedAt!.toIso8601String());
+          await prefs.setString(
+              'dpdp_consent_granted_at', _consentGrantedAt!.toIso8601String());
         }
-      } else if (backendStatus == 'revoked') {
+      } else {
         _hasDpdpConsent = false;
-        _consentStatus = 'revoked';
+        _consentStatus = backendStatus == 'revoked' ? 'revoked' : 'pending';
+        _consentGrantedAt = null;
         await prefs.setBool('dpdp_consent_granted', false);
+        await prefs.remove('dpdp_consent_granted_at');
+        await _smsListenerService.stopListening();
       }
     } catch (_) {
       // Offline fallback: keep local SharedPreferences state
@@ -73,6 +102,7 @@ class TasteProvider with ChangeNotifier {
   }
 
   Future<bool> grantConsent() async {
+    ++_consentRequest;
     final now = DateTime.now();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('dpdp_consent_granted', true);
@@ -90,6 +120,7 @@ class TasteProvider with ChangeNotifier {
   }
 
   Future<bool> revokeConsent() async {
+    ++_consentRequest;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('dpdp_consent_granted', false);
     await prefs.remove('dpdp_consent_granted_at');
@@ -109,41 +140,60 @@ class TasteProvider with ChangeNotifier {
   }
 
   Future<void> fetchProfile() async {
+    final request = ++_profileRequest;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _profile = await _apiService.getProfile(_activeUserId);
+      final profile = await _apiService.getProfile(_activeUserId);
+      if (request != _profileRequest) return;
+      _profile = profile;
     } catch (e) {
+      if (request != _profileRequest) return;
       _errorMessage = e.toString();
-      _profile = TasteProfile.empty(_activeUserId);
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (request == _profileRequest) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   Future<bool> clearProfile() async {
+    final request = ++_profileRequest;
     _isLoading = true;
     notifyListeners();
 
     try {
-      _profile = await _apiService.clearProfile(_activeUserId);
+      final profile = await _apiService.clearProfile(_activeUserId);
+      if (request != _profileRequest) return false;
+      _profile = profile;
       _errorMessage = null;
       notifyListeners();
       return true;
     } catch (e) {
+      if (request != _profileRequest) return false;
       _errorMessage = e.toString();
       notifyListeners();
       return false;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (request == _profileRequest) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   Future<bool> exerciseRightToErasure() async {
+    try {
+      await _smsListenerService.stopListening();
+      await _smsListenerService.clearPendingImports();
+    } catch (e) {
+      _errorMessage = 'Could not stop pending imports before erasure: $e';
+      notifyListeners();
+      return false;
+    }
     final cleared = await clearProfile();
     await revokeConsent();
     return cleared;

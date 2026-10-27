@@ -43,10 +43,12 @@ def explain_recommendation(
     if best_cuisine and best_affinity > 0.05:
         pct = int(round(best_affinity * 100))
         disp = CUISINE_DISPLAY_NAMES.get(best_cuisine, best_cuisine.replace('_', ' ').title())
-        if pct >= 25:
-            reasons.append(f"{disp} is your #1 food preference ({pct}% of your UPI food spending)")
+        highest_affinity = max(profile.cuisine_affinities.values(), default=0)
+        unique_top = list(profile.cuisine_affinities.values()).count(highest_affinity) == 1
+        if best_affinity == highest_affinity and unique_top:
+            reasons.append(f"{disp} is your most frequent identified cuisine ({pct}% of orders with identified cuisine)")
         else:
-            reasons.append(f"Matches your regular {disp} spending pattern ({pct}% of your dining orders)")
+            reasons.append(f"Matches your {disp} history ({pct}% of orders with identified cuisine)")
     elif restaurant.cuisines:
         disp = CUISINE_DISPLAY_NAMES.get(restaurant.cuisines[0], restaurant.cuisines[0].title())
         reasons.append(f"Features popular {disp} offerings")
@@ -58,17 +60,15 @@ def explain_recommendation(
             f"Fits your typical {restaurant.price_band} spending band "
             f"({direct_price_pct}% of your meals, avg ₹{profile.avg_spend:.0f}/order)"
         )
-    elif profile.avg_spend > 0:
-        reasons.append(f"In line with your average meal budget of ₹{profile.avg_spend:.0f}")
 
     # 3. Novelty / Familiarity reason
     past_visits = profile.top_restaurants.get(restaurant.id, 0)
     if past_visits == 0:
-        reasons.append("New discovery — you haven't paid at this spot yet")
+        reasons.append("No payments matched to this branch in your imported history")
     elif past_visits == 1:
-        reasons.append("You visited once recently via UPI")
+        reasons.append("One imported payment matched to this branch")
     else:
-        reasons.append(f"One of your repeat favorites ({past_visits} UPI payments recorded)")
+        reasons.append(f"{past_visits} imported payments matched to this branch")
 
     # 4. Meal context / Time pattern reason
     if meal_context and meal_context in profile.meal_patterns:
