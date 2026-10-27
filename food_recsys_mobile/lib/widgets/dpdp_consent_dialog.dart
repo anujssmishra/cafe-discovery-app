@@ -62,7 +62,8 @@ class _DpdpConsentDialogState extends State<DpdpConsentDialog> {
                       color: AppTheme.primary.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.verified_user, color: AppTheme.primary, size: 24),
+                    child: const Icon(Icons.verified_user,
+                        color: AppTheme.primary, size: 24),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -107,29 +108,41 @@ class _DpdpConsentDialogState extends State<DpdpConsentDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Notice Header
-                      _buildSectionHeader('1. STATUTORY NOTICE UNDER SECTION 5', Icons.info_outline),
+                      _buildSectionHeader('1. STATUTORY NOTICE UNDER SECTION 5',
+                          Icons.info_outline),
                       const SizedBox(height: 6),
                       const Text(
                         'Food RecSys acts as Data Fiduciary. Before processing your personal data, we provide this notice describing the purpose, scope, and your legal rights under Indian law.',
-                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.45),
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textSecondary,
+                            height: 1.45),
                       ),
                       const SizedBox(height: 14),
 
                       // Purpose
-                      _buildSectionHeader('2. SPECIFIED PURPOSE OF PROCESSING', Icons.track_changes),
+                      _buildSectionHeader('2. SPECIFIED PURPOSE OF PROCESSING',
+                          Icons.track_changes),
                       const SizedBox(height: 6),
                       const Text(
-                        'Your device’s transactional notifications and SMS debits from food delivery applications (Swiggy, Zomato, Zepto, Blinkit, EatSure) and UPI alerts are parsed locally to extract:\n'
+                        'Dining payment SMS and the Swiggy or Zomato files or receipt text you choose to import are parsed on your device. Reviewed fields are saved to your selected server to personalize recommendations:\n'
                         '• Restaurant & merchant brand name (e.g. Dastarkhwan, Roastery)\n'
                         '• Dining transaction amount (for budget and price tier estimation)\n'
                         '• Timestamp and day of week (for breakfast/lunch/dinner profiling)\n'
-                        '• Cuisine classification to recommend matching cafes and dining spots.',
-                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.45),
+                        '• Cuisine classification to recommend matching cafes and dining spots\n'
+                        '• Order platform, order ID, payment reference and dish names when supplied.\n'
+                        'Raw SMS, files and receipt text are not uploaded or stored in the retry queue. Only extracted fields are queued locally when offline. You can import orders without granting SMS permission.',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textSecondary,
+                            height: 1.45),
                       ),
                       const SizedBox(height: 14),
 
                       // Financial Redaction Guarantee
-                      _buildSectionHeader('3. STRICT FINANCIAL PRIVACY (RBI / NPCI STANDARDS)', Icons.lock_outline),
+                      _buildSectionHeader(
+                          '3. STRICT FINANCIAL PRIVACY (RBI / NPCI STANDARDS)',
+                          Icons.lock_outline),
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -143,7 +156,10 @@ class _DpdpConsentDialogState extends State<DpdpConsentDialog> {
                           children: const [
                             Text(
                               '🛡️ On-Device Redaction Guarantee:',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary),
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primary),
                             ),
                             SizedBox(height: 6),
                             Text(
@@ -151,7 +167,10 @@ class _DpdpConsentDialogState extends State<DpdpConsentDialog> {
                               '• Available bank balances and credit limits are purged instantly.\n'
                               '• OTPs, PINs, passwords, and personal chats are strictly excluded.\n'
                               '• Non-dining transactions (salary, investments, utility bills) are immediately discarded.',
-                              style: TextStyle(fontSize: 11, color: AppTheme.textMuted, height: 1.45),
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppTheme.textMuted,
+                                  height: 1.45),
                             ),
                           ],
                         ),
@@ -159,14 +178,18 @@ class _DpdpConsentDialogState extends State<DpdpConsentDialog> {
                       const SizedBox(height: 14),
 
                       // Principal Rights
-                      _buildSectionHeader('4. YOUR RIGHTS UNDER DPDP ACT 2023', Icons.shield_outlined),
+                      _buildSectionHeader('4. YOUR RIGHTS UNDER DPDP ACT 2023',
+                          Icons.shield_outlined),
                       const SizedBox(height: 6),
                       const Text(
                         '• Right to Withdraw Consent (Sec 6(4)): You may withdraw your consent at any time via Settings. All active listeners will stop immediately.\n'
                         '• Right to Erasure / Right to be Forgotten (Sec 12): You may permanently delete your taste profile, dining ledger, and recommendations.\n'
                         '• Right to Access (Sec 11): You can inspect the full chronological ledger of all processed transactions at any time.\n'
                         '• Grievance Redressal (Sec 13): Contact the designated Data Protection Officer at grievance@foodrecsys.app.',
-                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.45),
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textSecondary,
+                            height: 1.45),
                       ),
                     ],
                   ),
@@ -190,25 +213,31 @@ class _DpdpConsentDialogState extends State<DpdpConsentDialog> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Close Notice', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: const Text('Close Notice',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     )
                   : Column(
                       children: [
                         InkWell(
-                          onTap: () => setState(() => _checkboxChecked = !_checkboxChecked),
+                          onTap: () => setState(
+                              () => _checkboxChecked = !_checkboxChecked),
                           child: Row(
                             children: [
                               Checkbox(
                                 value: _checkboxChecked,
                                 activeColor: AppTheme.primary,
                                 checkColor: Colors.black,
-                                onChanged: (val) => setState(() => _checkboxChecked = val ?? false),
+                                onChanged: (val) => setState(
+                                    () => _checkboxChecked = val ?? false),
                               ),
                               const Expanded(
                                 child: Text(
-                                  'I have read and agree to the DPDP Act 2023 notice and explicitly consent to on-device dining SMS parsing.',
-                                  style: TextStyle(fontSize: 11, color: AppTheme.textPrimary, height: 1.3),
+                                  'I agree to processing extracted dining payment and selected order details for my taste profile and recommendations.',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: AppTheme.textPrimary,
+                                      height: 1.3),
                                 ),
                               ),
                             ],
@@ -220,11 +249,14 @@ class _DpdpConsentDialogState extends State<DpdpConsentDialog> {
                             Expanded(
                               child: OutlinedButton(
                                 style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: AppTheme.border),
+                                  side:
+                                      const BorderSide(color: AppTheme.border),
                                   foregroundColor: AppTheme.textMuted,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
                                 ),
-                                onPressed: widget.onConsentDenied ?? () => Navigator.pop(context, false),
+                                onPressed: widget.onConsentDenied ??
+                                    () => Navigator.pop(context, false),
                                 child: const Text('Disagree / Deny'),
                               ),
                             ),
@@ -232,14 +264,22 @@ class _DpdpConsentDialogState extends State<DpdpConsentDialog> {
                             Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: _checkboxChecked ? AppTheme.primary : AppTheme.surfaceElevated,
-                                  foregroundColor: _checkboxChecked ? Colors.black : AppTheme.textMuted,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  backgroundColor: _checkboxChecked
+                                      ? AppTheme.primary
+                                      : AppTheme.surfaceElevated,
+                                  foregroundColor: _checkboxChecked
+                                      ? Colors.black
+                                      : AppTheme.textMuted,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
                                 ),
                                 onPressed: _checkboxChecked
-                                    ? (widget.onConsentGranted ?? () => Navigator.pop(context, true))
+                                    ? (widget.onConsentGranted ??
+                                        () => Navigator.pop(context, true))
                                     : null,
-                                child: const Text('Agree & Consent', style: TextStyle(fontWeight: FontWeight.bold)),
+                                child: const Text('Agree & Consent',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
                               ),
                             ),
                           ],

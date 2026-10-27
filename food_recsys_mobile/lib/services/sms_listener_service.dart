@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'on_device_sms_parser.dart';
 import 'payment_import_queue.dart';
+import 'food_order_parser.dart';
 import '../config/constants.dart';
 export 'payment_import_queue.dart' show ImportSummary;
 
@@ -437,34 +438,62 @@ class SmsListenerService extends ChangeNotifier {
 
   Future<Map<String, dynamic>> importFoodOrders(
       List<Map<String, dynamic>> orders) async {
+    final endpoint = _apiService.baseUrl;
+    final generation = _captureGeneration;
     if (!await _queue.hasConsent()) {
       throw StateError('Consent is required before importing orders.');
     }
-    for (final order in orders) {
-      final merchant = order['restaurant_name']?.toString() ?? 'Food App';
-      final payload = ParsedPayment(
-          amount: (order['amount'] as num?)?.toDouble() ?? 0,
-          rawMerchant: merchant,
-          normalizedMerchant: merchant,
-          redactedText: '',
-          bank: order['platform']?.toString(),
-          transactionTime: order['order_time']?.toString(),
-          cuisine: order['cuisine']?.toString(),
-          dishNames: (order['dish_names'] as List?)
-                  ?.map((dish) => dish.toString())
-                  .toList() ??
-              []);
-      await _queue.enqueue(_activeUserId, payload.toPaymentPayload(),
-          channel: 'food-order', endpoint: _apiService.baseUrl);
+    if (orders.length > 1000) {
+      throw ArgumentError('Import at most 1,000 orders at a time.');
     }
-    final result = await retryPendingImports();
+    final rejected = <Map<String, dynamic>>[];
+    String? interrupted;
+    for (var index = 0; index < orders.length; index++) {
+      if (generation != _captureGeneration || endpoint != _apiService.baseUrl) {
+        interrupted =
+            'Import stopped because the data source changed or imports were cleared.';
+        break;
+      }
+      final input = orders[index];
+      final order =
+          FoodOrderParser.fromOrderPayload(input, rowNumber: index + 1);
+      final link = input['linked_transaction_id'];
+      final validLink = link == null ||
+          (link is String &&
+              RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
+                  .hasMatch(link));
+      if (!order.isImportable || !validLink) {
+        rejected.add({
+          'source_id': order.sourceId ?? 'invalid-order-row-${index + 1}',
+          'status': 'rejected',
+          'reason':
+              !validLink ? 'invalid_payment_link' : 'invalid_or_excluded_order',
+        });
+        continue;
+      }
+      final saved = await _queue.enqueue(_activeUserId,
+          order.toPaymentPayload(linkedTransactionId: link as String?),
+          channel: 'food-order', endpoint: endpoint);
+      if (!saved) {
+        interrupted = 'Import paused. Check consent before retrying.';
+        break;
+      }
+    }
+    final result = generation == _captureGeneration &&
+            endpoint == _apiService.baseUrl
+        ? await retryPendingImports(endpoint: endpoint)
+        : ImportSummary(
+            pendingCount:
+                await _queue.pendingCount(_activeUserId, endpoint: endpoint));
     return {
+      'submitted_count': orders.length,
       'ingested_count': result.ingestedCount,
       'duplicate_count': result.duplicateCount,
-      'rejected_count': result.rejectedCount,
+      'rejected_count': result.rejectedCount + rejected.length,
+      'unresolved_count': result.unresolvedCount,
       'pending_count': result.pendingCount,
-      'outcomes': result.outcomes,
-      if (result.error != null) 'error': result.error
+      'outcomes': [...result.outcomes, ...rejected],
+      if (interrupted ?? result.error case final error?) 'error': error,
     };
   }
 

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.models.restaurant import Restaurant
 from app.models.profile import TasteProfile, UserConsent
-from app.models.transaction import FoodPurchase, UpiTransaction, PaymentIdentity
+from app.models.transaction import FoodPurchase, UpiTransaction, PaymentIdentity, OrderDetails
 from app.models.recommendation import RecommendationLog
 from app.schemas.profile import TasteProfileOut, ConsentUpdateRequest, ConsentResponse
 from app.profile.builder import build_taste_profile
@@ -44,6 +44,8 @@ async def clear_profile(
     """Exercise DPDP Act 2023 Section 12 Right to Erasure (Right to be Forgotten).
     Permanently erases all food purchases, raw UPI records, recommendation logs, and resets taste profile.
     """
+    # Delete imported order context before the payments it references.
+    await session.execute(delete(OrderDetails).where(OrderDetails.user_id == user_id))
     # Delete dependent food purchases
     await session.execute(delete(FoodPurchase).where(FoodPurchase.user_id == user_id))
     # Delete raw upi transactions
@@ -167,6 +169,21 @@ async def get_user_transactions(
         UpiTransaction.transaction_time.desc(), UpiTransaction.id.desc()).limit(limit + 1))).all()
     has_more = len(records) > limit
     records = records[:limit]
+    orders_by_transaction = {}
+    if records:
+        order_records = (await session.execute(select(OrderDetails).where(
+            OrderDetails.user_id == user_id,
+            OrderDetails.transaction_id.in_([row[0].id for row in records]),
+        ).order_by(OrderDetails.platform, OrderDetails.order_id))).scalars().all()
+        for order in order_records:
+            orders_by_transaction.setdefault(order.transaction_id, []).append({
+                "platform": order.platform, "order_id": order.order_id,
+                "restaurant_name": order.merchant_name, "dish_names": order.dish_names,
+                "status": order.order_status, "currency": order.currency,
+                "time_precision": order.time_precision, "timezone": order.timezone,
+                "order_time": order.order_time.replace(tzinfo=timezone.utc).isoformat()
+                    if order.order_time else None,
+            })
     transactions = []
     for tx, purchase, name in records:
         instant = tx.transaction_time.replace(tzinfo=timezone.utc) if tx.transaction_time.tzinfo is None else tx.transaction_time
@@ -179,6 +196,7 @@ async def get_user_transactions(
             "price_band": purchase.price_band, "restaurant_id": purchase.restaurant_id,
             "restaurant_name": name,
             "classification_status": "matched" if purchase.restaurant_id else "unresolved",
+            "orders": orders_by_transaction.get(tx.id, []),
         })
     next_cursor = None
     if has_more and records:

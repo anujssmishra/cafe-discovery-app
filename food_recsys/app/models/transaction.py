@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, Float, Integer, Boolean, DateTime, ForeignKey, Index
+from sqlalchemy import String, Float, Integer, Boolean, DateTime, ForeignKey, Index, JSON, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
@@ -56,3 +56,29 @@ class PaymentIdentity(Base):
     transaction_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("upi_transactions.id", ondelete="CASCADE"), nullable=False, index=True,
     )
+
+
+class OrderDetails(Base):
+    """User-owned order context attached to one payment; no raw receipts or account data."""
+
+    __tablename__ = "order_details"
+    __table_args__ = (
+        UniqueConstraint("user_id", "platform", "order_id", name="uq_order_details_identity"),
+        UniqueConstraint("transaction_id", name="uq_order_details_payment"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    transaction_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("upi_transactions.id", ondelete="CASCADE"), nullable=False, index=True,
+    )
+    platform: Mapped[str] = mapped_column(String(16), nullable=False)
+    order_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    merchant_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    dish_names: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    cuisine: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    order_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    timezone: Mapped[str] = mapped_column(String(64), nullable=False, default="Asia/Kolkata")
+    time_precision: Mapped[str] = mapped_column(String(16), nullable=False, default="unknown")
+    order_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="INR")

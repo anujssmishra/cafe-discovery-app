@@ -9,6 +9,7 @@ import '../providers/recs_provider.dart';
 import '../widgets/dpdp_consent_dialog.dart';
 import '../config/constants.dart';
 import '../config/theme.dart';
+import 'food_order_import_screen.dart';
 
 class SmsIngestTab extends StatefulWidget {
   const SmsIngestTab({super.key});
@@ -188,6 +189,33 @@ class _SmsIngestTabState extends State<SmsIngestTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Swiggy & Zomato orders',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    const Text(
+                        'Import a CSV, JSON or text file, or paste a receipt. '
+                        'Review restaurants, dishes and possible payment matches before saving.'),
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      onPressed: () =>
+                          Navigator.of(context).push(MaterialPageRoute<void>(
+                        builder: (_) => const FoodOrderImportScreen(),
+                      )),
+                      icon: const Icon(Icons.receipt_long),
+                      label: const Text('Import Swiggy / Zomato'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             // 1. One-Tap Full Phone Inbox Scanner Card
             Card(
               color: const Color(0xFF131D31),
@@ -225,7 +253,7 @@ class _SmsIngestTabState extends State<SmsIngestTab> {
                                     color: AppTheme.textPrimary),
                               ),
                               Text(
-                                'Banks + Swiggy + Zomato History',
+                                'Dining payment alerts',
                                 style: TextStyle(
                                     fontSize: 12,
                                     color: AppTheme.secondary,

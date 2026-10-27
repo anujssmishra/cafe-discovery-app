@@ -109,7 +109,13 @@ class PaymentImportQueue {
       'upi_ref',
       'payment_app',
       'cuisine',
-      'dish_names'
+      'dish_names',
+      'order_id',
+      'order_platform',
+      'order_status',
+      'currency',
+      'linked_transaction_id',
+      'time_precision'
     };
     final safePayment = Map<String, dynamic>.fromEntries(
       payment.entries.where((entry) => allowed.contains(entry.key)),

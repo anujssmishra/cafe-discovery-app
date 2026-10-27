@@ -46,6 +46,83 @@ void main() {
         'api_base_url': 'https://synthetic.invalid'
       }));
 
+  Map<String, dynamic> order({String status = 'delivered'}) => {
+        'platform': 'Swiggy',
+        'order_id': 'SYNTHETIC_42',
+        'restaurant_name': 'Synthetic Cafe',
+        'amount': 280.0,
+        'status': status,
+        'currency': 'INR',
+        'order_time': '2026-10-24',
+        'time_precision': 'date',
+        'timezone': 'Asia/Kolkata',
+        'upi_ref': 'SYNTHETIC_REF_42',
+        'dish_names': ['Synthetic sandwich'],
+        'cuisine': 'cafe_western',
+      };
+
+  test(
+      'reviewed food order retains identity, precision and confirmed payment link',
+      () async {
+    final api = PaymentApi();
+    final service = SmsListenerService(api);
+    addTearDown(service.dispose);
+    final result = await service.importFoodOrders([
+      {
+        ...order(),
+        'linked_transaction_id': '12345678-1234-1234-1234-123456789012',
+        'raw_receipt': 'Private address and receipt must not leave the device',
+      }
+    ]);
+    expect(result['ingested_count'], 1);
+    expect(result['pending_count'], 0);
+    final payload = api.calls.single.single;
+    expect(payload['source_id'], 'order:swiggy:SYNTHETIC_42');
+    expect(payload['order_id'], 'SYNTHETIC_42');
+    expect(payload['order_platform'], 'Swiggy');
+    expect(payload['order_status'], 'delivered');
+    expect(payload['currency'], 'INR');
+    expect(payload['transaction_time'], '2026-10-24');
+    expect(payload['time_precision'], 'date');
+    expect(payload['upi_ref'], 'SYNTHETIC_REF_42');
+    expect(payload['linked_transaction_id'],
+        '12345678-1234-1234-1234-123456789012');
+    expect(payload['dish_names'], ['Synthetic sandwich']);
+    expect(payload.containsKey('raw_receipt'), false);
+  });
+
+  test('cancelled, invalid and non-INR orders never enter the persistent queue',
+      () async {
+    final api = PaymentApi();
+    final service = SmsListenerService(api);
+    addTearDown(service.dispose);
+    final result = await service.importFoodOrders([
+      order(status: 'cancelled'),
+      {...order(), 'amount': 0},
+      {...order(), 'currency': 'USD'},
+    ]);
+    expect(result['rejected_count'], 3);
+    expect(result['pending_count'], 0);
+    expect(api.calls, isEmpty);
+  });
+
+  test('offline orders retain safe context and retry on the original server',
+      () async {
+    final api = PaymentApi()..fail = true;
+    final service = SmsListenerService(api);
+    addTearDown(service.dispose);
+    final result = await service.importFoodOrders([order()]);
+    expect(result['ingested_count'], 0);
+    expect(result['pending_count'], 1);
+    api.fail = false;
+    api.resultStatus = 'duplicate';
+    final retry = await service.retryPendingImports();
+    expect(retry.duplicateCount, 1);
+    expect(retry.pendingCount, 0);
+    expect(api.destinations, everyElement('https://synthetic.invalid'));
+    expect(api.calls.last.single['dish_names'], ['Synthetic sandwich']);
+  });
+
   test(
       'registered foreground callback stops capturing after tracking is paused',
       () async {

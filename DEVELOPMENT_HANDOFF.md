@@ -2,6 +2,14 @@
 
 Updated: 2026-10-12. Transfer context through source and evidence, not credentials or live agent sessions.
 
+## Android order import checkpoint — 2026-10-27
+
+Work on `codex/swiggy-zomato-import`, based on the published mobile mapping fix `90652f9`.
+The current assignment adds Android Swiggy/Zomato CSV/JSON/plain-text receipt import with local
+review, duplicate preview, explicit links to existing payments, persisted retries, ledger dish
+context and erasure. See [SWIGGY_ZOMATO_IMPORT.md](SWIGGY_ZOMATO_IMPORT.md) for formats, exact
+scope and verification. This feature does not access personal accounts or update the PHP site.
+
 ## Mobile data mapping checkpoint — 2026-10-26
 
 Local work on `codex/mobile-data-mapping-fixes`, based on fetched GitHub `main` at `9226db1`.

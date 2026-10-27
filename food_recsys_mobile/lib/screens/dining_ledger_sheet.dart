@@ -183,6 +183,19 @@ class _DiningLedgerSheetState extends State<DiningLedgerSheet> {
             'Classification: ${transaction.classificationStatus.replaceAll('_', ' ')}',
             style:
                 const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+        for (final order in transaction.orders) ...[
+          Text('${order.platform} order #${order.orderId}',
+              style:
+                  const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+          if (order.restaurantName != null &&
+              order.restaurantName != transaction.restaurantName &&
+              order.restaurantName != transaction.merchantName)
+            Text('Ordered from ${order.restaurantName}',
+                style: const TextStyle(fontSize: 12)),
+          if (order.dishNames.isNotEmpty)
+            Text('Dishes: ${order.dishNames.join(', ')}',
+                style: const TextStyle(fontSize: 12)),
+        ],
         if (transaction.restaurantId != null)
           TextButton(
             onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(

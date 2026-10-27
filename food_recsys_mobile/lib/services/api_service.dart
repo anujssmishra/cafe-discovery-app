@@ -204,6 +204,23 @@ class ApiService extends ChangeNotifier {
     }
   }
 
+  Future<Map<String, dynamic>> previewFoodOrders(
+    String userId,
+    List<Map<String, dynamic>> orders,
+  ) async {
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/api/v1/ingest/food-orders/preview'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'user_id': userId, 'orders': orders}),
+        )
+        .timeout(const Duration(seconds: 30));
+    if (response.statusCode != 200) {
+      throw Exception('Could not review orders: HTTP ${response.statusCode}');
+    }
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> getTransactions(String userId,
       {int limit = 100, String? cursor}) async {
     final uri = Uri.parse('$_baseUrl/api/v1/profile/$userId/transactions')

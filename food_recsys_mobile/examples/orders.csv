@@ -1,0 +1,3 @@
+platform,order_id,restaurant_name,amount,order_time,dish_names,status,currency,timezone,cuisine
+Swiggy,SYNTHETIC_SWIGGY_001,Synthetic Example Kitchen,450.00,2026-10-26T19:30:00+05:30,Paneer bowl|Garlic naan,delivered,INR,Asia/Kolkata,north_indian_curry
+Zomato,SYNTHETIC_ZOMATO_001,Synthetic Example Cafe,280.00,2026-10-25,Sandwich|Coffee,completed,INR,Asia/Kolkata,cafe_western

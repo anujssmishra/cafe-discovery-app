@@ -1,3 +1,26 @@
+class DiningOrderDetails {
+  final String platform;
+  final String orderId;
+  final String? restaurantName;
+  final List<String> dishNames;
+
+  const DiningOrderDetails(
+      {required this.platform,
+      required this.orderId,
+      this.restaurantName,
+      this.dishNames = const []});
+
+  factory DiningOrderDetails.fromJson(Map<String, dynamic> json) =>
+      DiningOrderDetails(
+        platform: json['platform']?.toString() ?? 'Food order',
+        orderId: json['order_id']?.toString() ?? '',
+        restaurantName: json['restaurant_name'] as String?,
+        dishNames: (json['dish_names'] as List? ?? [])
+            .map((value) => value.toString())
+            .toList(),
+      );
+}
+
 class DiningTransaction {
   final String id;
   final String merchantName;
@@ -10,6 +33,7 @@ class DiningTransaction {
   final String classificationStatus;
   final String? restaurantId;
   final String? restaurantName;
+  final List<DiningOrderDetails> orders;
 
   const DiningTransaction({
     required this.id,
@@ -23,6 +47,7 @@ class DiningTransaction {
     required this.classificationStatus,
     this.restaurantId,
     this.restaurantName,
+    this.orders = const [],
   });
 
   factory DiningTransaction.fromJson(Map<String, dynamic> json) {
@@ -40,6 +65,11 @@ class DiningTransaction {
           json['classification_status']?.toString() ?? 'unknown',
       restaurantId: json['restaurant_id'] as String?,
       restaurantName: json['restaurant_name'] as String?,
+      orders: (json['orders'] as List? ?? [])
+          .whereType<Map>()
+          .map((row) =>
+              DiningOrderDetails.fromJson(Map<String, dynamic>.from(row)))
+          .toList(),
     );
   }
 }

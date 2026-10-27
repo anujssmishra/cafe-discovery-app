@@ -21,6 +21,12 @@ captures and scan checkpoints remain tied to the server they belong to.
 
 ## Import and review
 
+**Swiggy/Zomato orders:** open Auto-Ingest → Import Swiggy / Zomato. Select a CSV/JSON/TXT file
+or paste a receipt, edit the extracted fields, check duplicates and import selected orders.
+Possible existing payments require an explicit link/separate decision. Orders retain their
+IDs and dishes in the ledger. See [formats and instructions](../SWIGGY_ZOMATO_IMPORT.md).
+This is file/text import; account synchronization and PDF/image parsing are not included.
+
 - Grant SMS processing consent before scanning or enabling tracking.
 - The app extracts structured amount/merchant/reference/time fields on-device. Raw SMS is
   neither uploaded nor persisted in the import queue.

@@ -59,6 +59,14 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull,
           reason: '$label should open without a platform or provider error');
+      if (label == 'Auto-Ingest') {
+        await tester.tap(find.text('Import Swiggy / Zomato'));
+        await tester.pumpAndSettle();
+        expect(find.text('Import food orders'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+      }
     }
     await tester.pumpWidget(const SizedBox.shrink());
     taste.dispose();

@@ -9,6 +9,33 @@ import 'package:food_recsys_mobile/services/on_device_sms_parser.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test(
+      'food order preview uses reviewed fields and preserves the selected server',
+      () async {
+    final api = ApiService(client: MockClient((request) async {
+      expect(request.url.path, '/api/v1/ingest/food-orders/preview');
+      final body = jsonDecode(request.body) as Map;
+      expect(body['user_id'], 'contract_user');
+      expect((body['orders'] as List).single['source_id'],
+          'order:zomato:SYNTHETIC_1');
+      return http.Response(
+          '{"orders":[{"source_id":"order:zomato:SYNTHETIC_1","status":"new","candidates":[]}]}',
+          200);
+    }));
+    final result = await api.previewFoodOrders('contract_user', [
+      {
+        'source_id': 'order:zomato:SYNTHETIC_1',
+        'restaurant_name': 'Synthetic Cafe',
+        'amount': 280,
+        'platform': 'Zomato',
+        'order_id': 'SYNTHETIC_1',
+        'status': 'delivered',
+        'currency': 'INR',
+      }
+    ]);
+    expect(result['orders'].single['status'], 'new');
+  });
+
   test('on-device payment crosses the API boundary without raw SMS', () async {
     SharedPreferences.setMockInitialValues({});
     final api = ApiService(client: MockClient((request) async {

@@ -1,6 +1,6 @@
 from app.models.base import Base
 from app.models.restaurant import Restaurant
-from app.models.transaction import UpiTransaction, FoodPurchase, PaymentIdentity
+from app.models.transaction import UpiTransaction, FoodPurchase, PaymentIdentity, OrderDetails
 from app.models.profile import TasteProfile, UserConsent
 from app.models.recommendation import RecommendationLog
 
@@ -10,6 +10,7 @@ __all__ = [
     "UpiTransaction",
     "FoodPurchase",
     "PaymentIdentity",
+    "OrderDetails",
     "TasteProfile",
     "UserConsent",
     "RecommendationLog",

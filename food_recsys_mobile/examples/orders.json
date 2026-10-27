@@ -1,0 +1,16 @@
+{
+  "orders": [
+    {
+      "platform": "Swiggy",
+      "order_id": "SYNTHETIC_SWIGGY_001",
+      "restaurant_name": "Synthetic Example Kitchen",
+      "amount": 450,
+      "currency": "INR",
+      "status": "delivered",
+      "order_time": "2026-10-26T19:30:00+05:30",
+      "dish_names": ["Paneer bowl", "Garlic naan"],
+      "timezone": "Asia/Kolkata",
+      "cuisine": "north_indian_curry"
+    }
+  ]
+}

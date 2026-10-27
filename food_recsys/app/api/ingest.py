@@ -15,6 +15,7 @@ from app.schemas.transaction import (
     IngestOutcome,
 )
 from app.ingestion.pipeline import ingest_transactions
+from app.ingestion.order_import import order_to_transaction, order_rejection, preview_food_orders
 from app.ingestion.sms_parser import parse_sms, sms_to_transaction_in
 from app.ingestion.statement_parser import parse_statement_csv
 from app.profile.builder import build_taste_profile
@@ -65,7 +66,7 @@ def _import_payload(result: IngestResponse, profile: TasteProfile | None = None)
 async def _profile_after_import(session: AsyncSession, user_id: str, result: IngestResponse, rebuild: bool):
     if not rebuild:
         return None
-    if result.ingested_count:
+    if result.ingested_count or user_id in result.affected_users:
         return await build_taste_profile(session, user_id)
     # Repair an interrupted post-commit profile build on retry, while leaving a current profile alone.
     profile = (await session.execute(select(TasteProfile).where(TasteProfile.user_id == user_id))).scalar_one_or_none()
@@ -88,7 +89,7 @@ async def ingest_structured_payments(
         TransactionIn(
             user_id=payload.user_id,
             transaction_time=payment.transaction_time or now,
-            time_precision="exact" if payment.transaction_time is not None else "unknown",
+            time_precision=payment.time_precision,
             timezone=payment.timezone,
             merchant_name=payment.merchant_name,
             amount=payment.amount,
@@ -97,6 +98,9 @@ async def ingest_structured_payments(
             source_id=payment.source_id,
             cuisine=payment.cuisine,
             dish_names=payment.dish_names,
+            order_id=payment.order_id, order_platform=payment.order_platform,
+            linked_transaction_id=payment.linked_transaction_id,
+            order_status=payment.order_status, currency=payment.currency,
             mcc_code="5812",
             raw_description=f"Payment: Paid Rs {payment.amount:.2f} to {payment.merchant_name}",
         )
@@ -160,30 +164,38 @@ async def ingest_sms_messages(
     return response
 
 
+@router.post("/food-orders/preview")
+async def preview_order_import(
+    payload: FoodOrdersBatchIn, session: AsyncSession = Depends(get_db),
+):
+    """Show exact duplicates and user-owned review candidates without mutating history."""
+    return await preview_food_orders(session, payload.user_id, payload.orders)
+
+
 @router.post("/food-orders")
 async def ingest_food_orders(
     payload: FoodOrdersBatchIn,
     rebuild_profile: bool = Query(True, description="Automatically recompute user taste profile"),
     session: AsyncSession = Depends(get_db),
 ):
-    """Preserve explicit cuisine and every supplied dish during order classification."""
-    now = datetime.now(timezone.utc)
+    """Legacy structured orders, with safe order identity and enrichment when supplied."""
     transactions = []
-    for order in payload.orders:
-        platform = order.platform or "Food App"
-        dish_description = f" ({', '.join(order.dish_names or [])})" if order.dish_names else ""
-        transactions.append(TransactionIn(
-            user_id=payload.user_id,
-            transaction_time=order.order_time or now,
-            time_precision="exact" if order.order_time else "unknown",
-            timezone=order.timezone,
-            amount=order.amount, merchant_name=order.restaurant_name,
-            mcc_code="5812", payment_app=platform,
-            source_id=order.source_id, upi_ref=order.upi_ref,
-            cuisine=order.cuisine, dish_names=order.dish_names or [],
-            raw_description=f"{platform}: Ordered from {order.restaurant_name}{dish_description}"[:500],
-        ))
+    rejected_by_position = {}
+    for position, order in enumerate(payload.orders):
+        reason = order_rejection(order)
+        if reason:
+            rejected_by_position[position] = IngestOutcome(source_id=order.source_id, status="rejected", reason=reason)
+        else:
+            transactions.append(order_to_transaction(order, payload.user_id))
     result = await ingest_transactions(session, transactions)
+    result.submitted_count += len(rejected_by_position)
+    result.rejected_count += len(rejected_by_position)
+    result.skipped_count += len(rejected_by_position)
+    accepted_outcomes = iter(result.outcomes)
+    result.outcomes = [
+        rejected_by_position[position] if position in rejected_by_position else next(accepted_outcomes)
+        for position in range(len(payload.orders))
+    ]
     profile = await _profile_after_import(session, payload.user_id, result, rebuild_profile)
     response = _import_payload(result, profile)
     response.update(user_id=payload.user_id, orders_count=len(payload.orders), ingest_summary=result.model_dump())

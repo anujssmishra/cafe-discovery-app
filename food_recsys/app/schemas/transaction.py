@@ -1,8 +1,9 @@
+import re
 from datetime import datetime
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 Cuisine = Literal[
@@ -12,6 +13,45 @@ Cuisine = Literal[
 ]
 DishName = Annotated[str, Field(min_length=1, max_length=120)]
 SourceId = Annotated[str, Field(min_length=1, max_length=200, pattern=r"^[A-Za-z0-9_.:@/-]+$")]
+
+OrderId = Annotated[str, Field(min_length=1, max_length=64, pattern=r"^[A-Za-z0-9_-]+$")]
+LinkedTransactionId = Annotated[str, Field(pattern=r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")]
+OrderPlatform = Literal["Swiggy", "Zomato"]
+TimePrecision = Literal["exact", "date", "unknown"]
+
+
+def normalize_platform(value):
+    return {"swiggy": "Swiggy", "zomato": "Zomato"}.get(value.strip().lower(), value) if isinstance(value, str) else value
+
+
+def canonical_order_source(model):
+    source = model.source_id or ""
+    if source.lower().startswith("order:") and (model.order_id or model.order_platform or source.lower().startswith(("order:swiggy:", "order:zomato:"))):
+        match = re.fullmatch(r"order:(swiggy|zomato):([A-Za-z0-9_-]{1,64})", source, re.IGNORECASE)
+        if not match:
+            raise ValueError("Invalid order source_id")
+        platform, order_id = normalize_platform(match.group(1)), match.group(2)
+        if (model.order_id and model.order_id != order_id) or (model.order_platform and model.order_platform != platform):
+            raise ValueError("Order source_id conflicts with order identity")
+        model.order_platform, model.order_id = platform, order_id
+    if model.order_id or model.order_platform:
+        if not model.order_id or not model.order_platform:
+            raise ValueError("order_id and order_platform must be supplied together")
+        if model.amount > 100000:
+            raise ValueError("Order amount exceeds the supported INR 100000 limit")
+        model.source_id = f"order:{model.order_platform.lower()}:{model.order_id}"
+    if model.linked_transaction_id and not model.order_id:
+        raise ValueError("A linked transaction requires an order identity")
+    return model
+
+
+def mark_date_precision(value):
+    if isinstance(value, dict):
+        value = dict(value)
+        timestamp = value.get("transaction_time")
+        if isinstance(timestamp, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", timestamp):
+            value["time_precision"] = "date"
+    return value
 
 
 class PaymentIn(BaseModel):
@@ -28,6 +68,12 @@ class PaymentIn(BaseModel):
     payment_app: str | None = Field(None, max_length=64)
     cuisine: Cuisine | None = None
     dish_names: list[DishName] = Field(default_factory=list, max_length=20)
+    time_precision: TimePrecision | None = None
+    order_id: OrderId | None = None
+    order_platform: OrderPlatform | None = None
+    linked_transaction_id: LinkedTransactionId | None = None
+    order_status: Literal["completed", "paid", "delivered"] | None = None
+    currency: Literal["INR"] = "INR"
 
     @field_validator("timezone")
     @classmethod
@@ -37,6 +83,18 @@ class PaymentIn(BaseModel):
         except (ZoneInfoNotFoundError, ValueError):
             raise ValueError("timezone must be a valid IANA timezone")
         return value
+
+    _normalize_platform = field_validator("order_platform", mode="before")(normalize_platform)
+    _mark_date_precision = model_validator(mode="before")(mark_date_precision)
+
+    @model_validator(mode="after")
+    def validate_order(self):
+        canonical_order_source(self)
+        if self.transaction_time is None:
+            self.time_precision = "unknown"
+        elif self.time_precision is None:
+            self.time_precision = "exact"
+        return self
 
 
 class PaymentsBatchIn(BaseModel):
@@ -62,8 +120,16 @@ class TransactionIn(BaseModel):
     time_precision: Literal["exact", "date", "unknown"] = "exact"
     cuisine: Cuisine | None = None
     dish_names: list[DishName] = Field(default_factory=list, max_length=20)
+    order_id: OrderId | None = None
+    order_platform: OrderPlatform | None = None
+    linked_transaction_id: LinkedTransactionId | None = None
+    order_status: Literal["completed", "paid", "delivered"] | None = None
+    currency: Literal["INR"] = "INR"
 
     _validate_timezone = field_validator("timezone")(PaymentIn.validate_timezone.__func__)
+
+    _normalize_platform = field_validator("order_platform", mode="before")(normalize_platform)
+    _validate_order = model_validator(mode="after")(canonical_order_source)
 
 
 class TransactionBatchIn(BaseModel):
@@ -128,6 +194,8 @@ class SmsIngestRequest(BaseModel):
 
 
 class FoodOrderIn(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
     restaurant_name: str = Field(..., min_length=1, max_length=200)
     amount: float = Field(..., gt=0, le=100000, allow_inf_nan=False)
     order_time: datetime | None = None
@@ -137,8 +205,39 @@ class FoodOrderIn(BaseModel):
     source_id: SourceId | None = None
     timezone: str = Field("Asia/Kolkata", max_length=64)
     upi_ref: str | None = Field(None, max_length=64, pattern=r"^[A-Za-z0-9_-]+$")
+    order_id: OrderId | None = None
+    order_platform: OrderPlatform | None = None
+    linked_transaction_id: LinkedTransactionId | None = None
+    time_precision: TimePrecision | None = None
+    status: str | None = Field(None, max_length=32)
+    order_status: str | None = Field(None, max_length=32)
+    currency: str = Field("INR", min_length=3, max_length=3)
 
     _validate_timezone = field_validator("timezone")(PaymentIn.validate_timezone.__func__)
+    _normalize_platform = field_validator("platform", "order_platform", mode="before")(normalize_platform)
+
+    @model_validator(mode="before")
+    @classmethod
+    def date_only_orders(cls, value):
+        if isinstance(value, dict):
+            value = dict(value)
+            timestamp = value.get("order_time")
+            if isinstance(timestamp, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", timestamp):
+                value["time_precision"] = "date"
+        return value
+
+    @model_validator(mode="after")
+    def validate_order_context(self):
+        self.currency = self.currency.upper()
+        if self.order_id and self.order_platform is None:
+            if self.platform in {"Swiggy", "Zomato"}:
+                self.order_platform = self.platform
+        canonical_order_source(self)
+        if self.order_time is None:
+            self.time_precision = "unknown"
+        elif self.time_precision is None:
+            self.time_precision = "exact"
+        return self
 
 
 class FoodOrdersBatchIn(BaseModel):

@@ -4,6 +4,11 @@
 endpoint, with duplicate-safe identities and explicit per-record outcomes. See
 [verification and upgrade notes](../MOBILE_MAPPING_VERIFICATION.md).
 
+**27 October 2026 order import:** the Android app now reviews Swiggy/Zomato file and receipt
+imports locally, previews possible payment matches and retains order/dish context without
+double-counting exact duplicates. Update/restart this backend for the new preview endpoint
+and additive `order_details` table. See [order import instructions](../SWIGGY_ZOMATO_IMPORT.md).
+
 > **"Spotify for Food"** — A personalized recommendation engine that learns what you actually eat from UPI payment history and recommends restaurants you'll love with transparent reasoning.
 
 ---

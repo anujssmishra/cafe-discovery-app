@@ -28,6 +28,14 @@ class PagedLedgerApi extends ApiService {
                 'merchant_name': 'First cafe',
                 'amount': 30.25,
                 'transaction_time': '2026-10-26T08:00:00Z',
+                'orders': [
+                  {
+                    'platform': 'Swiggy',
+                    'order_id': 'SYNTHETIC_42',
+                    'restaurant_name': 'First cafe',
+                    'dish_names': ['Synthetic sandwich'],
+                  }
+                ],
                 'classification_status': 'matched'
               },
               {
@@ -62,6 +70,8 @@ void main() {
     expect(find.text('2 of 3 transactions loaded'), findsOneWidget);
     expect(find.text('₹99.50 total across all transactions'), findsOneWidget);
     expect(find.text('Classification: unresolved'), findsOneWidget);
+    expect(find.text('Swiggy order #SYNTHETIC_42'), findsOneWidget);
+    expect(find.text('Dishes: Synthetic sandwich'), findsOneWidget);
     expect(find.textContaining('Meal time unknown'), findsNWidgets(2));
     await tester.tap(find.text('Load more transactions'));
     await tester.pumpAndSettle();
